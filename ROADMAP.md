@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 1 — repo scaffold** · branch `chore/scaffold` open, not merged
+Status: **step 2 — HTTP client and error mapping**
 
 Scope and constraints live in `SCOPE.md`. Permission layers were established
 empirically on 2026-08-29; see section 2 there before adding any endpoint.
@@ -23,14 +23,14 @@ review them and write tests against them, but does not implement them.
 
 ## Milestone v0.1 — five read-only tools, no file content
 
-### [~] 1. Repo scaffold and CI
+### [x] 1. Repo scaffold and CI
 
 **Delivers:** `pip install -e .` works, `pytest` runs, CI green on every PR.
 
 **Files:** `pyproject.toml`, `.gitignore`, `.env.example`, `CLAUDE.md`,
 `.github/workflows/ci.yml`, `src/canvas_mcp/__init__.py`, `tests/test_import.py`
 
-**Branch:** `chore/scaffold`
+**Branch:** `chore/scaffold` · **Issue:** #1 · **PR:** #2 (merged, CI green)
 
 **Notes:** `.gitignore` must contain `.env` before any token exists on disk.
 
