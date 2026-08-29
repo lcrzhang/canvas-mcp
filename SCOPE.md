@@ -1,0 +1,238 @@
+# canvas-mcp — Scope & Workflow
+
+Read-only MCP server voor Canvas LMS (canvas.uva.nl).
+Eén student, één token, lokaal. Deny-by-default scoping.
+
+---
+
+## 1. Waarom deze server bestaat
+
+Een Canvas personal access token is **ongescoped**: het draagt alle
+permissies van de gebruiker die het aanmaakte. Canvas' eigen scope-systeem
+werkt alleen bij OAuth2 developer keys, die een instelling moet uitgeven.
+
+Deze server is daarom de enige laag waar least privilege wordt afgedwongen.
+Dat is het punt van het project, niet een bijzaak.
+
+---
+
+## 2. Empirisch vastgestelde permissielagen
+
+Getest tegen canvas.uva.nl met een student-token op 2026-08-29:
+
+| Endpoint | Resultaat |
+|---|---|
+| `GET /users/self` | 200 |
+| `GET /courses?enrollment_state=active` | 200 |
+| `GET /courses/:id/modules?include[]=items` | 200 |
+| `GET /courses/:id/files` | **403 unauthorized** |
+| `GET /courses/:id/files/:file_id` | 200 |
+
+Conclusies die de architectuur bepalen:
+
+- De **file index** vereist `manage_files`-rechten en is dicht voor
+  studenten. Individuele file objects zijn wél bereikbaar.
+  → Modules zijn de enige ingang naar bestanden.
+- Canvas filtert unpublished content zelf al weg op basis van enrollment
+  (module `position` 1, 2, 5 — 3 en 4 ontbraken uit de response).
+  → `position` is geen index; nooit als zodanig gebruiken.
+- Permissies zitten dus op drie lagen: Canvas-instelling, enrollment, en
+  deze server. De server is de smalste.
+
+---
+
+## 3. Tools
+
+### v0.1 — read-only, geen file content
+
+| Tool | Input | Output | Scope |
+|---|---|---|---|
+| `list_courses` | `term_filter?` | id, name, code, term-naam | `courses:read` |
+| `list_assignments` | `course_id`, `only_upcoming?` | id, name, due_at, points, submitted | `assignments:read` |
+| `get_assignment` | `course_id`, `assignment_id` | sanitized plain text, gecapt | `assignments:read` |
+| `list_announcements` | `course_id`, `limit?` | titel, datum, plain-text body | `announcements:read` |
+| `list_materials` | `course_id`, `module_filter?` | module → sectie → item (naam, type) | `materials:read` |
+
+`list_materials` heet bewust niet `list_files`: de bron is de module-tree,
+en de output bevat ook pages en assignments, niet alleen bestanden.
+
+### v0.2 — file content
+
+| Tool | Input | Output | Scope |
+|---|---|---|---|
+| `read_file` | `course_id`, `file_id`, `page_range?` | geëxtraheerde tekst | `files:content` |
+
+### Bestaat, maar staat standaard uit
+
+| Tool | Scope | Waarom uit |
+|---|---|---|
+| `list_grades` | `grades:read` | Het token mag het. De server niet, tenzij expliciet aangezet. Dit is de demonstratie. |
+
+---
+
+## 4. Wat een gebruiker kan vragen
+
+- "Welke vakken volg ik dit semester?"
+- "Wat moet ik deze week inleveren voor Datastructuren?"
+- "Waar gaat de week 1 opdracht over?"
+- "Welke slides horen bij week 1?"
+- "Zijn er nieuwe announcements bij DA?"
+- (v0.2) "Wat staat er op slide 10-15 van lec01_intro?"
+
+## Wat expliciet niet kan, by design
+
+- cijfers opvragen zonder `grades:read` expliciet aan te zetten
+- iets inleveren, wijzigen of verwijderen — er zijn geen write tools
+- vragen over alle vakken tegelijk zonder `course_id` — voorkomt N+1 calls
+- bestanden downloaden naar de gebruiker — alleen tekst komt terug
+
+---
+
+## 5. Data hygiene — velden die nooit de output in gaan
+
+Deze bevatten credentials of onnodige PII en worden in de filterlaag
+verwijderd, met een test per veld:
+
+| Veld | Reden |
+|---|---|
+| `calendar.ics` | unauthenticated feed-URL; wie hem heeft leest de agenda |
+| `file.url` (met `verifier=`) | unauthenticated download-link |
+| `canvadoc_session_url` | JWT met user_id erin |
+| `uuid`, `*_account_id`, `sis_*` | interne identifiers, geen nut voor een LLM |
+| `storage_quota_mb`, `blueprint`, `template`, `license`, ... | LTI/admin-plumbing |
+
+Gemeten op `/courses` met 4 vakken: **4310 bytes ruw → ~450 bytes geslankt**
+(factor ~9).
+
+Respecteer daarnaast `locked_for_user` en `hidden_for_user`: staat er
+`true`, dan bestaat het item niet voor de tool.
+
+---
+
+## 6. Untrusted content
+
+Assignment-descriptions, announcement-bodies en PDF-tekst zijn door derden
+geschreven en kunnen instructies bevatten die op een model gericht zijn.
+
+Mitigatie:
+
+1. HTML → plain text, tags gestript, links behouden als tekst
+2. harde cap (~2000 chars) met expliciete `[truncated]` marker
+3. content gewrapt in delimiters zodat de grens zichtbaar is
+
+**Eerlijk in de README:** dit lost prompt injection niet op. De echte
+verdediging is dat er geen write tools zijn — er is niets om te misbruiken.
+Dat is het argument, niet de sanitizer.
+
+---
+
+## 7. Non-goals
+
+Deze staan bovenaan de README, niet onderaan.
+
+- geen write tools (geen submissions, geen comments, geen wijzigingen)
+- geen caching layer
+- geen OCR — scans zonder tekstlaag worden geweigerd met duidelijke error
+- geen multi-user; één token, lokaal
+- geen web UI
+- geen OAuth2 — alleen Canvas-instances met personal access tokens
+- geen file downloads naar schijf voor de gebruiker
+- geen v0.1 file content
+
+---
+
+## 8. Fixture mode
+
+`--demo` draait tegen opgeslagen JSON-responses in `fixtures/`.
+
+- de repo werkt zonder UvA-account (belangrijk: tokens verlopen na max 90 dagen)
+- tests zijn deterministisch
+- fixtures zijn geanonimiseerd: user_id, uuids en verifiers vervangen
+
+---
+
+## 9. Error handling
+
+Errors zijn instructies voor een LLM, geen statuscodes.
+
+```
+401 → "Canvas token rejected. Personal access tokens expire after max 90
+       days — generate a new one at canvas.uva.nl → Account → Settings."
+403 → "Not authorised for this endpoint. The course file index requires
+       teacher permissions; use list_materials instead."
+404 → "Course 60059 not found or not visible with this enrollment."
+```
+
+Startup-check: valideer het token één keer tegen `/users/self` en fail fast.
+
+---
+
+## 10. Repo-structuur
+
+```
+canvas-mcp/
+├── src/canvas_mcp/
+│   ├── __init__.py
+│   ├── server.py        # MCP entrypoint, tool registratie
+│   ├── client.py        # HTTP layer, auth, error mapping
+│   ├── scopes.py        # deny-by-default registry
+│   ├── filters.py       # ruwe API-response → slim dict
+│   ├── sanitize.py      # HTML → plain text, caps
+│   └── tools/
+│       ├── courses.py
+│       ├── assignments.py
+│       ├── announcements.py
+│       └── materials.py
+├── fixtures/            # geanonimiseerde JSON voor --demo
+├── tests/
+├── .env.example         # CANVAS_TOKEN=
+├── .gitignore           # .env
+├── pyproject.toml
+├── README.md
+└── SCOPE.md
+```
+
+---
+
+## 11. Git workflow
+
+**Branches** — geen directe commits op `main`, ook niet solo.
+
+```
+feat/<naam>   nieuwe tool of feature
+fix/<naam>    bugfix
+docs/<naam>   README, scope
+chore/<naam>  CI, deps, config
+```
+
+**Commits** — Conventional Commits, één logische verandering per commit.
+
+```
+feat(tools): add list_assignments with due_at filtering
+fix(client): map 401 to actionable token error
+docs(scope): document empirically tested permission layers
+test(filters): assert verifier URLs are stripped
+chore(ci): run ruff and pytest on PRs
+```
+
+**Merges** — squash merge per PR. Trade-off: tussenstappen binnen een branch
+verdwijnen uit `main`, maar de log wordt leesbaar als changelog. De volledige
+geschiedenis blijft zichtbaar in de PR zelf.
+
+**Issues** — elke unit of work een issue, elke PR sluit er één
+(`Closes #7`). PR-beschrijving: wat, waarom, hoe getest.
+
+**CI** — vanaf de eerste PR: `ruff check`, `ruff format --check`, `pytest`.
+
+**Releases** — semver + tag. `v0.1.0` als de vijf tools werken,
+`v0.2.0` bij `read_file`.
+
+---
+
+## 12. Milestones
+
+| Milestone | Inhoud |
+|---|---|
+| `v0.1.0` | client, scopes, filters, 5 read-only tools, fixture mode, CI, README |
+| `v0.2.0` | `read_file` met page_range en size caps |
+| backlog | `list_grades` documentatie-voorbeeld, term-resolutie via `include[]=term` |
