@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 1 — repo scaffold** · branch `chore/scaffold` open, not merged
+Status: **step 2 — HTTP client and error mapping**
 
 Scope and constraints live in `SCOPE.md`. Permission layers were established
 empirically on 2026-08-29; see section 2 there before adding any endpoint.
@@ -23,14 +23,14 @@ review them and write tests against them, but does not implement them.
 
 ## Milestone v0.1 — five read-only tools, no file content
 
-### [~] 1. Repo scaffold and CI
+### [x] 1. Repo scaffold and CI
 
 **Delivers:** `pip install -e .` works, `pytest` runs, CI green on every PR.
 
 **Files:** `pyproject.toml`, `.gitignore`, `.env.example`, `CLAUDE.md`,
 `.github/workflows/ci.yml`, `src/canvas_mcp/__init__.py`, `tests/test_import.py`
 
-**Branch:** `chore/scaffold`
+**Branch:** `chore/scaffold` · **Issue:** #1 · **PR:** #2 (merged, CI green)
 
 **Notes:** `.gitignore` must contain `.env` before any token exists on disk.
 
@@ -77,8 +77,31 @@ tests assert that `calendar.ics`, `uuid` and any `verifier=` URL never survive.
 
 **Branch:** `feat/filters`
 
-**Notes:** fixtures are captured by Leo with curl and anonymised by hand
-(user_id, uuids, verifiers) before the agent sees them.
+**Notes:** fixtures are captured by Leo with curl and converted to synthetic
+values by hand — real field structure, invented values — before the agent sees
+them. See `SCOPE.md` section 8. Every field Canvas returns stays in the fixture,
+including unanticipated ones; only values change, and the hostname becomes
+`canvas.example.edu`.
+
+The byte counts in `SCOPE.md` section 5 are a one-off live measurement, not an
+assertion: `test_filters.py` asserts that named fields are absent and that the
+reduction is an order of magnitude, never `4310 → 450` exactly.
+
+### [ ] 3b. Fixture guard
+
+**Delivers:** CI fails if anything in `fixtures/` looks like real data.
+
+**Files:** `tests/test_fixtures_are_synthetic.py`
+
+**Branch:** `test/fixture-guard`
+
+**Notes:** scans every fixture for `uva.nl` hostnames and e-mail addresses, for
+`verifier=` values without the `FIXTURE` prefix, and for hex strings of token
+length. Turns "Leo remembered to anonymise it" into an assertion — the same
+argument this project makes about scopes: enforce it, do not document it.
+
+Numbered 3b rather than renumbering, because steps 4 and 13 are referred to by
+number in `CLAUDE.md`.
 
 ### [ ] 4. Scope registry — **HUMAN**
 

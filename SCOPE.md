@@ -101,8 +101,12 @@ verwijderd, met een test per veld:
 | `uuid`, `*_account_id`, `sis_*` | interne identifiers, geen nut voor een LLM |
 | `storage_quota_mb`, `blueprint`, `template`, `license`, ... | LTI/admin-plumbing |
 
-Gemeten op `/courses` met 4 vakken: **4310 bytes ruw → ~450 bytes geslankt**
-(factor ~9).
+Gemeten op `/courses` met 4 vakken op 2026-08-29: **4310 bytes ruw → ~450
+bytes geslankt** (factor ~9).
+
+Dat is een eenmalige meting tegen de live API, geen testassertie. De fixtures
+zijn synthetisch (sectie 8), dus de tests asserten het gedrag — dit veld is
+weg, de output is een orde van grootte kleiner — en niet dit exacte getal.
 
 Respecteer daarnaast `locked_for_user` en `hidden_for_user`: staat er
 `true`, dan bestaat het item niet voor de tool.
@@ -147,7 +151,35 @@ Deze staan bovenaan de README, niet onderaan.
 
 - de repo werkt zonder UvA-account (belangrijk: tokens verlopen na max 90 dagen)
 - tests zijn deterministisch
-- fixtures zijn geanonimiseerd: user_id, uuids en verifiers vervangen
+- fixtures zijn **synthetisch**, niet geanonimiseerd
+
+### Echte vorm, verzonnen waarden
+
+Een fixture wordt één keer afgevangen tegen de live API en behoudt daarna elk
+veld dat Canvas stuurt, inclusief de velden die niemand had voorspeld. Alleen
+de waarden worden vervangen:
+
+| Wat | Wordt |
+|---|---|
+| hostname | `canvas.example.edu` |
+| `user_id`, course-ids | kleine, zichtbaar nep getallen |
+| `uuid`, `verifier=` | `FIXTURE`-prefix, herkenbaar als niet-echt |
+| namen, e-mail, vaknamen | verzonnen, maar plausibel genoeg voor een demo |
+
+**Waarom niet met de hand verzinnen.** Een filter die alleen getest wordt tegen
+velden die je al kende, bewijst niets over de velden die je vergat. De rauwe
+`/courses`-response bevatte LTI- en admin-plumbing die niet was voorzien; dat
+is precies waarom sectie 5 bestaat. De vorm moet echt zijn om de filtertest
+betekenis te geven.
+
+**Waarom niet gitignoren.** Dan werkt `--demo` niet voor wie de repo cloont, en
+dat is de enige reden dat fixture-mode bestaat.
+
+Fixtures zijn hiermee de enige plek waar echte API-data de repo binnen zou
+kunnen komen. Ze worden door Leo afgevangen en omgezet; een test bewaakt dat er
+niets echts achterblijft (roadmap stap 3b). Een `verifier=`-URL is een
+werkende, niet-geauthenticeerde downloadlink — in een publieke repo is dat
+permanent, ook na een latere commit die hem weghaalt.
 
 ---
 
