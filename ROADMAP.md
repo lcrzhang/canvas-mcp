@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 1 — repo scaffold**
+Status: **step 1 — repo scaffold** · branch `chore/scaffold` open, not merged
 
 Scope and constraints live in `SCOPE.md`. Permission layers were established
 empirically on 2026-08-29; see section 2 there before adding any endpoint.
@@ -23,17 +23,36 @@ review them and write tests against them, but does not implement them.
 
 ## Milestone v0.1 — five read-only tools, no file content
 
-### [ ] 1. Repo scaffold and CI
+### [~] 1. Repo scaffold and CI
 
-**Delivers:** `pip install -e .` works, `pytest` runs (zero tests), CI green on
-every PR.
+**Delivers:** `pip install -e .` works, `pytest` runs, CI green on every PR.
 
 **Files:** `pyproject.toml`, `.gitignore`, `.env.example`, `CLAUDE.md`,
-`.github/workflows/ci.yml`, empty `src/canvas_mcp/__init__.py`
+`.github/workflows/ci.yml`, `src/canvas_mcp/__init__.py`, `tests/test_import.py`
 
 **Branch:** `chore/scaffold`
 
 **Notes:** `.gitignore` must contain `.env` before any token exists on disk.
+
+Done during the step:
+
+- The token predates the repo, so `.env` was left at `../.env`, outside the
+  working tree. A mistake in `.gitignore` cannot leak it. `.env.example` is in
+  the repo; `CLAUDE.md` records where the real one lives.
+- "zero tests" was not viable: pytest exits 5 when it collects nothing, which
+  fails CI. `tests/test_import.py` asserts the editable install and the src
+  layout — exactly what this step delivers.
+- No runtime dependencies declared. `httpx` belongs to step 2, the MCP SDK to
+  step 5, each in that step's brief.
+- No console-script entry point yet; it would point at `server:main`, which
+  step 5 creates.
+- CI runs a single Python 3.13 job. Add a 3.11 job when there is code that can
+  break on it — a `requires-python` claim on an empty package proves nothing.
+
+Affects later steps:
+
+- `gh` is not installed and there is no git remote, so no issue or PR exists
+  for this step. Every step from here inherits that until it is set up.
 
 ### [ ] 2. HTTP client and error mapping
 
