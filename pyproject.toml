@@ -10,9 +10,10 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "Leo" }]
-# Runtime dependencies are added by the roadmap step that needs them:
-# httpx in step 2 (client), the MCP SDK in step 5 (server).
-dependencies = []
+# Runtime dependencies are added by the roadmap step that needs them.
+# httpx2 (not httpx) because that is what the MCP SDK pulls in at step 5;
+# one HTTP stack, not two.
+dependencies = ["httpx2>=2.12"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.6"]

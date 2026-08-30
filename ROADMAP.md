@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 2 — HTTP client and error mapping**
+Status: **step 2 — HTTP client and error mapping** · branch `feat/client` open
 
 Scope and constraints live in `SCOPE.md`. Permission layers were established
 empirically on 2026-08-29; see section 2 there before adding any endpoint.
@@ -54,7 +54,7 @@ Affects later steps:
 - `gh` is not installed and there is no git remote, so no issue or PR exists
   for this step. Every step from here inherits that until it is set up.
 
-### [ ] 2. HTTP client and error mapping
+### [~] 2. HTTP client and error mapping
 
 **Delivers:** `CanvasClient.get("/courses")` returns parsed JSON; a bad token
 produces the actionable 401 message from SCOPE.md section 9.
@@ -64,8 +64,29 @@ produces the actionable 401 message from SCOPE.md section 9.
 **Branch:** `feat/client`
 
 **Notes:** startup check against `/users/self`, fail fast. Token from env only,
-never a parameter. Pagination helper (`per_page`, Link header) belongs here —
-`position` in the modules response is not an index.
+never a parameter.
+
+Pagination moved to step 2b: together the diff was ~250 lines against a 150
+line limit, and `get()` plus the error mapping stands alone as a reviewable
+unit. Nothing before step 5 needs a second page.
+
+`httpx2` was added here rather than `httpx`: the MCP SDK resolves to `httpx2`,
+and two HTTP stacks in one project is not worth the familiarity of the older
+name. Same API — `Client`, `MockTransport`, `Response.links`.
+
+### [ ] 2b. Pagination helper
+
+**Delivers:** `CanvasClient.paginate("/courses")` yields every page, following
+the `Link` header until there is no `rel="next"`.
+
+**Files:** `src/canvas_mcp/client.py`, `tests/test_client.py`
+
+**Branch:** `feat/pagination`
+
+**Notes:** inject `per_page` rather than trusting the default. `position` in
+the modules response is **not** an index and must never be used as one — Canvas
+filters unpublished items out of the response, so positions have gaps (see
+`SCOPE.md` section 2).
 
 ### [ ] 3. Fixtures and filter layer
 
