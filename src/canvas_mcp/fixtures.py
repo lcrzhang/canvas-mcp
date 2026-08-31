@@ -139,7 +139,7 @@ _PERSON_NAMES = (
 _PERSON_KEYS = frozenset(
     {"user_name", "display_name", "short_name", "sortable_name", "author_name"}
 )
-_COURSE_KEYS = frozenset({"name", "course_code", "original_name", "friendly_name"})
+_COURSE_KEYS = frozenset({"name", "original_name", "friendly_name"})
 
 _ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}([T ]|$)")
 _BASE_DATE = date(2026, 2, 2)
@@ -174,6 +174,10 @@ def _synthetic_string(key: str, value: str, n: int) -> str:
         return f"person{n}@example.edu"
     if key in _PERSON_KEYS:
         return _PERSON_NAMES[n % len(_PERSON_NAMES)]
+    if key == "course_code":
+        # A code, not a title: course_code sharing the course name would make
+        # the demo read as obviously fake data rather than as a course.
+        return f"FIX{n:04d}SYN"
     if key in _COURSE_KEYS:
         return _COURSE_NAMES[n % len(_COURSE_NAMES)]
     if key == "uuid" or _UUID.match(value):
