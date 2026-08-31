@@ -36,6 +36,7 @@ What `src/canvas_mcp/scopes.py` must provide:
 """
 
 import pytest
+
 from canvas_mcp.scopes import (
     DEFAULT_SCOPES,
     TOOL_SCOPES,
