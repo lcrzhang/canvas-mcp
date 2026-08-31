@@ -143,3 +143,9 @@ def test_url_shapes_are_preserved_so_filter_tests_stay_meaningful() -> None:
 
 def test_conversion_is_deterministic() -> None:
     assert to_synthetic(REAL_LOOKING) == to_synthetic(REAL_LOOKING)
+
+
+def test_course_code_is_a_code_and_not_the_course_name() -> None:
+    converted = to_synthetic(REAL_LOOKING)
+    assert converted["course_code"] != converted["name"]
+    assert converted["course_code"].startswith("FIX")
