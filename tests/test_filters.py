@@ -1,0 +1,97 @@
+"""The filter layer is the boundary between what Canvas sends and what a model
+sees. `SCOPE.md` section 5 lists the fields that must never cross it and asks
+for a test per field; those are the parametrised cases below.
+
+The filter is an allowlist, so these fields are excluded by construction rather
+than by removal. The tests still matter: they are what fails if someone widens
+the allowlist later.
+"""
+
+import json
+from pathlib import Path
+
+import pytest
+
+from canvas_mcp.filters import COURSE_FIELDS, slim_course
+
+FIXTURE = Path(__file__).resolve().parent.parent / "fixtures" / "courses.json"
+
+SAFE_COURSE = {
+    "id": 1,
+    "name": "Applied Handwaving",
+    "course_code": "FIX0001SYN",
+    "term": {"name": "Semester 1"},
+}
+
+# One entry per row of SCOPE.md section 5 that can appear on a course object.
+# The value is a sentinel: the test asserts it does not reach the output under
+# any key, which is stronger than asserting the key is absent.
+FORBIDDEN_FIELDS = {
+    "calendar": {"ics": "https://x.example.edu/feeds/SENTINEL.ics"},
+    "uuid": "SENTINEL-uuid",
+    "account_id": "SENTINEL-account-id",
+    "root_account_id": "SENTINEL-root-account-id",
+    "sis_course_id": "SENTINEL-sis-course-id",
+    "sis_import_id": "SENTINEL-sis-import-id",
+    "integration_id": "SENTINEL-integration-id",
+    "storage_quota_mb": "SENTINEL-storage-quota",
+    "blueprint": "SENTINEL-blueprint",
+    "template": "SENTINEL-template",
+    "license": "SENTINEL-license",
+    "grade_passback_setting": "SENTINEL-grade-passback",
+    "time_zone": "SENTINEL-time-zone",
+    "enrollments": [{"user_id": "SENTINEL-user-id"}],
+    "canvadoc_session_url": "SENTINEL-canvadoc-session",
+}
+
+
+def test_output_is_exactly_the_allowlist() -> None:
+    assert tuple(slim_course(SAFE_COURSE)) == COURSE_FIELDS
+
+
+@pytest.mark.parametrize("field", sorted(FORBIDDEN_FIELDS))
+def test_field_never_reaches_the_output(field: str) -> None:
+    course = {**SAFE_COURSE, field: FORBIDDEN_FIELDS[field]}
+    assert "SENTINEL" not in json.dumps(slim_course(course))
+
+
+def test_term_name_is_resolved_from_the_nested_object() -> None:
+    assert slim_course(SAFE_COURSE)["term"] == "Semester 1"
+
+
+def test_term_is_none_when_include_term_was_not_used() -> None:
+    course = {**SAFE_COURSE, "enrollment_term_id": 417}
+    del course["term"]
+    slimmed = slim_course(course)
+    # A bare 417 tells a model nothing, so it is not used as a fallback.
+    assert slimmed["term"] is None
+    assert 417 not in slimmed.values()
+
+
+def test_a_malformed_course_does_not_break_the_listing() -> None:
+    assert slim_course({}) == dict.fromkeys(COURSE_FIELDS)
+
+
+def test_every_course_in_the_fixture_survives_the_filter() -> None:
+    raw = json.loads(FIXTURE.read_text())
+    slimmed = [slim_course(course) for course in raw]
+    assert len(slimmed) == len(raw)
+    assert all(tuple(course) == COURSE_FIELDS for course in slimmed)
+    assert all(course["id"] is not None for course in slimmed)
+
+
+def test_the_reduction_is_an_order_of_magnitude() -> None:
+    """SCOPE.md section 5 measured ~9x on the live response. The exact number
+    belongs to that dated measurement; this asserts the behaviour."""
+    raw = json.loads(FIXTURE.read_text())
+    compact = {"separators": (",", ":")}
+    before = len(json.dumps(raw, **compact))
+    after = len(json.dumps([slim_course(c) for c in raw], **compact))
+    assert before / after > 5
+
+
+def test_no_url_or_feed_from_the_fixture_reaches_the_output() -> None:
+    raw = json.loads(FIXTURE.read_text())
+    output = json.dumps([slim_course(course) for course in raw])
+    for marker in ("http", ".ics", "verifier=", "uuid"):
+        assert marker not in output
