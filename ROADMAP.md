@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 3 — fixtures and filter layer**
+Status: **step 3 — filter layer** · branch `feat/filters` open
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -133,25 +133,30 @@ kept only if it also looks like an enum. The first version allowed spaces in
 that shape, which let `Uploaded by <name> on <date>` survive under `type`. Enums
 have no spaces; free text does. Caught by a test, not by review.
 
-### [ ] 3. Fixtures and filter layer
+### [~] 3. Filter layer
 
-**Delivers:** `slim_course()` turns the raw 4310-byte response into ~450 bytes;
+**Delivers:** `slim_course()` reduces a raw course by an order of magnitude;
 tests assert that `calendar.ics`, `uuid` and any `verifier=` URL never survive.
 
-**Files:** `src/canvas_mcp/filters.py`, `fixtures/courses.json`,
-`tests/test_filters.py`
+**Files:** `src/canvas_mcp/filters.py`, `tests/test_filters.py`
 
-**Branch:** `feat/filters`
+**Branch:** `feat/filters` · **Issue:** #17
 
-**Notes:** fixtures are captured by Leo with curl and converted to synthetic
-values by hand — real field structure, invented values — before the agent sees
-them. See `SCOPE.md` section 8. Every field Canvas returns stays in the fixture,
-including unanticipated ones; only values change, and the hostname becomes
-`canvas.example.edu`.
+**Notes:** the fixture moved to step 3a, which automated the capture — it is no
+longer converted by hand, and the raw response reaches neither disk nor the
+agent. See `SCOPE.md` section 8.
 
 The byte counts in `SCOPE.md` section 5 are a one-off live measurement, not an
 assertion: `test_filters.py` asserts that named fields are absent and that the
-reduction is an order of magnitude, never `4310 → 450` exactly.
+reduction is an order of magnitude, never `4310 → 450` exactly. Measured 11.2x
+on the six-course fixture, against ~9x on the live four-course response.
+
+Built as an **allowlist**, which section 5 does not say. Section 5 reads as a
+list of fields to remove, and a denylist has to be complete to be correct — the
+capture on 2026-08-30 confirmed the response carries fields nobody predicted.
+Building the output from named fields is wrong in the safe direction: a field
+nobody thought of is missing rather than leaked. The per-field tests section 5
+asks for are still there, and are what fails if the allowlist is widened.
 
 ### [x] 3b. Fixture guard
 
