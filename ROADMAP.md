@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 3 — filter layer** · branch `feat/filters` open
+Status: **step 4 — scope registry (HUMAN)** · specification on branch `test/scopes`, waiting on Leo
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -133,14 +133,14 @@ kept only if it also looks like an enum. The first version allowed spaces in
 that shape, which let `Uploaded by <name> on <date>` survive under `type`. Enums
 have no spaces; free text does. Caught by a test, not by review.
 
-### [~] 3. Filter layer
+### [x] 3. Filter layer
 
 **Delivers:** `slim_course()` reduces a raw course by an order of magnitude;
 tests assert that `calendar.ics`, `uuid` and any `verifier=` URL never survive.
 
 **Files:** `src/canvas_mcp/filters.py`, `tests/test_filters.py`
 
-**Branch:** `feat/filters` · **Issue:** #17
+**Branch:** `feat/filters` · **Issue:** #17 · **PR:** #18 (merged)
 
 **Notes:** the fixture moved to step 3a, which automated the capture — it is no
 longer converted by hand, and the raw response reaches neither disk nor the
@@ -197,6 +197,26 @@ exactly one tool; an unregistered scope raises at startup, not at call time.
 **Notes:** this is the learning goal of the project. `grades:read` exists but is
 off by default — that gap between what the token allows and what the server
 allows is the point.
+
+Designed together on 2026-08-30; `tests/test_scopes.py` is the specification
+and was written first. Decisions taken, each with the reason in one line:
+
+| Decision | Choice | Why |
+|---|---|---|
+| a tool outside scope | not registered, invisible | a forgotten registration is an annoyance, a forgotten check is a leak |
+| where the scope lives | one table in `scopes.py` | the policy fits on a page and can be pointed at |
+| preventing drift | the constructor refuses | table and tools must match or the server does not start |
+| unknown scope name | raises at construction | a typo must not yield a silently empty server |
+| the default | an explicit list, not "everything except" | growing the default becomes a decision, and the README cannot drift |
+| wildcards | none | `courses:*` is "everything except" turned around |
+| who filters | the registry hands out tools | `server.py` cannot register what it was never given |
+
+Rejected: a call-time `require()` inside each tool. It gives better
+observability — you can log what was attempted — but one forgotten line is a
+leak, and there is no logging in this project to make the benefit real.
+
+This is the same move as the fixture guard and the filter allowlist: enforce
+it, do not trust it.
 
 ### [ ] 5. MCP server and `list_courses`
 
