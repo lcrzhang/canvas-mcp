@@ -93,3 +93,83 @@ def test_unreachable_host_names_the_base_url() -> None:
     with CanvasClient(transport=httpx2.MockTransport(handler)) as client:
         with pytest.raises(CanvasError, match="Could not reach Canvas"):
             client.get("/courses")
+
+
+def paging_client(
+    pages: list[list[object]],
+    capture: list[httpx2.Request] | None = None,
+    never_ends: bool = False,
+) -> CanvasClient:
+    """A client whose transport serves `pages` and links them together."""
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        if capture is not None:
+            capture.append(request)
+        index = int(request.url.params.get("page", 1)) - 1
+        body = pages[min(index, len(pages) - 1)]
+        headers = {}
+        if never_ends or index < len(pages) - 1:
+            nxt = request.url.copy_set_param("page", index + 2)
+            headers["Link"] = f'<{nxt}>; rel="next"'
+        return httpx2.Response(200, json=body, headers=headers)
+
+    return CanvasClient(transport=httpx2.MockTransport(handler))
+
+
+def test_paginate_flattens_every_page_in_order() -> None:
+    with paging_client([[{"id": 1}, {"id": 2}], [{"id": 3}]]) as client:
+        assert list(client.paginate("/courses")) == [{"id": 1}, {"id": 2}, {"id": 3}]
+
+
+def test_paginate_stops_when_there_is_no_next_link() -> None:
+    seen: list[httpx2.Request] = []
+    with paging_client([[{"id": 1}]], capture=seen) as client:
+        list(client.paginate("/courses"))
+    assert len(seen) == 1
+
+
+def test_paginate_asks_for_a_hundred_per_page_by_default() -> None:
+    seen: list[httpx2.Request] = []
+    with paging_client([[]], capture=seen) as client:
+        list(client.paginate("/courses"))
+    assert seen[0].url.params["per_page"] == "100"
+
+
+def test_caller_params_and_per_page_are_not_repeated_on_later_pages() -> None:
+    seen: list[httpx2.Request] = []
+    with paging_client([[{"id": 1}], [{"id": 2}]], capture=seen) as client:
+        list(client.paginate("/courses", params={"enrollment_state": "active"}))
+
+    assert seen[0].url.params["enrollment_state"] == "active"
+    # Page two follows the rel="next" URL, which already carries the query.
+    assert seen[1].url.params.get_list("enrollment_state") == ["active"]
+    assert seen[1].url.params.get_list("per_page") == ["100"]
+
+
+def test_paginate_refuses_an_endpoint_that_returns_an_object() -> None:
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        return httpx2.Response(200, json={"id": 1})
+
+    with CanvasClient(transport=httpx2.MockTransport(handler)) as client:
+        with pytest.raises(CanvasError, match="not a list"):
+            list(client.paginate("/users/self"))
+
+
+def test_paginate_maps_an_error_on_a_later_page() -> None:
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        if "page" in request.url.params:
+            return httpx2.Response(401)
+        nxt = request.url.copy_set_param("page", 2)
+        return httpx2.Response(
+            200, json=[{"id": 1}], headers={"Link": f'<{nxt}>; rel="next"'}
+        )
+
+    with CanvasClient(transport=httpx2.MockTransport(handler)) as client:
+        with pytest.raises(CanvasError, match="90 days"):
+            list(client.paginate("/courses"))
+
+
+def test_paginate_gives_up_rather_than_truncating_silently() -> None:
+    with paging_client([[{"id": 1}]], never_ends=True) as client:
+        with pytest.raises(CanvasError, match="Refusing to keep following"):
+            list(client.paginate("/courses"))
