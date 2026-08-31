@@ -1,6 +1,9 @@
 # Roadmap — canvas-mcp
 
-Status: **step 2b — pagination** · branch `feat/pagination` open
+Status: **step 3b — fixture guard** · branch `test/fixture-guard` open
+
+3b runs before 3: the guard is the check on the converter that writes the
+fixtures, so it has to exist first.
 
 Scope and constraints live in `SCOPE.md`. Permission layers were established
 empirically on 2026-08-29; see section 2 there before adding any endpoint.
@@ -74,14 +77,14 @@ unit. Nothing before step 5 needs a second page.
 and two HTTP stacks in one project is not worth the familiarity of the older
 name. Same API — `Client`, `MockTransport`, `Response.links`.
 
-### [~] 2b. Pagination helper
+### [x] 2b. Pagination helper
 
 **Delivers:** `CanvasClient.paginate("/courses")` yields every item, across
 every page, following the `Link` header until there is no `rel="next"`.
 
 **Files:** `src/canvas_mcp/client.py`, `tests/test_client.py`
 
-**Branch:** `feat/pagination`
+**Branch:** `feat/pagination` · **Issue:** #7 · **PR:** #8 (merged)
 
 **Notes:** inject `per_page` rather than trusting the default. `position` in
 the modules response is **not** an index and must never be used as one — Canvas
@@ -114,11 +117,12 @@ The byte counts in `SCOPE.md` section 5 are a one-off live measurement, not an
 assertion: `test_filters.py` asserts that named fields are absent and that the
 reduction is an order of magnitude, never `4310 → 450` exactly.
 
-### [ ] 3b. Fixture guard
+### [~] 3b. Fixture guard
 
-**Delivers:** CI fails if anything in `fixtures/` looks like real data.
+**Delivers:** CI fails if anything in `fixtures/` looks like real data, and the
+converter refuses to write a fixture the guard rejects.
 
-**Files:** `tests/test_fixtures_are_synthetic.py`
+**Files:** `src/canvas_mcp/fixtures.py`, `tests/test_fixtures_are_synthetic.py`
 
 **Branch:** `test/fixture-guard`
 
@@ -129,6 +133,16 @@ argument this project makes about scopes: enforce it, do not document it.
 
 Numbered 3b rather than renumbering, because steps 4 and 13 are referred to by
 number in `CLAUDE.md`.
+
+Reordered to run **before** step 3. The earlier plan put it after, on the
+argument that a test with nothing to scan proves nothing. That was wrong once
+the fixtures became the output of a converter: the guard is the check on that
+converter and has to exist first. The detector is unit-tested against known-bad
+documents, so it is proven without any fixture present.
+
+The detector lives in `src/canvas_mcp/fixtures.py` rather than in the test,
+because the converter imports it too — and step 11's demo loader belongs in the
+same module.
 
 ### [ ] 4. Scope registry — **HUMAN**
 
