@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 2 — HTTP client and error mapping** · branch `feat/client` open
+Status: **step 2b — pagination** · branch `feat/pagination` open
 
 Scope and constraints live in `SCOPE.md`. Permission layers were established
 empirically on 2026-08-29; see section 2 there before adding any endpoint.
@@ -54,14 +54,14 @@ Affects later steps:
 - `gh` is not installed and there is no git remote, so no issue or PR exists
   for this step. Every step from here inherits that until it is set up.
 
-### [~] 2. HTTP client and error mapping
+### [x] 2. HTTP client and error mapping
 
 **Delivers:** `CanvasClient.get("/courses")` returns parsed JSON; a bad token
 produces the actionable 401 message from SCOPE.md section 9.
 
 **Files:** `src/canvas_mcp/client.py`, `tests/test_client.py`
 
-**Branch:** `feat/client`
+**Branch:** `feat/client` · **Issue:** #5 · **PR:** #6 (merged)
 
 **Notes:** startup check against `/users/self`, fail fast. Token from env only,
 never a parameter.
@@ -74,10 +74,10 @@ unit. Nothing before step 5 needs a second page.
 and two HTTP stacks in one project is not worth the familiarity of the older
 name. Same API — `Client`, `MockTransport`, `Response.links`.
 
-### [ ] 2b. Pagination helper
+### [~] 2b. Pagination helper
 
-**Delivers:** `CanvasClient.paginate("/courses")` yields every page, following
-the `Link` header until there is no `rel="next"`.
+**Delivers:** `CanvasClient.paginate("/courses")` yields every item, across
+every page, following the `Link` header until there is no `rel="next"`.
 
 **Files:** `src/canvas_mcp/client.py`, `tests/test_client.py`
 
@@ -87,6 +87,12 @@ the `Link` header until there is no `rel="next"`.
 the modules response is **not** an index and must never be used as one — Canvas
 filters unpublished items out of the response, so positions have gaps (see
 `SCOPE.md` section 2).
+
+Written during the step: yields items, not pages. Pages would push a second
+loop into every caller for no gain. Params are sent on the first request only,
+because the `rel="next"` URL already carries the query string. Stops with an
+error after 50 pages rather than truncating: a silently short list is a
+plausible wrong answer, which is the failure mode this project exists to avoid.
 
 ### [ ] 3. Fixtures and filter layer
 
