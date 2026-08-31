@@ -24,45 +24,66 @@ from canvas_mcp.fixtures import find_real_looking_values, to_synthetic
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
-def course_with_submissions(client: CanvasClient) -> str:
-    """Find a course that actually has submissions, and return its path.
+def richest_course(subpath: str, params: dict[str, Any]) -> Callable[..., str]:
+    """Resolve a course-scoped path against the course that has the most data.
 
     Course ids are real data. Resolving one inside the process keeps it out of
     the source, out of the output and out of anyone's notes — the report says
     "course 3 of 6", never which course.
 
-    A fixture captured from a course with no submissions would be an empty
-    list, which tests nothing.
+    Picking the richest course rather than the first matters: the first attempt
+    at a submissions capture landed on a course with none, and an empty list
+    tests nothing.
     """
-    courses = list(client.paginate("/courses", params={"enrollment_state": "active"}))
-    if not courses:
-        raise CanvasError("No active courses to capture from.")
 
-    best, best_count = None, 0
-    for index, course in enumerate(courses, start=1):
-        path = f"/courses/{course['id']}/students/submissions"
-        found = list(client.paginate(path, params={"student_ids[]": ["self"]}))
-        print(f"  course {index} of {len(courses)}: {len(found)} submissions")
-        if len(found) > best_count:
-            best, best_count = path, len(found)
+    def resolve(client: CanvasClient) -> str:
+        courses = list(
+            client.paginate("/courses", params={"enrollment_state": "active"})
+        )
+        if not courses:
+            raise CanvasError("No active courses to capture from.")
 
-    if best is None:
-        raise CanvasError("No submissions in any active course. Nothing to capture.")
-    return best
+        best, best_count = None, 0
+        for index, course in enumerate(courses, start=1):
+            path = f"/courses/{course['id']}/{subpath}"
+            found = list(client.paginate(path, params=params))
+            print(f"  course {index} of {len(courses)}: {len(found)} items")
+            if len(found) > best_count:
+                best, best_count = path, len(found)
+
+        if best is None:
+            raise CanvasError(f"No {subpath} in any active course.")
+        return best
+
+    return resolve
 
 
 # Every capture this project supports, so that what was fetched is readable
 # rather than remembered. A path may be a string, or a function that resolves
 # one against the live API.
-CAPTURES: dict[str, tuple[str | Callable[[CanvasClient], str], dict[str, Any]]] = {
-    "courses": ("/courses", {"enrollment_state": "active", "include[]": ["term"]}),
+# path/resolver, query parameters, and what one item in the response is. The
+# third entry matters: the converter names a field after its parent, and a
+# top-level object has none. Without it an assignment's `name` fell back to the
+# course pool, and the demo listed course names where it meant assignments.
+CAPTURES: dict[str, tuple[str | Callable[[CanvasClient], str], dict[str, Any], str]] = {
+    "courses": (
+        "/courses",
+        {"enrollment_state": "active", "include[]": ["term"]},
+        "course",
+    ),
     # Enrollments carry the grades. Captured from /users/self rather than a
     # course, so no course id has to be written down here.
-    "enrollments": ("/users/self/enrollments", {"state[]": ["active"]}),
+    "enrollments": ("/users/self/enrollments", {"state[]": ["active"]}, "enrollment"),
     # Per-assignment scores. Hidden final grades do not necessarily hide these.
     "submissions": (
-        course_with_submissions,
+        richest_course("students/submissions", {"student_ids[]": ["self"]}),
         {"student_ids[]": ["self"], "include[]": ["assignment"]},
+        "submission",
+    ),
+    "assignments": (
+        richest_course("assignments", {}),
+        {"include[]": ["submission"], "order_by": "due_at"},
+        "assignment",
     ),
 }
 
@@ -81,7 +102,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, default=None)
     args = parser.parse_args(argv)
 
-    path_or_resolver, params = CAPTURES[args.capture]
+    path_or_resolver, params, item_key = CAPTURES[args.capture]
     try:
         with CanvasClient() as client:
             path = (
@@ -94,7 +115,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Capture failed: {exc}", file=sys.stderr)
         return 1
 
-    fixture = to_synthetic(raw)
+    fixture = to_synthetic(raw, key=item_key)
 
     findings = find_real_looking_values(fixture)
     if findings:
