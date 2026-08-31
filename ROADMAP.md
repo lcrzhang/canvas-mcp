@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 6 — `list_assignments`**
+Status: **step 11 merged early** — demo mode, and the server confirmed working in a real client on 2026-08-31
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -390,11 +390,11 @@ module → subheader section → items.
 under them by `indent`. Respect `locked_for_user` and `hidden_for_user`. The
 course file index is 403 for students; modules are the only way in.
 
-### [ ] 11. Fixture mode
+### [~] 11. Fixture mode
 
 **Delivers:** `canvas-mcp --demo` runs with no token and no network.
 
-**Branch:** `feat/demo-mode`
+**Branch:** `feat/demo-mode` · **PR:** #25
 
 **Notes:** a transport that reads `fixtures/` instead of the network, not a
 second implementation — `CanvasClient` already takes `transport=`, which is the
@@ -403,6 +403,28 @@ only reason this step is small enough to be worth doing.
 It exists for the reader, not the user: anyone evaluating this repo has no UvA
 account and would otherwise have to take the README's claims on trust. Token
 expiry is not the argument; see `SCOPE.md` section 8.
+
+**Pulled forward from after step 10**, for a reason nobody wrote down: it makes
+the server testable end to end without a token. `tests/test_end_to_end.py`
+starts `canvas_mcp.server` as a real subprocess and speaks the protocol over
+stdio — initialize, list tools, call one. Every other test exercises a module;
+this is the difference between "the parts work" and "the server serves". The
+alternative was an in-memory harness coupled to the SDK's private
+`_lowlevel_server`.
+
+`/users/self` is answered inline so the startup check runs in demo mode too,
+rather than being skipped and going untested. The base URL becomes
+`canvas.example.edu`, so demo output never names a real institution for a
+request that was never made.
+
+**Found here: the HTTP library logs every request URL at INFO**, which under
+stdio lands in the client's log file. Section 7 lists logging as a non-goal and
+that has to hold for dependencies; a Canvas URL can carry a `verifier=`.
+`quiet_http_logging()` drops those to WARNING.
+
+**Confirmed in Claude Desktop on 2026-08-31.** Both tools registered, both
+called, the protocol handshake completed, the `instructions` string delivered.
+First attempt, no changes needed.
 
 ### [ ] 12. README and v0.1.0
 
@@ -422,6 +444,12 @@ descriptions until it does.
 **Notes:** no code, only descriptions. Roughly 30% of the project's value and
 the part that cannot be delegated: the failure mode is a plausible wrong
 answer, not an exception.
+
+Found during the live test on 2026-08-31: the generated schema for
+`list_courses` is `{"term_filter": {}}` — no type at all, while `course_id`
+correctly gets `{"type": "number"}`. A `str | None` annotation produces an
+empty schema, so a model is told nothing about what it may pass. Schemas belong
+with descriptions: both are what a model reads before choosing.
 
 ---
 
