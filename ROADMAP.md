@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 3a — fixture converter** · branch `feat/fixture-converter` open
+Status: **step 3a — fixture converter** · part 1 merged (#12), branch `feat/capture-courses` open
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -106,7 +106,8 @@ the raw response never reaches disk.
 **Files:** `src/canvas_mcp/fixtures.py`, `tests/test_fixtures_are_synthetic.py`,
 `tools/make_fixture.py`
 
-**Branch:** `feat/fixture-converter`, then `feat/capture-courses`
+**Branch:** `feat/fixture-converter` (**PR:** #12, merged), then
+`feat/capture-courses`
 
 **Notes:** two PRs. The conversion function first, on its own, because it is
 what stands between real data and a public repository. The CLI, the capture and
@@ -116,6 +117,16 @@ Replacement rather than redaction: a denylist fails on the field nobody thought
 of, which is exactly the failure `SCOPE.md` section 5 documents. Structure is
 preserved exactly so the filter tests still meet every field the live API
 sends.
+
+Captured on 2026-08-30: 6 active courses, 40 distinct keys, including the LTI
+and admin plumbing section 5 of `SCOPE.md` predicted — `blueprint`, `template`,
+`license`, `storage_quota_mb`, `grade_passback_setting`. Those are exactly the
+fields a hand-written fixture would have missed.
+
+Known wart: a term's `name` gets a course name from the pool, because the
+converter keys on the field name and cannot see that it is nested under `term`.
+Harmless for tests, odd to read. Fixing it needs parent context threaded
+through the converter, which is a change to `to_synthetic`, not to this step.
 
 `PRESERVED_KEYS` is the single exception, and it has a second gate: a value is
 kept only if it also looks like an enum. The first version allowed spaces in
