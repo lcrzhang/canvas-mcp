@@ -145,13 +145,44 @@ Deze staan bovenaan de README, niet onderaan.
 
 ---
 
-## 8. Fixture mode
+## 8. Fixtures en demo-modus
 
-`--demo` draait tegen opgeslagen JSON-responses in `fixtures/`.
+Twee dingen die vaak door elkaar lopen, met verschillende rechtvaardigingen.
 
-- de repo werkt zonder UvA-account (belangrijk: tokens verlopen na max 90 dagen)
-- tests zijn deterministisch
-- fixtures zijn **synthetisch**, niet geanonimiseerd
+### Fixtures bestaan voor de tests
+
+`tests/test_filters.py` moet kunnen bewijzen dat `calendar.ics`, `uuid` en
+verifier-URL's de output niet halen. Dat vereist een realistische input die
+niet afhangt van een geldig token of een netwerkverbinding — anders zijn de
+tests niet-deterministisch en falen ze zodra het token verloopt.
+
+Deze reden staat op zichzelf. Ook zonder demo-modus zouden de fixtures er zijn.
+
+### Demo-modus bestaat voor de lezer, niet voor de gebruiker
+
+De **gebruiker** van deze server heeft per definitie een Canvas-account; voor
+die persoon voegt `--demo` niets toe.
+
+De **lezer** van deze repo is een andere groep. Dit project beweert iets
+controleerbaars: de server is smaller dan het token dat hij gebruikt, en
+`list_grades` staat uit terwijl het token het wél mag. Wie geen UvA-account
+heeft, kan dat niet nagaan en moet de README op zijn woord geloven. Met
+`--demo` is het in dertig seconden zelf te zien.
+
+Dat is het argument. "Tokens verlopen na 90 dagen" is dat níét — als je token
+verloopt maak je een nieuwe aan.
+
+### Wat demo-modus niet is
+
+- **Geen tweede implementatie.** `CanvasClient` accepteert een `transport`;
+  demo-modus is een transport die uit `fixtures/` leest in plaats van van het
+  netwerk. Zelfde client, zelfde filters, zelfde tools. Was het een parallel
+  codepad geweest, dan zou de onderhoudslast de feature niet waard zijn.
+- **Geen bewijs dat de echte API zich zo gedraagt.** Een groene demo zegt dat
+  de code klopt tegen een vastgelegde response, niet dat Canvas die response
+  vandaag nog zo teruggeeft.
+- **Geen volledige dataset.** De fixtures dekken de endpoints die een tool
+  nodig heeft, niet elk veld dat Canvas kan sturen.
 
 ### Echte vorm, verzonnen waarden
 

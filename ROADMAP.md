@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 3a — fixture converter** · part 1 merged (#12), branch `feat/capture-courses` open
+Status: **step 3 — fixtures and filter layer**
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -97,7 +97,7 @@ because the `rel="next"` URL already carries the query string. Stops with an
 error after 50 pages rather than truncating: a silently short list is a
 plausible wrong answer, which is the failure mode this project exists to avoid.
 
-### [~] 3a. Fixture converter
+### [x] 3a. Fixture converter
 
 **Delivers:** `to_synthetic(document)` rebuilds a live response with every
 scalar value replaced, and a CLI that captures and converts in one process so
@@ -106,8 +106,8 @@ the raw response never reaches disk.
 **Files:** `src/canvas_mcp/fixtures.py`, `tests/test_fixtures_are_synthetic.py`,
 `tools/make_fixture.py`
 
-**Branch:** `feat/fixture-converter` (**PR:** #12, merged), then
-`feat/capture-courses`
+**Branch:** `feat/fixture-converter` (**PR:** #12) and `feat/capture-courses`
+(**PR:** #14) · **Issues:** #11, #13 — both merged
 
 **Notes:** two PRs. The conversion function first, on its own, because it is
 what stands between real data and a public repository. The CLI, the capture and
@@ -260,8 +260,13 @@ course file index is 403 for students; modules are the only way in.
 
 **Branch:** `feat/demo-mode`
 
-**Notes:** this is what makes the repo runnable by someone without a UvA
-account, including when Leo's own token has expired.
+**Notes:** a transport that reads `fixtures/` instead of the network, not a
+second implementation — `CanvasClient` already takes `transport=`, which is the
+only reason this step is small enough to be worth doing.
+
+It exists for the reader, not the user: anyone evaluating this repo has no UvA
+account and would otherwise have to take the README's claims on trust. Token
+expiry is not the argument; see `SCOPE.md` section 8.
 
 ### [ ] 12. README and v0.1.0
 
