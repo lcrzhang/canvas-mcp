@@ -1,9 +1,9 @@
 # Roadmap — canvas-mcp
 
-Status: **step 3b — fixture guard** · branch `test/fixture-guard` open
+Status: **step 3a — fixture converter** · branch `feat/fixture-converter` open
 
-3b runs before 3: the guard is the check on the converter that writes the
-fixtures, so it has to exist first.
+Order is 3b, 3a, 3: the guard checks the converter, the converter produces
+the fixture, the fixture makes the filter tests mean something.
 
 Scope and constraints live in `SCOPE.md`. Permission layers were established
 empirically on 2026-08-29; see section 2 there before adding any endpoint.
@@ -97,6 +97,31 @@ because the `rel="next"` URL already carries the query string. Stops with an
 error after 50 pages rather than truncating: a silently short list is a
 plausible wrong answer, which is the failure mode this project exists to avoid.
 
+### [~] 3a. Fixture converter
+
+**Delivers:** `to_synthetic(document)` rebuilds a live response with every
+scalar value replaced, and a CLI that captures and converts in one process so
+the raw response never reaches disk.
+
+**Files:** `src/canvas_mcp/fixtures.py`, `tests/test_fixtures_are_synthetic.py`,
+`tools/make_fixture.py`
+
+**Branch:** `feat/fixture-converter`, then `feat/capture-courses`
+
+**Notes:** two PRs. The conversion function first, on its own, because it is
+what stands between real data and a public repository. The CLI, the capture and
+the resulting fixture second.
+
+Replacement rather than redaction: a denylist fails on the field nobody thought
+of, which is exactly the failure `SCOPE.md` section 5 documents. Structure is
+preserved exactly so the filter tests still meet every field the live API
+sends.
+
+`PRESERVED_KEYS` is the single exception, and it has a second gate: a value is
+kept only if it also looks like an enum. The first version allowed spaces in
+that shape, which let `Uploaded by <name> on <date>` survive under `type`. Enums
+have no spaces; free text does. Caught by a test, not by review.
+
 ### [ ] 3. Fixtures and filter layer
 
 **Delivers:** `slim_course()` turns the raw 4310-byte response into ~450 bytes;
@@ -117,14 +142,14 @@ The byte counts in `SCOPE.md` section 5 are a one-off live measurement, not an
 assertion: `test_filters.py` asserts that named fields are absent and that the
 reduction is an order of magnitude, never `4310 → 450` exactly.
 
-### [~] 3b. Fixture guard
+### [x] 3b. Fixture guard
 
 **Delivers:** CI fails if anything in `fixtures/` looks like real data, and the
 converter refuses to write a fixture the guard rejects.
 
 **Files:** `src/canvas_mcp/fixtures.py`, `tests/test_fixtures_are_synthetic.py`
 
-**Branch:** `test/fixture-guard`
+**Branch:** `test/fixture-guard` · **Issue:** #9 · **PR:** #10 (merged)
 
 **Notes:** scans every fixture for `uva.nl` hostnames and e-mail addresses, for
 `verifier=` values without the `FIXTURE` prefix, and for hex strings of token
