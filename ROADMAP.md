@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 5b blocked** — grades are not readable with this token; the demonstration needs a new subject
+Status: **step 5b** — demonstration moved to per-assignment scores, which are readable
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -290,9 +290,24 @@ Three ways forward, and it is Leo's decision:
    demonstration survives intact and gets better. Needs one more capture, and
    a capture keyed on a course id rather than a fixed path.
 
-Also captured and kept as a reproducible probe: `enrollments` in
-`tools/make_fixture.py`. Its fixture is not committed — no test uses it until
-this decision is made. Together they were ~350 lines against a 150
+**Chosen: 3, and it works.** `GET /courses/:id/students/submissions` with
+`student_ids[]=self` returns `score`, `grade`, `entered_score`,
+`points_possible`, `graded_at`, `late`, `missing` and `excused`. So
+`list_grades` becomes per-assignment scores for one course — a better
+demonstration than course totals would have been: more useful to a student, and
+more clearly something a server should gate.
+
+The capture needed a course id, which is real data. `course_with_submissions()`
+resolves one inside the process and reports "course 3 of 6", never which course,
+and picks a course that actually has submissions — a fixture of an empty list
+tests nothing.
+
+`fixtures/submissions.json` is 91363 bytes for 12 submissions across 129
+fields, including `secure_params`, `preview_url` and every assignment's full
+`description`. It is the strongest case in the repo for the filter layer.
+
+`fixtures/enrollments.json` stays uncommitted: it produced a finding, but no
+test uses it. The capture entry remains, so it is one command away. Together they were ~350 lines against a 150
 line limit. 5a alone is ~200 and still over, but splitting the server from its
 first tool would produce a branch that cannot be run at all, and this step is
 defined by being runnable.
