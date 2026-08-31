@@ -10,6 +10,7 @@ that echoes a token into a CI log has leaked it just the same.
 """
 
 import re
+from datetime import date, timedelta
 from typing import Any
 
 # A fixture may mention these hosts and no others.
@@ -89,3 +90,124 @@ def find_real_looking_values(data: Any, where: str = "$") -> list[str]:
             findings += find_real_looking_values(value, f"{where}[{index}]")
         return findings
     return []
+
+
+# --- conversion -----------------------------------------------------------
+#
+# The guard above is the second line of defence. This is the first, and it
+# works the other way round: instead of removing fields known to be dangerous,
+# it replaces *every* scalar value. Nothing real survives because nothing real
+# is copied — which does not depend on having thought of every field.
+
+SYNTHETIC_HOST = "canvas.example.edu"
+
+# The one place an original value survives. These are enums the tools branch
+# on, so replacing them would make a fixture useless. A value is only kept if
+# it also *looks* like an enum — see _preserved().
+PRESERVED_KEYS = frozenset(
+    {
+        "workflow_state",
+        "state",
+        "enrollment_state",
+        "type",
+        "content_type",
+        "grading_type",
+        "submission_types",
+        "role",
+    }
+)
+# No spaces: every Canvas enum is a single token ("available",
+# "online_upload", "application/pdf"), while free text that happens to sit
+# under an allowlisted key almost always has them. Spaces were allowed in
+# the first version, which let "Uploaded by <name> on <date>" through as an
+# enum. Slash and dot are allowed so MIME types survive.
+_ENUM_SHAPE = re.compile(r"^[A-Za-z0-9_\-./+]{1,60}$")
+
+_COURSE_NAMES = (
+    "Introduction to Imaginary Systems",
+    "Applied Handwaving",
+    "Theory of Plausible Machines",
+    "Advanced Placeholder Studies",
+    "Seminar in Invented Methods",
+)
+_PERSON_NAMES = (
+    "Robin Fictief",
+    "Sam Verzonnen",
+    "Kim Bedacht",
+    "Alex Voorbeeld",
+)
+_PERSON_KEYS = frozenset(
+    {"user_name", "display_name", "short_name", "sortable_name", "author_name"}
+)
+_COURSE_KEYS = frozenset({"name", "course_code", "original_name", "friendly_name"})
+
+_ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}([T ]|$)")
+_BASE_DATE = date(2026, 2, 2)
+
+
+def _preserved(key: str, value: str) -> bool:
+    """Whether an original string may be kept verbatim.
+
+    Being on the allowlist is not enough: the value must also look like an
+    enum. A field that unexpectedly carries free text is replaced anyway,
+    otherwise the allowlist is a hole rather than an exception.
+    """
+    return key in PRESERVED_KEYS and bool(_ENUM_SHAPE.match(value))
+
+
+def _synthetic_string(key: str, value: str, n: int) -> str:
+    if _preserved(key, value):
+        return value
+    if key == "ics" or value.endswith(".ics"):
+        return f"https://{SYNTHETIC_HOST}/feeds/calendars/FIXTURE{n:02d}.ics"
+    if "verifier=" in value:
+        return (
+            f"https://{SYNTHETIC_HOST}/files/{n}/download"
+            f"?download_frd=1&verifier=FIXTURE{n:02d}"
+        )
+    if value.startswith(("http://", "https://")):
+        return f"https://{SYNTHETIC_HOST}/api/v1/{key}/{n}"
+    if _ISO_DATE.match(value):
+        stamp = _BASE_DATE + timedelta(days=n)
+        return f"{stamp.isoformat()}T09:00:00Z" if "T" in value else stamp.isoformat()
+    if "email" in key or key == "login_id":
+        return f"person{n}@example.edu"
+    if key in _PERSON_KEYS:
+        return _PERSON_NAMES[n % len(_PERSON_NAMES)]
+    if key in _COURSE_KEYS:
+        return _COURSE_NAMES[n % len(_COURSE_NAMES)]
+    if key == "uuid" or _UUID.match(value):
+        return f"FIXTUREuuid{n:022d}"
+    if "<" in value and ">" in value:
+        return f"<p>Synthetic body {n} for {key}.</p>"
+    return f"FIXTURE-{key}-{n}"
+
+
+def to_synthetic(data: Any, key: str = "root", counters: dict | None = None) -> Any:
+    """Rebuild a decoded JSON document with every value replaced.
+
+    Structure is preserved exactly — same keys, same nesting, same list
+    lengths, same types — so a filter tested against the result still meets
+    every field the live API sends, including ones nobody anticipated.
+
+    Deterministic: the same input always produces the same output, so a
+    regenerated fixture gives an empty diff rather than noise.
+    """
+    if counters is None:
+        counters = {}
+    if isinstance(data, dict):
+        return {k: to_synthetic(v, k, counters) for k, v in data.items()}
+    if isinstance(data, list):
+        return [to_synthetic(v, key, counters) for v in data]
+    if isinstance(data, bool) or data is None:
+        return data
+
+    counters[key] = counters.get(key, 0) + 1
+    n = counters[key]
+    if isinstance(data, str):
+        return _synthetic_string(key, data, n)
+    if isinstance(data, int):
+        return n if key.endswith("id") else 100 + n
+    if isinstance(data, float):
+        return float(10 * n)
+    return data
