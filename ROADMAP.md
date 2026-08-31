@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 4 — scope registry** · branch `test/scopes` open
+Status: **step 5a — MCP server and `list_courses`** · branch `feat/list-courses` open
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -185,14 +185,14 @@ The detector lives in `src/canvas_mcp/fixtures.py` rather than in the test,
 because the converter imports it too — and step 11's demo loader belongs in the
 same module.
 
-### [~] 4. Scope registry — design **HUMAN**
+### [x] 4. Scope registry — design **HUMAN**
 
 **Delivers:** deny-by-default tool registration; `--scopes courses:read` exposes
 exactly one tool; an unregistered scope raises at startup, not at call time.
 
 **Files:** `src/canvas_mcp/scopes.py`
 
-**Branch:** `test/scopes` · **Issue:** #19 · **PR:** #20
+**Branch:** `test/scopes` · **Issue:** #19 · **PR:** #20 (merged)
 
 **Notes:** this is the learning goal of the project. `grades:read` exists but is
 off by default — that gap between what the token allows and what the server
@@ -239,14 +239,14 @@ Building the tools one step at a time now works, and a renamed tool is still
 caught. Same principle as everywhere else, applied at the right layer: enforce
 what prevents damage, assert what guards documentation.
 
-### [ ] 5. MCP server and `list_courses`
+### [~] 5. MCP server and `list_courses`
 
 **Delivers:** the server runs in Claude Desktop and answers "which courses am I
 taking?" against the real API.
 
 **Files:** `src/canvas_mcp/server.py`, `src/canvas_mcp/tools/courses.py`
 
-**Branch:** `feat/list-courses`
+**Branch:** `feat/list-courses` (5a) then `feat/list-grades` (5b)
 
 **Notes:** first end-to-end step. Resolve `enrollment_term_id` to a term name
 via `include[]=term` — a bare `417` is useless to a model.
@@ -262,6 +262,26 @@ Also add the test that step 4 moved out of the runtime: every row in
 
 Print one line at startup naming the enabled and disabled scopes. Diagnostics,
 not logging — no request data, nothing near a token.
+
+Split into two PRs: 5a is the server, the CLI and `list_courses`; 5b is
+`list_grades` and the table test. Together they were ~350 lines against a 150
+line limit. 5a alone is ~200 and still over, but splitting the server from its
+first tool would produce a branch that cannot be run at all, and this step is
+defined by being runnable.
+
+**mcp 2.x, not 1.x.** `FastMCP` was renamed `MCPServer`, the API is snake_case
+(`input_schema`, `read_only_hint`) and `list_tools()` is a coroutine. Verified
+against the installed package rather than assumed, which is the second time
+that has changed a decision here — `httpx2` was the first.
+
+Tools are built by factories that close over the client rather than taking one
+as an argument. Tool arguments are chosen by a model; a `client` parameter
+would put the connection, and through it the token, inside something the model
+can influence.
+
+The startup line goes to **stderr**. The stdio transport speaks the protocol on
+stdout, so a stray print there corrupts the stream — a failure that looks like
+a broken server rather than a broken print. There is a test for it.
 
 ### [ ] 6. `list_assignments`
 
