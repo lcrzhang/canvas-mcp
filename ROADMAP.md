@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 5a — MCP server and `list_courses`** · branch `feat/list-courses` open
+Status: **step 5b** — demonstration moved to per-assignment scores, which are readable
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -239,7 +239,7 @@ Building the tools one step at a time now works, and a renamed tool is still
 caught. Same principle as everywhere else, applied at the right layer: enforce
 what prevents damage, assert what guards documentation.
 
-### [~] 5. MCP server and `list_courses`
+### [~] 5. MCP server and `list_courses` — 5a merged (#22)
 
 **Delivers:** the server runs in Claude Desktop and answers "which courses am I
 taking?" against the real API.
@@ -264,7 +264,50 @@ Print one line at startup naming the enabled and disabled scopes. Diagnostics,
 not logging — no request data, nothing near a token.
 
 Split into two PRs: 5a is the server, the CLI and `list_courses`; 5b is
-`list_grades` and the table test. Together they were ~350 lines against a 150
+`list_grades` and the table test.
+
+**5b is blocked by an empirical finding, 2026-08-31.** Before writing
+`list_grades` the endpoints were captured, the way section 2 of `SCOPE.md`
+demands. Result: this token cannot read grades at all. The `grades` object in
+an enrollment carries only `html_url`; `current_score`, `current_grade`,
+`final_score` and `final_grade` are absent rather than null, and
+`include[]=total_scores` on `/courses` adds nothing. The courses carry
+`hide_final_grades: true`.
+
+So the intended claim — the token may read grades, this server may not — is
+false on canvas.uva.nl. Canvas blocks it before this server gets the chance.
+
+Three ways forward, and it is Leo's decision:
+
+1. **Drop `list_grades` and `grades:read`.** The scope machinery is proven by
+   its own tests either way; the README needs a different example.
+2. **Keep `list_grades` returning only the grades page URL.** It demonstrates
+   the mechanism — off by default, appears when enabled — but returns almost
+   nothing, which is a weak thing to build a README around.
+3. **Test whether per-assignment submission scores are readable.** Hidden final
+   grades do not necessarily hide individual submission scores, and "what did I
+   score on this assignment" is both useful and sensitive. If it works, the
+   demonstration survives intact and gets better. Needs one more capture, and
+   a capture keyed on a course id rather than a fixed path.
+
+**Chosen: 3, and it works.** `GET /courses/:id/students/submissions` with
+`student_ids[]=self` returns `score`, `grade`, `entered_score`,
+`points_possible`, `graded_at`, `late`, `missing` and `excused`. So
+`list_grades` becomes per-assignment scores for one course — a better
+demonstration than course totals would have been: more useful to a student, and
+more clearly something a server should gate.
+
+The capture needed a course id, which is real data. `course_with_submissions()`
+resolves one inside the process and reports "course 3 of 6", never which course,
+and picks a course that actually has submissions — a fixture of an empty list
+tests nothing.
+
+`fixtures/submissions.json` is 91363 bytes for 12 submissions across 129
+fields, including `secure_params`, `preview_url` and every assignment's full
+`description`. It is the strongest case in the repo for the filter layer.
+
+`fixtures/enrollments.json` stays uncommitted: it produced a finding, but no
+test uses it. The capture entry remains, so it is one command away. Together they were ~350 lines against a 150
 line limit. 5a alone is ~200 and still over, but splitting the server from its
 first tool would produce a branch that cannot be run at all, and this step is
 defined by being runnable.

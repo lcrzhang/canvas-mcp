@@ -14,6 +14,7 @@ should not have one.
 import argparse
 import json
 import sys
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -22,10 +23,47 @@ from canvas_mcp.fixtures import find_real_looking_values, to_synthetic
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
+
+def course_with_submissions(client: CanvasClient) -> str:
+    """Find a course that actually has submissions, and return its path.
+
+    Course ids are real data. Resolving one inside the process keeps it out of
+    the source, out of the output and out of anyone's notes — the report says
+    "course 3 of 6", never which course.
+
+    A fixture captured from a course with no submissions would be an empty
+    list, which tests nothing.
+    """
+    courses = list(client.paginate("/courses", params={"enrollment_state": "active"}))
+    if not courses:
+        raise CanvasError("No active courses to capture from.")
+
+    best, best_count = None, 0
+    for index, course in enumerate(courses, start=1):
+        path = f"/courses/{course['id']}/students/submissions"
+        found = list(client.paginate(path, params={"student_ids[]": ["self"]}))
+        print(f"  course {index} of {len(courses)}: {len(found)} submissions")
+        if len(found) > best_count:
+            best, best_count = path, len(found)
+
+    if best is None:
+        raise CanvasError("No submissions in any active course. Nothing to capture.")
+    return best
+
+
 # Every capture this project supports, so that what was fetched is readable
-# rather than remembered.
-CAPTURES: dict[str, tuple[str, dict[str, Any]]] = {
+# rather than remembered. A path may be a string, or a function that resolves
+# one against the live API.
+CAPTURES: dict[str, tuple[str | Callable[[CanvasClient], str], dict[str, Any]]] = {
     "courses": ("/courses", {"enrollment_state": "active", "include[]": ["term"]}),
+    # Enrollments carry the grades. Captured from /users/self rather than a
+    # course, so no course id has to be written down here.
+    "enrollments": ("/users/self/enrollments", {"state[]": ["active"]}),
+    # Per-assignment scores. Hidden final grades do not necessarily hide these.
+    "submissions": (
+        course_with_submissions,
+        {"student_ids[]": ["self"], "include[]": ["assignment"]},
+    ),
 }
 
 
@@ -43,9 +81,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, default=None)
     args = parser.parse_args(argv)
 
-    path, params = CAPTURES[args.capture]
+    path_or_resolver, params = CAPTURES[args.capture]
     try:
         with CanvasClient() as client:
+            path = (
+                path_or_resolver(client)
+                if callable(path_or_resolver)
+                else path_or_resolver
+            )
             raw = list(client.paginate(path, params=params))
     except CanvasError as exc:
         print(f"Capture failed: {exc}", file=sys.stderr)
@@ -67,7 +110,7 @@ def main(argv: list[str] | None = None) -> int:
     out.write_text(json.dumps(fixture, indent=2) + "\n")
 
     keys = sorted(keys_in(fixture))
-    print(f"{len(raw)} objects from {path}")
+    print(f"{len(raw)} objects from {args.capture}")
     print(f"{len(keys)} distinct keys, {out.stat().st_size} bytes written")
     print(f"wrote {out.relative_to(REPO_ROOT)}")
     print("keys: " + ", ".join(keys))

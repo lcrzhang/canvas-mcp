@@ -28,6 +28,14 @@ Getest tegen canvas.uva.nl met een student-token op 2026-08-29:
 | `GET /courses/:id/files` | **403 unauthorized** |
 | `GET /courses/:id/files/:file_id` | 200 |
 
+Aanvullend getest op 2026-08-31, met hetzelfde token:
+
+| Endpoint | Resultaat |
+|---|---|
+| `GET /users/self/enrollments?state[]=active` | 200, 7 enrollments |
+| `GET /courses?include[]=total_scores` | 200, **geen score-velden** |
+| `GET /courses/:id/students/submissions?student_ids[]=self` | 200, **score aanwezig** |
+
 Conclusies die de architectuur bepalen:
 
 - De **file index** vereist `manage_files`-rechten en is dicht voor
@@ -38,6 +46,31 @@ Conclusies die de architectuur bepalen:
   → `position` is geen index; nooit als zodanig gebruiken.
 - Permissies zitten dus op drie lagen: Canvas-instelling, enrollment, en
   deze server. De server is de smalste.
+
+**Cijfers zijn niet leesbaar met dit token.** Het `grades`-object in een
+enrollment bevat alleen `html_url`; `current_score`, `current_grade`,
+`final_score` en `final_grade` ontbreken — ze zijn niet leeg, ze zitten er niet
+in. `include[]=total_scores` op `/courses` voegt evenmin een score toe. De
+vakken hebben `hide_final_grades: true`, wat dit verklaart.
+
+Dat is een instellingskeuze van de UvA, geen eigenschap van Canvas, en het kan
+per instelling en per vak verschillen. Maar hier geldt: de laag waar cijfers
+worden geblokkeerd is Canvas zelf, niet deze server.
+
+**Scores per opdracht zijn wél leesbaar.** Verborgen eindcijfers verbergen de
+individuele submissions niet. `GET /courses/:id/students/submissions` met
+`student_ids[]=self` geeft `score`, `grade`, `entered_score`,
+`points_possible`, `graded_at`, `late`, `missing` en `excused`.
+
+Daar zit dus de demonstratie, en scherper dan het origineel: *"wat had ik voor
+opdracht 2"* is zowel nuttig als gevoelig. Het token mag het, deze server niet
+tenzij `grades:read` expliciet aanstaat.
+
+Gemeten op 2026-08-31: **12 submissions van één vak zijn 91 363 bytes** over
+129 verschillende velden, inclusief `secure_params`, `preview_url`,
+`submissions_download_url` en de volledige `description` van elke opdracht. Dat
+is de grootste reductie die de filterlaag in dit project maakt, en meteen het
+duidelijkste voorbeeld van waarom sectie 5 bestaat.
 
 ---
 
@@ -66,7 +99,7 @@ en de output bevat ook pages en assignments, niet alleen bestanden.
 
 | Tool | Scope | Waarom uit |
 |---|---|---|
-| `list_grades` | `grades:read` | Het token mag het. De server niet, tenzij expliciet aangezet. Dit is de demonstratie. |
+| `list_grades` | `grades:read` | Scores per opdracht voor één vak: `course_id` in, opdrachtnaam + score + maximum + status uit. Het token mag het, de server niet tenzij expliciet aangezet. Dit is de demonstratie. |
 
 ---
 
