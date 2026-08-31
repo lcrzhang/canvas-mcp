@@ -40,8 +40,11 @@ prints field names and counts, never values.
 
 ## Owned by the human — do not write these
 
-- `src/canvas_mcp/scopes.py` — the deny-by-default registry (roadmap step 4).
-  This is the learning goal of the project.
+- the *design* of `src/canvas_mcp/scopes.py` — the deny-by-default registry
+  (roadmap step 4). Settled by Leo on 2026-08-30, decision by decision, with
+  the alternatives and reasons recorded in `ROADMAP.md`. Writing the code was
+  delegated afterwards, on the grounds that the reasoning was the learning
+  goal. Changing any of those decisions is Leo's call, not a refactor.
 - tool descriptions and the tuning pass on them (roadmap step 13)
 - deciding *when* a live capture runs. The capture itself is automated in
   `tools/make_fixture.py`, which fetches, converts and checks in one process;

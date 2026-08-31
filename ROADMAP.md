@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 4 — scope registry (HUMAN)** · specification on branch `test/scopes`, waiting on Leo
+Status: **step 4 — scope registry** · branch `test/scopes` open
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -185,14 +185,14 @@ The detector lives in `src/canvas_mcp/fixtures.py` rather than in the test,
 because the converter imports it too — and step 11's demo loader belongs in the
 same module.
 
-### [ ] 4. Scope registry — **HUMAN**
+### [~] 4. Scope registry — design **HUMAN**
 
 **Delivers:** deny-by-default tool registration; `--scopes courses:read` exposes
 exactly one tool; an unregistered scope raises at startup, not at call time.
 
 **Files:** `src/canvas_mcp/scopes.py`
 
-**Branch:** `feat/scopes`
+**Branch:** `test/scopes` · **Issue:** #19 · **PR:** #20
 
 **Notes:** this is the learning goal of the project. `grades:read` exists but is
 off by default — that gap between what the token allows and what the server
@@ -217,6 +217,26 @@ leak, and there is no logging in this project to make the benefit real.
 
 This is the same move as the fixture guard and the filter allowlist: enforce
 it, do not trust it.
+
+The tests were written first and the implementation followed. Leo made every
+decision in the table above; writing the code was delegated once the design was
+settled, on the grounds that the reasoning was the learning goal, not the
+typing. `CLAUDE.md` records that split.
+
+**Consequence for step 5.** `TOOL_SCOPES` lists all six v0.1 tools, and the
+registry refuses to start when a table row has no matching tool. At step 5 only
+`list_courses` exists, so the server cannot construct a registry yet. Three
+ways out, and it is a decision rather than a detail:
+
+1. grow `TOOL_SCOPES` one row per step, as each tool lands
+2. build `list_grades` in step 5 alongside `list_courses`, which makes the
+   demonstration real from the first end-to-end step
+3. drop the orphan check and keep only the unpoliced-tool check
+
+Only the second direction of the check protects anything: a tool with no policy
+row could run unpoliced, while a policy row with no tool is stale documentation.
+Option 3 is therefore not unsafe — but it removes the thing that would catch a
+renamed tool.
 
 ### [ ] 5. MCP server and `list_courses`
 
