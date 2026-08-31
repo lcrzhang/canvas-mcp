@@ -9,8 +9,10 @@ Findings name the JSON path and the reason, never the offending value: a guard
 that echoes a token into a CI log has leaked it just the same.
 """
 
+import json
 import re
 from datetime import date, timedelta
+from pathlib import Path
 from typing import Any
 
 # A fixture may mention these hosts and no others.
@@ -215,3 +217,51 @@ def to_synthetic(data: Any, key: str = "root", counters: dict | None = None) -> 
     if isinstance(data, float):
         return float(10 * n)
     return data
+
+
+# --- demo mode ------------------------------------------------------------
+#
+# `--demo` serves the committed fixtures instead of the network. It is a
+# transport swap, not a second implementation: the same client, filters, tools
+# and scope registry run underneath. See `SCOPE.md` section 8.
+
+FIXTURE_DIR = Path(__file__).resolve().parent.parent.parent / "fixtures"
+
+# The placeholder that stands in for a token in demo mode. Deliberately not a
+# credential and deliberately obvious in any error message.
+DEMO_TOKEN = "demo-mode-no-credential"
+
+# Request path -> fixture file. Anything not listed 404s with a message saying
+# demo mode is the reason, rather than looking like a Canvas failure.
+DEMO_ROUTES: tuple[tuple[re.Pattern[str], str], ...] = (
+    (re.compile(r"^/api/v1/courses/?$"), "courses.json"),
+    (re.compile(r"^/api/v1/courses/\d+/students/submissions/?$"), "submissions.json"),
+)
+
+
+def load_fixture(name: str) -> Any:
+    return json.loads((FIXTURE_DIR / name).read_text())
+
+
+def demo_transport() -> Any:
+    """A transport that answers from `fixtures/` and never opens a socket."""
+    import httpx2
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        path = request.url.path
+        if path == "/api/v1/users/self":
+            # Answered inline so the startup check runs in demo mode too,
+            # rather than being skipped and going untested.
+            return httpx2.Response(200, json={"id": 1, "name": "Demo Student"})
+        for pattern, fixture in DEMO_ROUTES:
+            if pattern.match(path):
+                return httpx2.Response(200, json=load_fixture(fixture))
+        return httpx2.Response(
+            404,
+            json={
+                "message": f"{path} has no fixture; demo mode serves only "
+                "the endpoints in DEMO_ROUTES."
+            },
+        )
+
+    return httpx2.MockTransport(handler)
