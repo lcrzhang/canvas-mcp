@@ -73,3 +73,33 @@ def slim_submission(submission: dict[str, Any]) -> dict[str, Any]:
         "status": submission.get("workflow_state"),
         "flags": [flag for flag in SUBMISSION_FLAGS if submission.get(flag)],
     }
+
+
+# The complete output of slim_assignment(). 129 fields arrive, including the
+# assignment's HTML description, the student's own submitted body and url,
+# secure_params and every moderation setting the course has.
+ASSIGNMENT_FIELDS = ("id", "name", "due_at", "points", "submitted", "locked")
+
+
+def slim_assignment(assignment: dict[str, Any]) -> dict[str, Any]:
+    """Reduce one raw assignment to what a student needs to plan.
+
+    `submitted` comes from the nested submission, which is only present when
+    the request used `include[]=submission`; without it nothing is known, so it
+    is None rather than False. Claiming "not submitted" on missing information
+    is exactly the plausible wrong answer this project tries not to produce.
+
+    `locked` is reported rather than used to hide the assignment. See
+    `SCOPE.md` section 5 and the note in `ROADMAP.md` step 6: a locked
+    assignment is one you cannot submit to right now, not one you may not know
+    about.
+    """
+    submission = assignment.get("submission")
+    return {
+        "id": assignment.get("id"),
+        "name": assignment.get("name"),
+        "due_at": assignment.get("due_at"),
+        "points": assignment.get("points_possible"),
+        "submitted": bool(submission.get("submitted_at")) if submission else None,
+        "locked": bool(assignment.get("locked_for_user")),
+    }
