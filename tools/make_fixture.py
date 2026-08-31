@@ -26,6 +26,9 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 # rather than remembered.
 CAPTURES: dict[str, tuple[str, dict[str, Any]]] = {
     "courses": ("/courses", {"enrollment_state": "active", "include[]": ["term"]}),
+    # Enrollments carry the grades. Captured from /users/self rather than a
+    # course, so no course id has to be written down here.
+    "enrollments": ("/users/self/enrollments", {"state[]": ["active"]}),
 }
 
 

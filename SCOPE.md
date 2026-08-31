@@ -28,6 +28,13 @@ Getest tegen canvas.uva.nl met een student-token op 2026-08-29:
 | `GET /courses/:id/files` | **403 unauthorized** |
 | `GET /courses/:id/files/:file_id` | 200 |
 
+Aanvullend getest op 2026-08-31, met hetzelfde token:
+
+| Endpoint | Resultaat |
+|---|---|
+| `GET /users/self/enrollments?state[]=active` | 200, 7 enrollments |
+| `GET /courses?include[]=total_scores` | 200, **geen score-velden** |
+
 Conclusies die de architectuur bepalen:
 
 - De **file index** vereist `manage_files`-rechten en is dicht voor
@@ -38,6 +45,21 @@ Conclusies die de architectuur bepalen:
   → `position` is geen index; nooit als zodanig gebruiken.
 - Permissies zitten dus op drie lagen: Canvas-instelling, enrollment, en
   deze server. De server is de smalste.
+
+**Cijfers zijn niet leesbaar met dit token.** Het `grades`-object in een
+enrollment bevat alleen `html_url`; `current_score`, `current_grade`,
+`final_score` en `final_grade` ontbreken — ze zijn niet leeg, ze zitten er niet
+in. `include[]=total_scores` op `/courses` voegt evenmin een score toe. De
+vakken hebben `hide_final_grades: true`, wat dit verklaart.
+
+Dat is een instellingskeuze van de UvA, geen eigenschap van Canvas, en het kan
+per instelling en per vak verschillen. Maar hier geldt: de laag waar cijfers
+worden geblokkeerd is Canvas zelf, niet deze server.
+
+**Gevolg voor de demonstratie.** De beoogde claim was: het token mag cijfers
+lezen, de server niet. De eerste helft klopt niet op canvas.uva.nl, dus die
+claim kan zo niet in de README. Wat er wél voor in de plaats komt, staat open —
+zie `ROADMAP.md` bij stap 5b.
 
 ---
 
