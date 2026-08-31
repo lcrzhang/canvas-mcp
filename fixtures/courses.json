@@ -1,0 +1,328 @@
+[
+  {
+    "id": 1,
+    "name": "Applied Handwaving",
+    "course_code": "FIX0001SYN",
+    "account_id": 1,
+    "created_at": "2026-02-03T09:00:00Z",
+    "start_at": "2026-02-03T09:00:00Z",
+    "default_view": "FIXTURE-default_view-1",
+    "enrollment_term_id": 1,
+    "is_public": false,
+    "grading_standard_id": null,
+    "root_account_id": 1,
+    "uuid": "FIXTUREuuid0000000000000000000001",
+    "license": "FIXTURE-license-1",
+    "grade_passback_setting": null,
+    "end_at": null,
+    "public_syllabus": false,
+    "public_syllabus_to_auth": true,
+    "storage_quota_mb": 101,
+    "is_public_to_auth_users": false,
+    "homeroom_course": false,
+    "course_color": null,
+    "friendly_name": null,
+    "term": {
+      "id": 2,
+      "name": "Theory of Plausible Machines",
+      "start_at": null,
+      "end_at": null,
+      "workflow_state": "active",
+      "grading_period_group_id": null,
+      "created_at": "2026-02-04T09:00:00Z"
+    },
+    "apply_assignment_group_weights": false,
+    "calendar": {
+      "ics": "https://canvas.example.edu/feeds/calendars/FIXTURE01.ics"
+    },
+    "time_zone": "FIXTURE-time_zone-1",
+    "blueprint": false,
+    "template": false,
+    "enrollments": [
+      {
+        "type": "student",
+        "role": "StudentEnrollment",
+        "role_id": 1,
+        "user_id": 1,
+        "enrollment_state": "active",
+        "limit_privileges_to_course_section": false
+      },
+      {
+        "type": "student",
+        "role": "StudentEnrollment",
+        "role_id": 2,
+        "user_id": 2,
+        "enrollment_state": "active",
+        "limit_privileges_to_course_section": false
+      }
+    ],
+    "hide_final_grades": true,
+    "workflow_state": "available",
+    "restrict_enrollments_to_course_dates": false
+  },
+  {
+    "id": 3,
+    "name": "Advanced Placeholder Studies",
+    "course_code": "FIX0002SYN",
+    "account_id": 2,
+    "created_at": "2026-02-05T09:00:00Z",
+    "start_at": null,
+    "default_view": "FIXTURE-default_view-2",
+    "enrollment_term_id": 2,
+    "is_public": false,
+    "grading_standard_id": null,
+    "root_account_id": 2,
+    "uuid": "FIXTUREuuid0000000000000000000002",
+    "license": "FIXTURE-license-2",
+    "grade_passback_setting": null,
+    "end_at": null,
+    "public_syllabus": false,
+    "public_syllabus_to_auth": false,
+    "storage_quota_mb": 102,
+    "is_public_to_auth_users": false,
+    "homeroom_course": false,
+    "course_color": null,
+    "friendly_name": null,
+    "term": {
+      "id": 4,
+      "name": "Seminar in Invented Methods",
+      "start_at": null,
+      "end_at": "2026-02-03T09:00:00Z",
+      "workflow_state": "active",
+      "grading_period_group_id": null,
+      "created_at": "2026-02-06T09:00:00Z"
+    },
+    "apply_assignment_group_weights": false,
+    "calendar": {
+      "ics": "https://canvas.example.edu/feeds/calendars/FIXTURE02.ics"
+    },
+    "time_zone": "FIXTURE-time_zone-2",
+    "blueprint": false,
+    "template": false,
+    "enrollments": [
+      {
+        "type": "student",
+        "role": "StudentEnrollment",
+        "role_id": 3,
+        "user_id": 3,
+        "enrollment_state": "active",
+        "limit_privileges_to_course_section": false
+      }
+    ],
+    "hide_final_grades": true,
+    "workflow_state": "available",
+    "restrict_enrollments_to_course_dates": false
+  },
+  {
+    "id": 5,
+    "name": "Introduction to Imaginary Systems",
+    "course_code": "FIX0003SYN",
+    "account_id": 3,
+    "created_at": "2026-02-07T09:00:00Z",
+    "start_at": "2026-02-04T09:00:00Z",
+    "default_view": "FIXTURE-default_view-3",
+    "enrollment_term_id": 3,
+    "is_public": false,
+    "grading_standard_id": null,
+    "root_account_id": 3,
+    "uuid": "FIXTUREuuid0000000000000000000003",
+    "license": "FIXTURE-license-3",
+    "grade_passback_setting": null,
+    "end_at": null,
+    "public_syllabus": false,
+    "public_syllabus_to_auth": false,
+    "storage_quota_mb": 103,
+    "is_public_to_auth_users": false,
+    "homeroom_course": false,
+    "course_color": null,
+    "friendly_name": null,
+    "term": {
+      "id": 6,
+      "name": "Applied Handwaving",
+      "start_at": null,
+      "end_at": "2026-02-04T09:00:00Z",
+      "workflow_state": "active",
+      "grading_period_group_id": null,
+      "created_at": "2026-02-08T09:00:00Z"
+    },
+    "apply_assignment_group_weights": false,
+    "calendar": {
+      "ics": "https://canvas.example.edu/feeds/calendars/FIXTURE03.ics"
+    },
+    "time_zone": "FIXTURE-time_zone-3",
+    "blueprint": false,
+    "template": false,
+    "enrollments": [
+      {
+        "type": "student",
+        "role": "StudentEnrollment",
+        "role_id": 4,
+        "user_id": 4,
+        "enrollment_state": "active",
+        "limit_privileges_to_course_section": false
+      }
+    ],
+    "hide_final_grades": true,
+    "workflow_state": "available",
+    "restrict_enrollments_to_course_dates": true
+  },
+  {
+    "id": 7,
+    "name": "Theory of Plausible Machines",
+    "course_code": "FIX0004SYN",
+    "account_id": 4,
+    "created_at": "2026-02-09T09:00:00Z",
+    "start_at": null,
+    "default_view": "FIXTURE-default_view-4",
+    "enrollment_term_id": 4,
+    "is_public": false,
+    "grading_standard_id": null,
+    "root_account_id": 4,
+    "uuid": "FIXTUREuuid0000000000000000000004",
+    "license": "FIXTURE-license-4",
+    "grade_passback_setting": null,
+    "end_at": null,
+    "public_syllabus": false,
+    "public_syllabus_to_auth": false,
+    "storage_quota_mb": 104,
+    "is_public_to_auth_users": false,
+    "homeroom_course": false,
+    "course_color": null,
+    "friendly_name": null,
+    "term": {
+      "id": 8,
+      "name": "Advanced Placeholder Studies",
+      "start_at": null,
+      "end_at": "2026-02-05T09:00:00Z",
+      "workflow_state": "active",
+      "grading_period_group_id": null,
+      "created_at": "2026-02-10T09:00:00Z"
+    },
+    "apply_assignment_group_weights": false,
+    "calendar": {
+      "ics": "https://canvas.example.edu/feeds/calendars/FIXTURE04.ics"
+    },
+    "time_zone": "FIXTURE-time_zone-4",
+    "blueprint": false,
+    "template": false,
+    "enrollments": [
+      {
+        "type": "student",
+        "role": "StudentEnrollment",
+        "role_id": 5,
+        "user_id": 5,
+        "enrollment_state": "active",
+        "limit_privileges_to_course_section": false
+      }
+    ],
+    "hide_final_grades": true,
+    "workflow_state": "available",
+    "restrict_enrollments_to_course_dates": false
+  },
+  {
+    "id": 9,
+    "name": "Seminar in Invented Methods",
+    "course_code": "FIX0005SYN",
+    "account_id": 5,
+    "created_at": "2026-02-11T09:00:00Z",
+    "start_at": null,
+    "default_view": "FIXTURE-default_view-5",
+    "enrollment_term_id": 5,
+    "is_public": false,
+    "grading_standard_id": null,
+    "root_account_id": 5,
+    "uuid": "FIXTUREuuid0000000000000000000005",
+    "license": "FIXTURE-license-5",
+    "grade_passback_setting": null,
+    "end_at": null,
+    "public_syllabus": false,
+    "public_syllabus_to_auth": false,
+    "storage_quota_mb": 105,
+    "is_public_to_auth_users": false,
+    "homeroom_course": false,
+    "course_color": null,
+    "friendly_name": null,
+    "term": {
+      "id": 10,
+      "name": "Introduction to Imaginary Systems",
+      "start_at": null,
+      "end_at": "2026-02-06T09:00:00Z",
+      "workflow_state": "active",
+      "grading_period_group_id": null,
+      "created_at": "2026-02-12T09:00:00Z"
+    },
+    "apply_assignment_group_weights": false,
+    "calendar": {
+      "ics": "https://canvas.example.edu/feeds/calendars/FIXTURE05.ics"
+    },
+    "time_zone": "FIXTURE-time_zone-5",
+    "blueprint": false,
+    "template": false,
+    "enrollments": [
+      {
+        "type": "student",
+        "role": "StudentEnrollment",
+        "role_id": 6,
+        "user_id": 6,
+        "enrollment_state": "active",
+        "limit_privileges_to_course_section": false
+      }
+    ],
+    "hide_final_grades": true,
+    "workflow_state": "available",
+    "restrict_enrollments_to_course_dates": false
+  },
+  {
+    "id": 11,
+    "name": "Applied Handwaving",
+    "course_code": "FIX0006SYN",
+    "account_id": 6,
+    "created_at": "2026-02-13T09:00:00Z",
+    "start_at": null,
+    "default_view": "FIXTURE-default_view-6",
+    "enrollment_term_id": 6,
+    "is_public": false,
+    "grading_standard_id": null,
+    "root_account_id": 6,
+    "uuid": "FIXTUREuuid0000000000000000000006",
+    "license": "FIXTURE-license-6",
+    "grade_passback_setting": null,
+    "end_at": null,
+    "public_syllabus": false,
+    "public_syllabus_to_auth": false,
+    "storage_quota_mb": 106,
+    "is_public_to_auth_users": true,
+    "homeroom_course": false,
+    "course_color": null,
+    "friendly_name": null,
+    "term": {
+      "id": 12,
+      "name": "Theory of Plausible Machines",
+      "start_at": null,
+      "end_at": "2026-02-07T09:00:00Z",
+      "workflow_state": "active",
+      "grading_period_group_id": null,
+      "created_at": "2026-02-14T09:00:00Z"
+    },
+    "apply_assignment_group_weights": true,
+    "calendar": {
+      "ics": "https://canvas.example.edu/feeds/calendars/FIXTURE06.ics"
+    },
+    "time_zone": "FIXTURE-time_zone-6",
+    "blueprint": false,
+    "template": false,
+    "enrollments": [
+      {
+        "type": "student",
+        "role": "StudentEnrollment",
+        "role_id": 7,
+        "user_id": 7,
+        "enrollment_state": "active",
+        "limit_privileges_to_course_section": false
+      }
+    ],
+    "hide_final_grades": true,
+    "workflow_state": "available",
+    "restrict_enrollments_to_course_dates": false
+  }
+]
