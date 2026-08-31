@@ -1,0 +1,21 @@
+"""Tool factories.
+
+Each tool is built from a client rather than taking one as an argument. Tool
+arguments are chosen by a model; a `client` parameter would put the connection
+— and through it the token — inside something the model can influence.
+"""
+
+from collections.abc import Callable
+from typing import Any
+
+from canvas_mcp.client import CanvasClient
+from canvas_mcp.tools.courses import make_list_courses
+
+
+def build_tools(client: CanvasClient) -> dict[str, Callable[..., Any]]:
+    """Every tool this project implements, by name.
+
+    The names must match `TOOL_SCOPES` in `scopes.py`; the registry refuses to
+    start otherwise.
+    """
+    return {"list_courses": make_list_courses(client)}

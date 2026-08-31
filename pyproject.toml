@@ -13,7 +13,14 @@ authors = [{ name = "Leo" }]
 # Runtime dependencies are added by the roadmap step that needs them.
 # httpx2 (not httpx) because that is what the MCP SDK pulls in at step 5;
 # one HTTP stack, not two.
-dependencies = ["httpx2>=2.12"]
+dependencies = [
+    "httpx2>=2.12",
+    # mcp 2.x: FastMCP was renamed MCPServer and the API is snake_case.
+    "mcp>=2.1",
+]
+
+[project.scripts]
+canvas-mcp = "canvas_mcp.server:main"
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.6"]
