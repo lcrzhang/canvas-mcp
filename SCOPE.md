@@ -81,7 +81,7 @@ duidelijkste voorbeeld van waarom sectie 5 bestaat.
 | Tool | Input | Output | Scope |
 |---|---|---|---|
 | `list_courses` | `term_filter?`, `current_only?` | id, name, code, term-naam | `courses:read` |
-| `list_assignments` | `course_id`, `only_upcoming?` | id, name, due_at, points, submitted | `assignments:read` |
+| `list_assignments` | `course_id`, `only_upcoming?` | id, name, due_at, points, submitted, locked | `assignments:read` |
 | `get_assignment` | `course_id`, `assignment_id` | sanitized plain text, gecapt | `assignments:read` |
 | `list_announcements` | `course_id`, `limit?` | titel, datum, plain-text body | `announcements:read` |
 | `list_materials` | `course_id`, `module_filter?` | module → sectie → item (naam, type) | `materials:read` |
@@ -149,8 +149,19 @@ Dat is een eenmalige meting tegen de live API, geen testassertie. De fixtures
 zijn synthetisch (sectie 8), dus de tests asserten het gedrag — dit veld is
 weg, de output is een orde van grootte kleiner — en niet dit exacte getal.
 
-Respecteer daarnaast `locked_for_user` en `hidden_for_user`: staat er
-`true`, dan bestaat het item niet voor de tool.
+Respecteer `hidden_for_user`: staat er `true`, dan bestaat het item niet voor
+de tool.
+
+`locked_for_user` ligt anders, empirisch vastgesteld op 2026-09-01. Bij zeven
+van twaalf opdrachten stond hij op `true` — inclusief opdrachten die al waren
+ingeleverd. Bij een opdracht betekent hij "je kunt hier nu niet inleveren", niet
+"je mag niet weten dat dit bestaat". Letterlijk toepassen zou meer dan de helft
+van de deadlines verbergen, en juist een gemiste deadline is wat een student
+moet zien. `list_assignments` geeft hem daarom terug als veld `locked` in plaats
+van het item te verwijderen.
+
+Voor bestanden en modules in stap 10 blijft de oorspronkelijke lezing gelden:
+daar betekent locked wél dat je de inhoud niet mag hebben.
 
 ---
 
