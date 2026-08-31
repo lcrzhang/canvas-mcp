@@ -12,9 +12,16 @@ from pathlib import Path
 
 import pytest
 
-from canvas_mcp.filters import COURSE_FIELDS, slim_course
+from canvas_mcp.filters import (
+    COURSE_FIELDS,
+    SUBMISSION_FIELDS,
+    slim_course,
+    slim_submission,
+)
 
-FIXTURE = Path(__file__).resolve().parent.parent / "fixtures" / "courses.json"
+FIXTURES = Path(__file__).resolve().parent.parent / "fixtures"
+FIXTURE = FIXTURES / "courses.json"
+SUBMISSIONS_FIXTURE = FIXTURES / "submissions.json"
 
 SAFE_COURSE = {
     "id": 1,
@@ -94,4 +101,98 @@ def test_no_url_or_feed_from_the_fixture_reaches_the_output() -> None:
     raw = json.loads(FIXTURE.read_text())
     output = json.dumps([slim_course(course) for course in raw])
     for marker in ("http", ".ics", "verifier=", "uuid"):
+        assert marker not in output
+
+
+# --- submissions ----------------------------------------------------------
+
+SAFE_SUBMISSION = {
+    "score": 8.5,
+    "grade": "8.5",
+    "workflow_state": "graded",
+    "late": False,
+    "missing": False,
+    "excused": False,
+    "assignment": {"name": "Week 1 exercise", "points_possible": 10.0},
+}
+
+# Fields the raw response carries that must not survive. The assignment's
+# description is teacher-written HTML — untrusted content per SCOPE.md
+# section 6, and exactly what a denylist forgets.
+FORBIDDEN_SUBMISSION_FIELDS = {
+    "preview_url": "SENTINEL-preview-url",
+    "url": "SENTINEL-url",
+    "submissions_download_url": "SENTINEL-download-url",
+    "user_id": "SENTINEL-user-id",
+    "uuid": "SENTINEL-uuid",
+    "html_url": "SENTINEL-html-url",
+    "body": "SENTINEL-submitted-body",
+}
+FORBIDDEN_ASSIGNMENT_FIELDS = {
+    "description": "<p>SENTINEL-teacher-html</p>",
+    "secure_params": "SENTINEL-secure-params",
+    "lti_context_id": "SENTINEL-lti-context",
+    "rubric": [{"description": "SENTINEL-rubric"}],
+    "html_url": "SENTINEL-assignment-url",
+}
+
+
+def test_submission_output_is_exactly_the_allowlist() -> None:
+    assert tuple(slim_submission(SAFE_SUBMISSION)) == SUBMISSION_FIELDS
+
+
+@pytest.mark.parametrize("field", sorted(FORBIDDEN_SUBMISSION_FIELDS))
+def test_submission_field_never_reaches_the_output(field: str) -> None:
+    submission = {**SAFE_SUBMISSION, field: FORBIDDEN_SUBMISSION_FIELDS[field]}
+    assert "SENTINEL" not in json.dumps(slim_submission(submission))
+
+
+@pytest.mark.parametrize("field", sorted(FORBIDDEN_ASSIGNMENT_FIELDS))
+def test_assignment_field_never_reaches_the_output(field: str) -> None:
+    submission = {
+        **SAFE_SUBMISSION,
+        "assignment": {
+            **SAFE_SUBMISSION["assignment"],
+            field: FORBIDDEN_ASSIGNMENT_FIELDS[field],
+        },
+    }
+    assert "SENTINEL" not in json.dumps(slim_submission(submission))
+
+
+def test_flags_name_only_what_is_true() -> None:
+    assert slim_submission(SAFE_SUBMISSION)["flags"] == []
+    late = {**SAFE_SUBMISSION, "late": True, "missing": True}
+    assert slim_submission(late)["flags"] == ["late", "missing"]
+
+
+def test_an_excused_submission_keeps_its_null_score() -> None:
+    excused = {**SAFE_SUBMISSION, "excused": True, "score": None, "grade": None}
+    slimmed = slim_submission(excused)
+    assert slimmed["score"] is None
+    assert slimmed["flags"] == ["excused"]
+
+
+def test_without_the_assignment_object_the_name_is_none_not_an_id() -> None:
+    """A bare assignment_id tells a model nothing, so it is not a fallback."""
+    bare = {**SAFE_SUBMISSION, "assignment_id": 4471}
+    del bare["assignment"]
+    slimmed = slim_submission(bare)
+    assert slimmed["assignment"] is None
+    assert 4471 not in slimmed.values()
+
+
+def test_the_submission_reduction_is_dramatic() -> None:
+    raw = json.loads(SUBMISSIONS_FIXTURE.read_text())
+    compact = {"separators": (",", ":")}
+    before = len(json.dumps(raw, **compact))
+    after = len(json.dumps([slim_submission(s) for s in raw], **compact))
+    # Measured at 40x on 2026-08-31; asserted well below that to stay honest
+    # about what changes when the fixture is recaptured.
+    assert before / after > 20
+
+
+def test_no_untrusted_html_from_the_fixture_reaches_the_output() -> None:
+    raw = json.loads(SUBMISSIONS_FIXTURE.read_text())
+    output = json.dumps([slim_submission(s) for s in raw])
+    for marker in ("<p>", "http", "secure_params", "preview_url"):
         assert marker not in output
