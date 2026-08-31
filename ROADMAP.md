@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 5b** — demonstration moved to per-assignment scores, which are readable
+Status: **step 6 — `list_assignments`**
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -239,14 +239,14 @@ Building the tools one step at a time now works, and a renamed tool is still
 caught. Same principle as everywhere else, applied at the right layer: enforce
 what prevents damage, assert what guards documentation.
 
-### [~] 5. MCP server and `list_courses` — 5a merged (#22)
+### [x] 5. MCP server, `list_courses` and `list_grades`
 
 **Delivers:** the server runs in Claude Desktop and answers "which courses am I
 taking?" against the real API.
 
 **Files:** `src/canvas_mcp/server.py`, `src/canvas_mcp/tools/courses.py`
 
-**Branch:** `feat/list-courses` (5a) then `feat/list-grades` (5b)
+**Branch:** `feat/list-courses` (**PR:** #22), `feat/list-grades` (#23), `feat/list-grades-tool` (5b) · **Issue:** #21
 
 **Notes:** first end-to-end step. Resolve `enrollment_term_id` to a term name
 via `include[]=term` — a bare `417` is useless to a model.
@@ -307,7 +307,22 @@ fields, including `secure_params`, `preview_url` and every assignment's full
 `description`. It is the strongest case in the repo for the filter layer.
 
 `fixtures/enrollments.json` stays uncommitted: it produced a finding, but no
-test uses it. The capture entry remains, so it is one command away. Together they were ~350 lines against a 150
+test uses it. The capture entry remains, so it is one command away.
+
+**5b delivered.** `slim_submission()` is an allowlist of six fields, and the
+reduction is **40x** — 64044 bytes of submissions to 1612. That is the largest
+measurement in the project and the clearest answer to why section 5 exists.
+
+`flags` is a list naming only what is true, rather than three booleans that are
+usually false. `course_id` passes through `int()` before it reaches a path: the
+SDK validates the type from the hint, but that argument is model-chosen and one
+coercion closes it at the source.
+
+The check step 4 moved out of the registry now lives in
+`test_every_policy_row_names_a_tool_that_exists_or_is_listed_as_pending`, with
+a `NOT_YET_BUILT` set covering steps 6 to 10. Adding a tool fails that test
+until its name is removed, so the list tracks the remaining work and the check
+does real work today. Together they were ~350 lines against a 150
 line limit. 5a alone is ~200 and still over, but splitting the server from its
 first tool would produce a branch that cannot be run at all, and this step is
 defined by being runnable.
