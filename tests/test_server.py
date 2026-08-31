@@ -11,10 +11,10 @@ from pathlib import Path
 import httpx2
 import pytest
 
-from canvas_mcp.client import CanvasClient
+from canvas_mcp.client import CanvasClient, CanvasError
 from canvas_mcp.filters import SUBMISSION_FIELDS
 from canvas_mcp.scopes import DEFAULT_SCOPES, TOOL_SCOPES
-from canvas_mcp.server import build_server, parse_args
+from canvas_mcp.server import build_client, build_server, parse_args
 from canvas_mcp.tools import build_tools
 from canvas_mcp.tools.courses import make_list_courses
 from canvas_mcp.tools.grades import make_list_grades
@@ -164,3 +164,18 @@ def test_list_grades_returns_slimmed_submissions() -> None:
     assert len(scores) == len(payload)
     assert all(tuple(score) == SUBMISSION_FIELDS for score in scores)
     assert "secure_params" not in json.dumps(scores)
+
+
+def test_demo_mode_needs_no_token_and_no_network(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("CANVAS_TOKEN", raising=False)
+    client = build_client(demo=True)
+    assert client.verify_token()["name"] == "Demo Student"
+    assert client.base_url == "https://canvas.example.edu"
+
+
+def test_demo_mode_404s_an_endpoint_it_has_no_fixture_for() -> None:
+    client = build_client(demo=True)
+    with pytest.raises(CanvasError, match="not found"):
+        client.get("/courses/1/modules")
