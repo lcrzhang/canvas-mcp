@@ -80,11 +80,19 @@ duidelijkste voorbeeld van waarom sectie 5 bestaat.
 
 | Tool | Input | Output | Scope |
 |---|---|---|---|
-| `list_courses` | `term_filter?` | id, name, code, term-naam | `courses:read` |
+| `list_courses` | `term_filter?`, `current_only?` | id, name, code, term-naam | `courses:read` |
 | `list_assignments` | `course_id`, `only_upcoming?` | id, name, due_at, points, submitted | `assignments:read` |
 | `get_assignment` | `course_id`, `assignment_id` | sanitized plain text, gecapt | `assignments:read` |
 | `list_announcements` | `course_id`, `limit?` | titel, datum, plain-text body | `announcements:read` |
 | `list_materials` | `course_id`, `module_filter?` | module → sectie → item (naam, type) | `materials:read` |
+
+`current_only` staat standaard aan. Empirisch vastgesteld op 2026-08-31:
+`enrollment_state=active` betekent dat je *inschrijving* actief is, niet dat de
+*periode* loopt. Canvas gaf zes vakken terug waarvan er drie uit afgesloten
+periodes van 2024 en 2025 kwamen. Zonder filter moet een model zelf uitzoeken
+wat actueel is — en de faalmodus daarvan is een plausibel verkeerd antwoord,
+niet een foutmelding. Een term zonder einddatum telt als lopend; een vak
+verbergen op grond van een ontbrekende datum is erger dan er een te veel tonen.
 
 `list_materials` heet bewust niet `list_files`: de bron is de module-tree,
 en de output bevat ook pages en assignments, niet alleen bestanden.

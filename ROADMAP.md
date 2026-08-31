@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 6 — `list_assignments`** · fixture realism fixed after the live test
+Status: **step 6 — `list_assignments`**
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -260,6 +260,24 @@ taking?" against the real API.
 **Files:** `src/canvas_mcp/server.py`, `src/canvas_mcp/tools/courses.py`
 
 **Branch:** `feat/list-courses` (**PR:** #22), `feat/list-grades` (#23), `feat/list-grades-tool` (5b) · **Issue:** #21
+
+**Notes (after the live test, 2026-08-31):** `current_only` was added to
+`list_courses` and defaults to true. `enrollment_state=active` means the
+enrolment is active, not that the term is running, so Canvas returned six
+courses of which three came from terms that ended in 2024 and 2025. The model
+sorted it out from the term names, but only because they happened to carry the
+year — and it should not have had to. Step 6 would have inherited the problem
+as "what is due this week" searching courses from two years ago.
+
+A term with no end date counts as running, and an unparseable date never hides
+a course: erring towards showing too much is the safe direction here.
+
+That change also broke the demo, which is how the fixture's dates were found to
+be stale — every synthetic term had already ended. Fields meaning "this closes
+later" are now dated a year past the base date. That buys roughly a year before
+a captured fixture reads as archived again. The durable fix would be for demo
+mode to shift dates relative to today at load time, which keeps the file
+deterministic and the demo current; not worth it until it bites.
 
 **Notes:** first end-to-end step. Resolve `enrollment_term_id` to a term name
 via `include[]=term` — a bare `417` is useless to a model.
