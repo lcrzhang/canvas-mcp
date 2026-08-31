@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 6 — `list_assignments`**
+Status: **step 7 — sanitizer**
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -372,7 +372,7 @@ The startup line goes to **stderr**. The stdio transport speaks the protocol on
 stdout, so a stray print there corrupts the stream — a failure that looks like
 a broken server rather than a broken print. There is a test for it.
 
-### [ ] 6. `list_assignments`
+### [~] 6. `list_assignments`
 
 **Delivers:** "what is due this week for Datastructuren?" works.
 
@@ -382,6 +382,33 @@ a broken server rather than a broken print. There is a test for it.
 
 **Notes:** `due_at` may be null. `only_upcoming` filters on it; document what
 happens to assignments without a due date rather than dropping them silently.
+
+Done: an assignment with no due date counts as upcoming and is always returned.
+There is no date on which to decide it is over, and hiding work that still has
+to be done is the wrong direction to err in. Same for an unparseable date.
+
+`only_upcoming` defaults to **false**, unlike `current_only` on `list_courses`.
+The difference is what the model has to infer. A finished term could only be
+recognised from a term name; a passed deadline is a date sitting in the output,
+which a model can filter exactly. Nothing is hidden and nothing has to be
+guessed.
+
+`submitted` is None rather than False when the response carried no submission
+object. Claiming "not handed in" on missing information is precisely the
+plausible wrong answer this project exists to avoid.
+
+**Scope question raised here:** `locked_for_user` was true on seven of twelve
+assignments, including ones already submitted. `SCOPE.md` section 5 said a
+locked item does not exist for the tool; applied literally that hides most of
+the deadlines, and a missed deadline is exactly what a student needs to see.
+Section 5 now distinguishes: `hidden_for_user` drops the item, `locked_for_user`
+becomes a field. The original reading still holds for files and modules in step
+10, where locked really does mean the content is off limits.
+
+Captures gained an item key, because the converter names a field after its
+parent and a top-level object has none: an assignment's `name` fell back to the
+course pool, so the demo listed course names where it meant assignments. Same
+defect class as the one the live test surfaced on 2026-08-31, in a new place.
 
 ### [ ] 7. Sanitizer
 

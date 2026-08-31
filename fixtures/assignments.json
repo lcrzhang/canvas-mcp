@@ -1,0 +1,2675 @@
+[
+  {
+    "id": 1,
+    "position": 101,
+    "description": "<p>Synthetic body 1 for description.</p>",
+    "points_possible": 20.0,
+    "grading_type": "points",
+    "created_at": "2026-02-03T09:00:00Z",
+    "updated_at": "2026-02-03T09:00:00Z",
+    "due_at": "2026-02-03T09:00:00Z",
+    "final_grader_id": null,
+    "grader_count": 101,
+    "graders_anonymous_to_graders": false,
+    "grader_comments_visible_to_graders": true,
+    "grader_names_visible_to_final_grader": true,
+    "lock_at": "2027-02-03T09:00:00Z",
+    "unlock_at": null,
+    "assignment_group_id": 1,
+    "peer_reviews": false,
+    "anonymous_peer_reviews": false,
+    "automatic_peer_reviews": false,
+    "intra_group_peer_reviews": false,
+    "post_to_sis": false,
+    "grade_group_students_individually": false,
+    "group_category_id": null,
+    "grading_standard_id": null,
+    "moderated_grading": false,
+    "hide_in_gradebook": false,
+    "omit_from_final_grade": true,
+    "suppress_assignment": false,
+    "anonymous_instructor_annotations": false,
+    "anonymous_grading": false,
+    "allowed_attempts": 101,
+    "annotatable_attachment_id": null,
+    "lock_info": {
+      "lock_at": "2027-02-03T09:00:00Z",
+      "can_view": true,
+      "asset_string": "FIXTURE-asset_string-1"
+    },
+    "secure_params": "FIXTURE-secure_params-1",
+    "lti_context_id": "FIXTUREuuid0000000000000000000001",
+    "course_id": 1,
+    "name": "Lab report",
+    "submission_types": [
+      "online_text_entry",
+      "online_upload"
+    ],
+    "has_submitted_submissions": true,
+    "due_date_required": false,
+    "max_name_length": 101,
+    "in_closed_grading_period": false,
+    "availability_status": {
+      "status": "FIXTURE-status-1",
+      "date": null
+    },
+    "graded_submissions_exist": true,
+    "is_quiz_assignment": false,
+    "can_duplicate": true,
+    "original_course_id": null,
+    "original_assignment_id": null,
+    "original_lti_resource_link_id": null,
+    "original_assignment_name": null,
+    "original_quiz_id": null,
+    "workflow_state": "published",
+    "important_dates": false,
+    "muted": true,
+    "html_url": "https://canvas.example.edu/api/v1/html_url/1",
+    "published": true,
+    "only_visible_to_overrides": false,
+    "visible_to_everyone": true,
+    "submission": {
+      "id": 1,
+      "user_id": 1,
+      "url": null,
+      "score": null,
+      "grade": null,
+      "excused": null,
+      "attempt": null,
+      "submission_type": null,
+      "submitted_at": null,
+      "body": null,
+      "assignment_id": 1,
+      "graded_at": null,
+      "grade_matches_current_submission": true,
+      "grader_id": null,
+      "workflow_state": "unsubmitted",
+      "late_policy_status": null,
+      "points_deducted": null,
+      "grading_period_id": null,
+      "cached_due_date": "2027-02-03T09:00:00Z",
+      "extra_attempts": null,
+      "posted_at": null,
+      "redo_request": false,
+      "sticker": null,
+      "custom_grade_status_id": null,
+      "late": false,
+      "missing": true,
+      "seconds_late": 101,
+      "entered_grade": null,
+      "entered_score": null,
+      "preview_url": "https://canvas.example.edu/api/v1/preview_url/1"
+    },
+    "locked_for_user": true,
+    "lock_explanation": "FIXTURE-lock_explanation-1",
+    "submissions_download_url": "https://canvas.example.edu/api/v1/submissions_download_url/1",
+    "post_manually": false,
+    "anonymize_students": false,
+    "new_quizzes_anonymous_participants": false,
+    "require_lockdown_browser": false,
+    "restrict_quantitative_data": false
+  },
+  {
+    "id": 2,
+    "position": 102,
+    "description": "<p>Synthetic body 2 for description.</p>",
+    "points_possible": 25.0,
+    "grading_type": "points",
+    "created_at": "2026-02-04T09:00:00Z",
+    "updated_at": "2026-02-04T09:00:00Z",
+    "due_at": "2026-02-04T09:00:00Z",
+    "final_grader_id": null,
+    "grader_count": 102,
+    "graders_anonymous_to_graders": false,
+    "grader_comments_visible_to_graders": true,
+    "grader_names_visible_to_final_grader": true,
+    "lock_at": "2027-02-04T09:00:00Z",
+    "unlock_at": "2027-02-03T09:00:00Z",
+    "assignment_group_id": 2,
+    "peer_reviews": false,
+    "anonymous_peer_reviews": false,
+    "automatic_peer_reviews": false,
+    "intra_group_peer_reviews": false,
+    "post_to_sis": false,
+    "grade_group_students_individually": false,
+    "group_category_id": null,
+    "grading_standard_id": null,
+    "moderated_grading": false,
+    "hide_in_gradebook": false,
+    "omit_from_final_grade": false,
+    "suppress_assignment": false,
+    "anonymous_instructor_annotations": false,
+    "anonymous_grading": false,
+    "allowed_attempts": 102,
+    "annotatable_attachment_id": null,
+    "lock_info": {
+      "lock_at": "2027-02-04T09:00:00Z",
+      "can_view": true,
+      "asset_string": "FIXTURE-asset_string-2"
+    },
+    "secure_params": "FIXTURE-secure_params-2",
+    "lti_context_id": "FIXTUREuuid0000000000000000000002",
+    "course_id": 2,
+    "name": "Midterm essay",
+    "submission_types": [
+      "online_upload"
+    ],
+    "has_submitted_submissions": true,
+    "due_date_required": false,
+    "max_name_length": 102,
+    "in_closed_grading_period": false,
+    "availability_status": {
+      "status": "FIXTURE-status-2",
+      "date": null
+    },
+    "graded_submissions_exist": true,
+    "is_quiz_assignment": false,
+    "can_duplicate": true,
+    "original_course_id": null,
+    "original_assignment_id": null,
+    "original_lti_resource_link_id": null,
+    "original_assignment_name": null,
+    "original_quiz_id": null,
+    "workflow_state": "published",
+    "important_dates": false,
+    "muted": true,
+    "html_url": "https://canvas.example.edu/api/v1/html_url/2",
+    "allowed_extensions": [
+      "FIXTURE-allowed_extensions-1",
+      "FIXTURE-allowed_extensions-2"
+    ],
+    "use_rubric_for_grading": true,
+    "free_form_criterion_comments": false,
+    "rubric": [
+      {
+        "id": "FIXTURE-id-1",
+        "points": 10.0,
+        "description": "FIXTURE-description-1",
+        "long_description": "FIXTURE-long_description-1",
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-1",
+            "points": 10.0,
+            "description": "FIXTURE-description-1",
+            "long_description": "FIXTURE-long_description-1"
+          },
+          {
+            "id": "FIXTURE-id-2",
+            "points": 20.0,
+            "description": "FIXTURE-description-2",
+            "long_description": "FIXTURE-long_description-2"
+          },
+          {
+            "id": "FIXTURE-id-3",
+            "points": 30.0,
+            "description": "FIXTURE-description-3",
+            "long_description": "FIXTURE-long_description-3"
+          },
+          {
+            "id": "FIXTURE-id-4",
+            "points": 40.0,
+            "description": "FIXTURE-description-4",
+            "long_description": "FIXTURE-long_description-4"
+          },
+          {
+            "id": "FIXTURE-id-5",
+            "points": 50.0,
+            "description": "FIXTURE-description-5",
+            "long_description": "FIXTURE-long_description-5"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-2",
+        "points": 20.0,
+        "description": "FIXTURE-description-2",
+        "long_description": "FIXTURE-long_description-2",
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-6",
+            "points": 60.0,
+            "description": "FIXTURE-description-6",
+            "long_description": "FIXTURE-long_description-6"
+          },
+          {
+            "id": "FIXTURE-id-7",
+            "points": 70.0,
+            "description": "FIXTURE-description-7",
+            "long_description": "FIXTURE-long_description-7"
+          },
+          {
+            "id": "FIXTURE-id-8",
+            "points": 80.0,
+            "description": "FIXTURE-description-8",
+            "long_description": "FIXTURE-long_description-8"
+          },
+          {
+            "id": "FIXTURE-id-9",
+            "points": 90.0,
+            "description": "FIXTURE-description-9",
+            "long_description": "FIXTURE-long_description-9"
+          },
+          {
+            "id": "FIXTURE-id-10",
+            "points": 100.0,
+            "description": "FIXTURE-description-10",
+            "long_description": "FIXTURE-long_description-10"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-3",
+        "points": 30.0,
+        "description": "FIXTURE-description-3",
+        "long_description": "FIXTURE-long_description-3",
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-11",
+            "points": 110.0,
+            "description": "FIXTURE-description-11",
+            "long_description": "FIXTURE-long_description-11"
+          },
+          {
+            "id": "FIXTURE-id-12",
+            "points": 120.0,
+            "description": "FIXTURE-description-12",
+            "long_description": "FIXTURE-long_description-12"
+          },
+          {
+            "id": "FIXTURE-id-13",
+            "points": 130.0,
+            "description": "FIXTURE-description-13",
+            "long_description": "FIXTURE-long_description-13"
+          },
+          {
+            "id": "FIXTURE-id-14",
+            "points": 140.0,
+            "description": "FIXTURE-description-14",
+            "long_description": "FIXTURE-long_description-14"
+          },
+          {
+            "id": "FIXTURE-id-15",
+            "points": 150.0,
+            "description": "FIXTURE-description-15",
+            "long_description": "FIXTURE-long_description-15"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-4",
+        "points": 40.0,
+        "description": "FIXTURE-description-4",
+        "long_description": "FIXTURE-long_description-4",
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-16",
+            "points": 160.0,
+            "description": "FIXTURE-description-16",
+            "long_description": "FIXTURE-long_description-16"
+          },
+          {
+            "id": "FIXTURE-id-17",
+            "points": 170.0,
+            "description": "FIXTURE-description-17",
+            "long_description": "FIXTURE-long_description-17"
+          },
+          {
+            "id": "FIXTURE-id-18",
+            "points": 180.0,
+            "description": "FIXTURE-description-18",
+            "long_description": "FIXTURE-long_description-18"
+          }
+        ]
+      }
+    ],
+    "rubric_settings": {
+      "id": 1,
+      "title": "FIXTURE-title-1",
+      "points_possible": 20.0,
+      "free_form_criterion_comments": false,
+      "hide_score_total": false,
+      "hide_points": false
+    },
+    "published": true,
+    "only_visible_to_overrides": false,
+    "visible_to_everyone": true,
+    "submission": {
+      "id": 2,
+      "user_id": 2,
+      "url": null,
+      "score": 7.0,
+      "grade": "A-",
+      "excused": false,
+      "attempt": 101,
+      "submission_type": "FIXTURE-submission_type-1",
+      "submitted_at": "2026-02-03T09:00:00Z",
+      "body": null,
+      "assignment_id": 2,
+      "graded_at": "2026-02-03T09:00:00Z",
+      "grade_matches_current_submission": true,
+      "grader_id": 1,
+      "workflow_state": "graded",
+      "late_policy_status": null,
+      "points_deducted": null,
+      "grading_period_id": null,
+      "cached_due_date": "2027-02-04T09:00:00Z",
+      "extra_attempts": null,
+      "posted_at": "2026-02-03T09:00:00Z",
+      "redo_request": false,
+      "sticker": null,
+      "custom_grade_status_id": null,
+      "late": false,
+      "missing": false,
+      "seconds_late": 102,
+      "entered_grade": "A-",
+      "entered_score": 7.0,
+      "preview_url": "https://canvas.example.edu/api/v1/preview_url/2",
+      "attachments": [
+        {
+          "id": 1,
+          "folder_id": 1,
+          "display_name": "Sam Verzonnen",
+          "filename": "FIXTURE-filename-1",
+          "uuid": "FIXTUREuuid0000000000000000000001",
+          "upload_status": "FIXTURE-upload_status-1",
+          "content-type": "FIXTURE-content-type-1",
+          "url": "https://canvas.example.edu/files/1/download?download_frd=1&verifier=FIXTURE01",
+          "size": 101,
+          "created_at": "2026-02-03T09:00:00Z",
+          "updated_at": "2026-02-03T09:00:00Z",
+          "unlock_at": null,
+          "locked": false,
+          "hidden": false,
+          "lock_at": null,
+          "hidden_for_user": false,
+          "thumbnail_url": null,
+          "modified_at": "2026-02-03T09:00:00Z",
+          "mime_class": "FIXTURE-mime_class-1",
+          "media_entry_id": null,
+          "category": "FIXTURE-category-1",
+          "locked_for_user": false,
+          "preview_url": "FIXTURE-preview_url-1"
+        },
+        {
+          "id": 2,
+          "folder_id": 2,
+          "display_name": "Kim Bedacht",
+          "filename": "FIXTURE-filename-2",
+          "uuid": "FIXTUREuuid0000000000000000000002",
+          "upload_status": "FIXTURE-upload_status-2",
+          "content-type": "FIXTURE-content-type-2",
+          "url": "https://canvas.example.edu/files/2/download?download_frd=1&verifier=FIXTURE02",
+          "size": 102,
+          "created_at": "2026-02-04T09:00:00Z",
+          "updated_at": "2026-02-04T09:00:00Z",
+          "unlock_at": null,
+          "locked": false,
+          "hidden": false,
+          "lock_at": null,
+          "hidden_for_user": false,
+          "thumbnail_url": null,
+          "modified_at": "2026-02-04T09:00:00Z",
+          "mime_class": "FIXTURE-mime_class-2",
+          "media_entry_id": null,
+          "category": "FIXTURE-category-2",
+          "locked_for_user": false,
+          "preview_url": "FIXTURE-preview_url-2"
+        }
+      ]
+    },
+    "locked_for_user": true,
+    "lock_explanation": "FIXTURE-lock_explanation-2",
+    "submissions_download_url": "https://canvas.example.edu/api/v1/submissions_download_url/2",
+    "post_manually": true,
+    "anonymize_students": false,
+    "new_quizzes_anonymous_participants": false,
+    "require_lockdown_browser": false,
+    "restrict_quantitative_data": false
+  },
+  {
+    "id": 3,
+    "position": 103,
+    "description": "<p>Synthetic body 3 for description.</p>",
+    "points_possible": 50.0,
+    "grading_type": "points",
+    "created_at": "2026-02-05T09:00:00Z",
+    "updated_at": "2026-02-05T09:00:00Z",
+    "due_at": "2026-02-05T09:00:00Z",
+    "final_grader_id": null,
+    "grader_count": 103,
+    "graders_anonymous_to_graders": false,
+    "grader_comments_visible_to_graders": true,
+    "grader_names_visible_to_final_grader": true,
+    "lock_at": "2027-02-05T09:00:00Z",
+    "unlock_at": "2027-02-04T09:00:00Z",
+    "assignment_group_id": 3,
+    "peer_reviews": false,
+    "anonymous_peer_reviews": false,
+    "automatic_peer_reviews": false,
+    "intra_group_peer_reviews": false,
+    "post_to_sis": false,
+    "grade_group_students_individually": false,
+    "group_category_id": null,
+    "grading_standard_id": null,
+    "moderated_grading": false,
+    "hide_in_gradebook": false,
+    "omit_from_final_grade": true,
+    "suppress_assignment": false,
+    "anonymous_instructor_annotations": false,
+    "anonymous_grading": false,
+    "allowed_attempts": 103,
+    "annotatable_attachment_id": null,
+    "lock_info": {
+      "lock_at": "2027-02-05T09:00:00Z",
+      "can_view": true,
+      "asset_string": "FIXTURE-asset_string-3"
+    },
+    "secure_params": "FIXTURE-secure_params-3",
+    "lti_context_id": "FIXTUREuuid0000000000000000000003",
+    "course_id": 3,
+    "name": "Group project",
+    "submission_types": [
+      "online_text_entry",
+      "online_upload"
+    ],
+    "has_submitted_submissions": true,
+    "due_date_required": false,
+    "max_name_length": 103,
+    "in_closed_grading_period": false,
+    "availability_status": {
+      "status": "FIXTURE-status-3",
+      "date": null
+    },
+    "graded_submissions_exist": true,
+    "is_quiz_assignment": false,
+    "can_duplicate": true,
+    "original_course_id": null,
+    "original_assignment_id": null,
+    "original_lti_resource_link_id": null,
+    "original_assignment_name": null,
+    "original_quiz_id": null,
+    "workflow_state": "published",
+    "important_dates": false,
+    "muted": true,
+    "html_url": "https://canvas.example.edu/api/v1/html_url/3",
+    "published": true,
+    "only_visible_to_overrides": false,
+    "visible_to_everyone": true,
+    "submission": {
+      "id": 3,
+      "user_id": 3,
+      "url": null,
+      "score": null,
+      "grade": null,
+      "excused": null,
+      "attempt": 102,
+      "submission_type": "FIXTURE-submission_type-2",
+      "submitted_at": "2026-02-04T09:00:00Z",
+      "body": "<p>Synthetic body 1 for body.</p>",
+      "assignment_id": 3,
+      "graded_at": null,
+      "grade_matches_current_submission": true,
+      "grader_id": null,
+      "workflow_state": "submitted",
+      "late_policy_status": null,
+      "points_deducted": null,
+      "grading_period_id": null,
+      "cached_due_date": "2027-02-05T09:00:00Z",
+      "extra_attempts": null,
+      "posted_at": null,
+      "redo_request": false,
+      "sticker": null,
+      "custom_grade_status_id": null,
+      "late": false,
+      "missing": false,
+      "seconds_late": 103,
+      "entered_grade": null,
+      "entered_score": null,
+      "preview_url": "https://canvas.example.edu/api/v1/preview_url/3"
+    },
+    "locked_for_user": true,
+    "lock_explanation": "FIXTURE-lock_explanation-3",
+    "submissions_download_url": "https://canvas.example.edu/api/v1/submissions_download_url/3",
+    "post_manually": false,
+    "anonymize_students": false,
+    "new_quizzes_anonymous_participants": false,
+    "require_lockdown_browser": false,
+    "restrict_quantitative_data": false
+  },
+  {
+    "id": 4,
+    "position": 104,
+    "description": "<p>Synthetic body 4 for description.</p>",
+    "points_possible": 100.0,
+    "grading_type": "pass_fail",
+    "created_at": "2026-02-06T09:00:00Z",
+    "updated_at": "2026-02-06T09:00:00Z",
+    "due_at": "2026-02-06T09:00:00Z",
+    "final_grader_id": null,
+    "grader_count": 104,
+    "graders_anonymous_to_graders": false,
+    "grader_comments_visible_to_graders": true,
+    "grader_names_visible_to_final_grader": true,
+    "lock_at": "2027-02-06T09:00:00Z",
+    "unlock_at": "2027-02-05T09:00:00Z",
+    "assignment_group_id": 4,
+    "peer_reviews": false,
+    "anonymous_peer_reviews": false,
+    "automatic_peer_reviews": false,
+    "intra_group_peer_reviews": false,
+    "post_to_sis": false,
+    "grade_group_students_individually": false,
+    "group_category_id": 1,
+    "grading_standard_id": null,
+    "moderated_grading": false,
+    "hide_in_gradebook": false,
+    "omit_from_final_grade": true,
+    "suppress_assignment": false,
+    "anonymous_instructor_annotations": false,
+    "anonymous_grading": false,
+    "allowed_attempts": 104,
+    "annotatable_attachment_id": null,
+    "lock_info": {
+      "lock_at": "2027-02-06T09:00:00Z",
+      "can_view": true,
+      "asset_string": "FIXTURE-asset_string-4"
+    },
+    "secure_params": "FIXTURE-secure_params-4",
+    "lti_context_id": "FIXTUREuuid0000000000000000000004",
+    "course_id": 4,
+    "name": "Reading response",
+    "submission_types": [
+      "online_text_entry"
+    ],
+    "has_submitted_submissions": true,
+    "due_date_required": false,
+    "max_name_length": 104,
+    "in_closed_grading_period": false,
+    "availability_status": {
+      "status": "FIXTURE-status-4",
+      "date": null
+    },
+    "graded_submissions_exist": true,
+    "is_quiz_assignment": false,
+    "can_duplicate": true,
+    "original_course_id": null,
+    "original_assignment_id": null,
+    "original_lti_resource_link_id": null,
+    "original_assignment_name": null,
+    "original_quiz_id": null,
+    "workflow_state": "published",
+    "important_dates": false,
+    "muted": true,
+    "html_url": "https://canvas.example.edu/api/v1/html_url/4",
+    "published": true,
+    "only_visible_to_overrides": false,
+    "visible_to_everyone": true,
+    "submission": {
+      "id": 4,
+      "user_id": 4,
+      "url": null,
+      "score": 8.0,
+      "grade": "B+",
+      "excused": false,
+      "attempt": 103,
+      "submission_type": "FIXTURE-submission_type-3",
+      "submitted_at": "2026-02-05T09:00:00Z",
+      "body": "<p>Synthetic body 2 for body.</p>",
+      "assignment_id": 4,
+      "graded_at": "2026-02-04T09:00:00Z",
+      "grade_matches_current_submission": true,
+      "grader_id": 2,
+      "workflow_state": "graded",
+      "late_policy_status": null,
+      "points_deducted": null,
+      "grading_period_id": null,
+      "cached_due_date": "2027-02-06T09:00:00Z",
+      "extra_attempts": null,
+      "posted_at": "2026-02-04T09:00:00Z",
+      "redo_request": false,
+      "sticker": null,
+      "custom_grade_status_id": null,
+      "late": false,
+      "missing": false,
+      "seconds_late": 104,
+      "entered_grade": "B+",
+      "entered_score": 8.0,
+      "preview_url": "https://canvas.example.edu/api/v1/preview_url/4"
+    },
+    "locked_for_user": true,
+    "lock_explanation": "FIXTURE-lock_explanation-4",
+    "submissions_download_url": "https://canvas.example.edu/api/v1/submissions_download_url/4",
+    "post_manually": false,
+    "anonymize_students": false,
+    "new_quizzes_anonymous_participants": false,
+    "require_lockdown_browser": false,
+    "restrict_quantitative_data": false
+  },
+  {
+    "id": 5,
+    "position": 105,
+    "description": "<p>Synthetic body 5 for description.</p>",
+    "points_possible": 10.0,
+    "grading_type": "points",
+    "created_at": "2026-02-07T09:00:00Z",
+    "updated_at": "2026-02-07T09:00:00Z",
+    "due_at": "2026-02-07T09:00:00Z",
+    "final_grader_id": null,
+    "grader_count": 105,
+    "graders_anonymous_to_graders": false,
+    "grader_comments_visible_to_graders": true,
+    "grader_names_visible_to_final_grader": true,
+    "lock_at": "2027-02-07T09:00:00Z",
+    "unlock_at": "2027-02-06T09:00:00Z",
+    "assignment_group_id": 5,
+    "peer_reviews": true,
+    "anonymous_peer_reviews": true,
+    "automatic_peer_reviews": false,
+    "intra_group_peer_reviews": false,
+    "post_to_sis": false,
+    "grade_group_students_individually": false,
+    "group_category_id": 2,
+    "grading_standard_id": null,
+    "moderated_grading": false,
+    "hide_in_gradebook": false,
+    "omit_from_final_grade": false,
+    "suppress_assignment": false,
+    "anonymous_instructor_annotations": false,
+    "anonymous_grading": false,
+    "allowed_attempts": 105,
+    "annotatable_attachment_id": null,
+    "lock_info": {
+      "lock_at": "2027-02-07T09:00:00Z",
+      "can_view": true,
+      "asset_string": "FIXTURE-asset_string-5"
+    },
+    "secure_params": "FIXTURE-secure_params-5",
+    "lti_context_id": "FIXTUREuuid0000000000000000000005",
+    "course_id": 5,
+    "name": "Problem set 4",
+    "submission_types": [
+      "online_upload"
+    ],
+    "has_submitted_submissions": true,
+    "due_date_required": false,
+    "max_name_length": 105,
+    "in_closed_grading_period": false,
+    "availability_status": {
+      "status": "FIXTURE-status-5",
+      "date": null
+    },
+    "graded_submissions_exist": true,
+    "is_quiz_assignment": false,
+    "can_duplicate": true,
+    "original_course_id": null,
+    "original_assignment_id": null,
+    "original_lti_resource_link_id": null,
+    "original_assignment_name": null,
+    "original_quiz_id": null,
+    "workflow_state": "published",
+    "important_dates": false,
+    "muted": true,
+    "html_url": "https://canvas.example.edu/api/v1/html_url/5",
+    "use_rubric_for_grading": false,
+    "free_form_criterion_comments": false,
+    "rubric": [
+      {
+        "id": "FIXTURE-id-5",
+        "points": 50.0,
+        "description": "FIXTURE-description-5",
+        "long_description": null,
+        "ignore_for_scoring": null,
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-19",
+            "points": 190.0,
+            "description": "FIXTURE-description-19",
+            "long_description": "FIXTURE-long_description-19"
+          },
+          {
+            "id": "FIXTURE-id-20",
+            "points": 200.0,
+            "description": "FIXTURE-description-20",
+            "long_description": "FIXTURE-long_description-20"
+          },
+          {
+            "id": "FIXTURE-id-21",
+            "points": 210.0,
+            "description": "FIXTURE-description-21",
+            "long_description": "FIXTURE-long_description-21"
+          },
+          {
+            "id": "FIXTURE-id-22",
+            "points": 220.0,
+            "description": "FIXTURE-description-22",
+            "long_description": "FIXTURE-long_description-22"
+          },
+          {
+            "id": "FIXTURE-id-23",
+            "points": 230.0,
+            "description": "FIXTURE-description-23",
+            "long_description": "FIXTURE-long_description-23"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-6",
+        "points": 60.0,
+        "description": "FIXTURE-description-6",
+        "long_description": null,
+        "ignore_for_scoring": null,
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-24",
+            "points": 240.0,
+            "description": "FIXTURE-description-24",
+            "long_description": "FIXTURE-long_description-24"
+          },
+          {
+            "id": "FIXTURE-id-25",
+            "points": 250.0,
+            "description": "FIXTURE-description-25",
+            "long_description": "FIXTURE-long_description-25"
+          },
+          {
+            "id": "FIXTURE-id-26",
+            "points": 260.0,
+            "description": "FIXTURE-description-26",
+            "long_description": "FIXTURE-long_description-26"
+          },
+          {
+            "id": "FIXTURE-id-27",
+            "points": 270.0,
+            "description": "FIXTURE-description-27",
+            "long_description": "FIXTURE-long_description-27"
+          },
+          {
+            "id": "FIXTURE-id-28",
+            "points": 280.0,
+            "description": "FIXTURE-description-28",
+            "long_description": "FIXTURE-long_description-28"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-7",
+        "points": 70.0,
+        "description": "FIXTURE-description-7",
+        "long_description": null,
+        "ignore_for_scoring": null,
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-29",
+            "points": 290.0,
+            "description": "FIXTURE-description-29",
+            "long_description": "FIXTURE-long_description-29"
+          },
+          {
+            "id": "FIXTURE-id-30",
+            "points": 300.0,
+            "description": "FIXTURE-description-30",
+            "long_description": "FIXTURE-long_description-30"
+          },
+          {
+            "id": "FIXTURE-id-31",
+            "points": 310.0,
+            "description": "FIXTURE-description-31",
+            "long_description": "FIXTURE-long_description-31"
+          },
+          {
+            "id": "FIXTURE-id-32",
+            "points": 320.0,
+            "description": "FIXTURE-description-32",
+            "long_description": "FIXTURE-long_description-32"
+          },
+          {
+            "id": "FIXTURE-id-33",
+            "points": 330.0,
+            "description": "FIXTURE-description-33",
+            "long_description": "FIXTURE-long_description-33"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-8",
+        "points": 80.0,
+        "description": "FIXTURE-description-8",
+        "long_description": null,
+        "ignore_for_scoring": null,
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-34",
+            "points": 340.0,
+            "description": "FIXTURE-description-34",
+            "long_description": "FIXTURE-long_description-34"
+          },
+          {
+            "id": "FIXTURE-id-35",
+            "points": 350.0,
+            "description": "FIXTURE-description-35",
+            "long_description": "FIXTURE-long_description-35"
+          },
+          {
+            "id": "FIXTURE-id-36",
+            "points": 360.0,
+            "description": "FIXTURE-description-36",
+            "long_description": "FIXTURE-long_description-36"
+          },
+          {
+            "id": "FIXTURE-id-37",
+            "points": 370.0,
+            "description": "FIXTURE-description-37",
+            "long_description": "FIXTURE-long_description-37"
+          },
+          {
+            "id": "FIXTURE-id-38",
+            "points": 380.0,
+            "description": "FIXTURE-description-38",
+            "long_description": "FIXTURE-long_description-38"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-9",
+        "points": 90.0,
+        "description": "FIXTURE-description-9",
+        "long_description": null,
+        "ignore_for_scoring": null,
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-39",
+            "points": 390.0,
+            "description": "FIXTURE-description-39",
+            "long_description": "FIXTURE-long_description-39"
+          },
+          {
+            "id": "FIXTURE-id-40",
+            "points": 400.0,
+            "description": "FIXTURE-description-40",
+            "long_description": "FIXTURE-long_description-40"
+          },
+          {
+            "id": "FIXTURE-id-41",
+            "points": 410.0,
+            "description": "FIXTURE-description-41",
+            "long_description": "FIXTURE-long_description-41"
+          },
+          {
+            "id": "FIXTURE-id-42",
+            "points": 420.0,
+            "description": "FIXTURE-description-42",
+            "long_description": "FIXTURE-long_description-42"
+          },
+          {
+            "id": "FIXTURE-id-43",
+            "points": 430.0,
+            "description": "FIXTURE-description-43",
+            "long_description": "FIXTURE-long_description-43"
+          }
+        ]
+      }
+    ],
+    "rubric_settings": {
+      "id": 2,
+      "title": "FIXTURE-title-2",
+      "points_possible": 25.0,
+      "free_form_criterion_comments": false,
+      "hide_score_total": false,
+      "hide_points": false
+    },
+    "published": true,
+    "only_visible_to_overrides": false,
+    "visible_to_everyone": true,
+    "submission": {
+      "id": 5,
+      "user_id": 5,
+      "url": null,
+      "score": null,
+      "grade": null,
+      "excused": null,
+      "attempt": 104,
+      "submission_type": "FIXTURE-submission_type-4",
+      "submitted_at": "2026-02-06T09:00:00Z",
+      "body": null,
+      "assignment_id": 5,
+      "graded_at": null,
+      "grade_matches_current_submission": true,
+      "grader_id": null,
+      "workflow_state": "submitted",
+      "late_policy_status": null,
+      "points_deducted": null,
+      "grading_period_id": null,
+      "cached_due_date": "2027-02-07T09:00:00Z",
+      "extra_attempts": null,
+      "posted_at": null,
+      "redo_request": false,
+      "sticker": null,
+      "custom_grade_status_id": null,
+      "late": false,
+      "missing": false,
+      "seconds_late": 105,
+      "entered_grade": null,
+      "entered_score": null,
+      "preview_url": "https://canvas.example.edu/api/v1/preview_url/5",
+      "attachments": [
+        {
+          "id": 3,
+          "folder_id": 3,
+          "display_name": "Alex Voorbeeld",
+          "filename": "FIXTURE-filename-3",
+          "upload_status": "FIXTURE-upload_status-3",
+          "content-type": "FIXTURE-content-type-3",
+          "url": "https://canvas.example.edu/files/3/download?download_frd=1&verifier=FIXTURE03",
+          "size": 103,
+          "created_at": "2026-02-05T09:00:00Z",
+          "updated_at": "2026-02-05T09:00:00Z",
+          "unlock_at": null,
+          "locked": false,
+          "hidden": false,
+          "lock_at": null,
+          "hidden_for_user": false,
+          "thumbnail_url": null,
+          "modified_at": "2026-02-05T09:00:00Z",
+          "mime_class": "FIXTURE-mime_class-3",
+          "media_entry_id": null,
+          "category": "FIXTURE-category-3",
+          "locked_for_user": false,
+          "preview_url": "FIXTURE-preview_url-3"
+        }
+      ]
+    },
+    "locked_for_user": true,
+    "lock_explanation": "FIXTURE-lock_explanation-5",
+    "submissions_download_url": "https://canvas.example.edu/api/v1/submissions_download_url/5",
+    "post_manually": false,
+    "anonymize_students": false,
+    "new_quizzes_anonymous_participants": false,
+    "require_lockdown_browser": false,
+    "restrict_quantitative_data": false
+  },
+  {
+    "id": 6,
+    "position": 106,
+    "description": "<p>Synthetic body 6 for description.</p>",
+    "points_possible": 20.0,
+    "grading_type": "points",
+    "created_at": "2026-02-08T09:00:00Z",
+    "updated_at": "2026-02-08T09:00:00Z",
+    "due_at": "2026-02-08T09:00:00Z",
+    "final_grader_id": null,
+    "grader_count": 106,
+    "graders_anonymous_to_graders": false,
+    "grader_comments_visible_to_graders": true,
+    "grader_names_visible_to_final_grader": true,
+    "lock_at": "2027-02-08T09:00:00Z",
+    "unlock_at": "2027-02-07T09:00:00Z",
+    "assignment_group_id": 6,
+    "peer_reviews": false,
+    "anonymous_peer_reviews": false,
+    "automatic_peer_reviews": false,
+    "intra_group_peer_reviews": false,
+    "post_to_sis": false,
+    "grade_group_students_individually": false,
+    "group_category_id": 3,
+    "grading_standard_id": null,
+    "moderated_grading": false,
+    "hide_in_gradebook": false,
+    "omit_from_final_grade": false,
+    "suppress_assignment": false,
+    "anonymous_instructor_annotations": false,
+    "anonymous_grading": false,
+    "allowed_attempts": 106,
+    "annotatable_attachment_id": null,
+    "lock_info": {
+      "lock_at": "2027-02-08T09:00:00Z",
+      "can_view": true,
+      "asset_string": "FIXTURE-asset_string-6"
+    },
+    "secure_params": "FIXTURE-secure_params-6",
+    "lti_context_id": "FIXTUREuuid0000000000000000000006",
+    "course_id": 6,
+    "name": "Final assignment",
+    "submission_types": [
+      "online_upload"
+    ],
+    "has_submitted_submissions": true,
+    "due_date_required": false,
+    "max_name_length": 106,
+    "in_closed_grading_period": false,
+    "availability_status": {
+      "status": "FIXTURE-status-6",
+      "date": null
+    },
+    "graded_submissions_exist": true,
+    "is_quiz_assignment": false,
+    "can_duplicate": true,
+    "original_course_id": null,
+    "original_assignment_id": null,
+    "original_lti_resource_link_id": null,
+    "original_assignment_name": null,
+    "original_quiz_id": null,
+    "workflow_state": "published",
+    "important_dates": false,
+    "muted": true,
+    "html_url": "https://canvas.example.edu/api/v1/html_url/6",
+    "use_rubric_for_grading": false,
+    "free_form_criterion_comments": false,
+    "rubric": [
+      {
+        "id": "FIXTURE-id-10",
+        "points": 100.0,
+        "description": "FIXTURE-description-10",
+        "long_description": null,
+        "ignore_for_scoring": null,
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-44",
+            "points": 440.0,
+            "description": "FIXTURE-description-44",
+            "long_description": "FIXTURE-long_description-44"
+          },
+          {
+            "id": "FIXTURE-id-45",
+            "points": 450.0,
+            "description": "FIXTURE-description-45",
+            "long_description": "FIXTURE-long_description-45"
+          },
+          {
+            "id": "FIXTURE-id-46",
+            "points": 460.0,
+            "description": "FIXTURE-description-46",
+            "long_description": "FIXTURE-long_description-46"
+          },
+          {
+            "id": "FIXTURE-id-47",
+            "points": 470.0,
+            "description": "FIXTURE-description-47",
+            "long_description": "FIXTURE-long_description-47"
+          },
+          {
+            "id": "FIXTURE-id-48",
+            "points": 480.0,
+            "description": "FIXTURE-description-48",
+            "long_description": "FIXTURE-long_description-48"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-11",
+        "points": 110.0,
+        "description": "FIXTURE-description-11",
+        "long_description": null,
+        "ignore_for_scoring": null,
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-49",
+            "points": 490.0,
+            "description": "FIXTURE-description-49",
+            "long_description": "FIXTURE-long_description-49"
+          },
+          {
+            "id": "FIXTURE-id-50",
+            "points": 500.0,
+            "description": "FIXTURE-description-50",
+            "long_description": "FIXTURE-long_description-50"
+          },
+          {
+            "id": "FIXTURE-id-51",
+            "points": 510.0,
+            "description": "FIXTURE-description-51",
+            "long_description": "FIXTURE-long_description-51"
+          },
+          {
+            "id": "FIXTURE-id-52",
+            "points": 520.0,
+            "description": "FIXTURE-description-52",
+            "long_description": "FIXTURE-long_description-52"
+          },
+          {
+            "id": "FIXTURE-id-53",
+            "points": 530.0,
+            "description": "FIXTURE-description-53",
+            "long_description": "FIXTURE-long_description-53"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-12",
+        "points": 120.0,
+        "description": "FIXTURE-description-12",
+        "long_description": null,
+        "ignore_for_scoring": null,
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-54",
+            "points": 540.0,
+            "description": "FIXTURE-description-54",
+            "long_description": "FIXTURE-long_description-54"
+          },
+          {
+            "id": "FIXTURE-id-55",
+            "points": 550.0,
+            "description": "FIXTURE-description-55",
+            "long_description": "FIXTURE-long_description-55"
+          },
+          {
+            "id": "FIXTURE-id-56",
+            "points": 560.0,
+            "description": "FIXTURE-description-56",
+            "long_description": "FIXTURE-long_description-56"
+          },
+          {
+            "id": "FIXTURE-id-57",
+            "points": 570.0,
+            "description": "FIXTURE-description-57",
+            "long_description": "FIXTURE-long_description-57"
+          },
+          {
+            "id": "FIXTURE-id-58",
+            "points": 580.0,
+            "description": "FIXTURE-description-58",
+            "long_description": "FIXTURE-long_description-58"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-13",
+        "points": 130.0,
+        "description": "FIXTURE-description-13",
+        "long_description": null,
+        "ignore_for_scoring": null,
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-59",
+            "points": 590.0,
+            "description": "FIXTURE-description-59",
+            "long_description": "FIXTURE-long_description-59"
+          },
+          {
+            "id": "FIXTURE-id-60",
+            "points": 600.0,
+            "description": "FIXTURE-description-60",
+            "long_description": "FIXTURE-long_description-60"
+          },
+          {
+            "id": "FIXTURE-id-61",
+            "points": 610.0,
+            "description": "FIXTURE-description-61",
+            "long_description": "FIXTURE-long_description-61"
+          },
+          {
+            "id": "FIXTURE-id-62",
+            "points": 620.0,
+            "description": "FIXTURE-description-62",
+            "long_description": "FIXTURE-long_description-62"
+          },
+          {
+            "id": "FIXTURE-id-63",
+            "points": 630.0,
+            "description": "FIXTURE-description-63",
+            "long_description": "FIXTURE-long_description-63"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-14",
+        "points": 140.0,
+        "description": "FIXTURE-description-14",
+        "long_description": null,
+        "ignore_for_scoring": null,
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-64",
+            "points": 640.0,
+            "description": "FIXTURE-description-64",
+            "long_description": "FIXTURE-long_description-64"
+          },
+          {
+            "id": "FIXTURE-id-65",
+            "points": 650.0,
+            "description": "FIXTURE-description-65",
+            "long_description": "FIXTURE-long_description-65"
+          },
+          {
+            "id": "FIXTURE-id-66",
+            "points": 660.0,
+            "description": "FIXTURE-description-66",
+            "long_description": "FIXTURE-long_description-66"
+          },
+          {
+            "id": "FIXTURE-id-67",
+            "points": 670.0,
+            "description": "FIXTURE-description-67",
+            "long_description": "FIXTURE-long_description-67"
+          },
+          {
+            "id": "FIXTURE-id-68",
+            "points": 680.0,
+            "description": "FIXTURE-description-68",
+            "long_description": "FIXTURE-long_description-68"
+          }
+        ]
+      }
+    ],
+    "rubric_settings": {
+      "id": 3,
+      "title": "FIXTURE-title-3",
+      "points_possible": 50.0,
+      "free_form_criterion_comments": false,
+      "hide_score_total": false,
+      "hide_points": false
+    },
+    "published": true,
+    "only_visible_to_overrides": false,
+    "visible_to_everyone": true,
+    "submission": {
+      "id": 6,
+      "user_id": 6,
+      "url": null,
+      "score": 8.5,
+      "grade": "B",
+      "excused": false,
+      "attempt": 105,
+      "submission_type": "FIXTURE-submission_type-5",
+      "submitted_at": "2026-02-07T09:00:00Z",
+      "body": null,
+      "assignment_id": 6,
+      "graded_at": "2026-02-05T09:00:00Z",
+      "grade_matches_current_submission": true,
+      "grader_id": 3,
+      "workflow_state": "graded",
+      "late_policy_status": null,
+      "points_deducted": null,
+      "grading_period_id": null,
+      "cached_due_date": "2027-02-08T09:00:00Z",
+      "extra_attempts": null,
+      "posted_at": "2026-02-05T09:00:00Z",
+      "redo_request": false,
+      "sticker": null,
+      "custom_grade_status_id": null,
+      "late": false,
+      "missing": false,
+      "seconds_late": 106,
+      "entered_grade": "B",
+      "entered_score": 8.5,
+      "preview_url": "https://canvas.example.edu/api/v1/preview_url/6",
+      "has_originality_report": true,
+      "attachments": [
+        {
+          "id": 4,
+          "folder_id": 4,
+          "display_name": "Robin Fictief",
+          "filename": "FIXTURE-filename-4",
+          "upload_status": "FIXTURE-upload_status-4",
+          "content-type": "FIXTURE-content-type-4",
+          "url": "https://canvas.example.edu/files/4/download?download_frd=1&verifier=FIXTURE04",
+          "size": 104,
+          "created_at": "2026-02-06T09:00:00Z",
+          "updated_at": "2026-02-06T09:00:00Z",
+          "unlock_at": null,
+          "locked": false,
+          "hidden": false,
+          "lock_at": null,
+          "hidden_for_user": false,
+          "thumbnail_url": null,
+          "modified_at": "2026-02-06T09:00:00Z",
+          "mime_class": "FIXTURE-mime_class-4",
+          "media_entry_id": null,
+          "category": "FIXTURE-category-4",
+          "locked_for_user": false,
+          "preview_url": "FIXTURE-preview_url-4"
+        }
+      ]
+    },
+    "locked_for_user": true,
+    "lock_explanation": "FIXTURE-lock_explanation-6",
+    "submissions_download_url": "https://canvas.example.edu/api/v1/submissions_download_url/6",
+    "post_manually": true,
+    "anonymize_students": false,
+    "new_quizzes_anonymous_participants": false,
+    "require_lockdown_browser": false,
+    "restrict_quantitative_data": false
+  },
+  {
+    "id": 7,
+    "position": 107,
+    "description": "https://canvas.example.edu/files/7/download?download_frd=1&verifier=FIXTURE07",
+    "points_possible": 25.0,
+    "grading_type": "points",
+    "created_at": "2026-02-09T09:00:00Z",
+    "updated_at": "2026-02-09T09:00:00Z",
+    "due_at": "2026-02-09T09:00:00Z",
+    "final_grader_id": null,
+    "grader_count": 107,
+    "graders_anonymous_to_graders": false,
+    "grader_comments_visible_to_graders": true,
+    "grader_names_visible_to_final_grader": true,
+    "lock_at": null,
+    "unlock_at": null,
+    "assignment_group_id": 7,
+    "peer_reviews": false,
+    "anonymous_peer_reviews": false,
+    "automatic_peer_reviews": false,
+    "intra_group_peer_reviews": false,
+    "post_to_sis": false,
+    "grade_group_students_individually": false,
+    "group_category_id": null,
+    "grading_standard_id": null,
+    "moderated_grading": false,
+    "hide_in_gradebook": false,
+    "omit_from_final_grade": false,
+    "suppress_assignment": false,
+    "anonymous_instructor_annotations": false,
+    "anonymous_grading": false,
+    "allowed_attempts": 107,
+    "annotatable_attachment_id": null,
+    "secure_params": "FIXTURE-secure_params-7",
+    "lti_context_id": "FIXTUREuuid0000000000000000000007",
+    "course_id": 7,
+    "name": "Weekly exercise 1",
+    "submission_types": [
+      "online_text_entry",
+      "online_upload"
+    ],
+    "has_submitted_submissions": true,
+    "due_date_required": false,
+    "max_name_length": 107,
+    "in_closed_grading_period": false,
+    "graded_submissions_exist": true,
+    "is_quiz_assignment": false,
+    "can_duplicate": true,
+    "original_course_id": null,
+    "original_assignment_id": null,
+    "original_lti_resource_link_id": null,
+    "original_assignment_name": null,
+    "original_quiz_id": null,
+    "workflow_state": "published",
+    "important_dates": false,
+    "muted": true,
+    "html_url": "https://canvas.example.edu/api/v1/html_url/7",
+    "use_rubric_for_grading": false,
+    "free_form_criterion_comments": false,
+    "rubric": [
+      {
+        "id": "FIXTURE-id-15",
+        "points": 150.0,
+        "description": "FIXTURE-description-15",
+        "long_description": "FIXTURE-long_description-5",
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-69",
+            "points": 690.0,
+            "description": "FIXTURE-description-69",
+            "long_description": "FIXTURE-long_description-69"
+          },
+          {
+            "id": "FIXTURE-id-70",
+            "points": 700.0,
+            "description": "FIXTURE-description-70",
+            "long_description": "FIXTURE-long_description-70"
+          },
+          {
+            "id": "FIXTURE-id-71",
+            "points": 710.0,
+            "description": "FIXTURE-description-71",
+            "long_description": "FIXTURE-long_description-71"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-16",
+        "points": 160.0,
+        "description": "FIXTURE-description-16",
+        "long_description": "FIXTURE-long_description-6",
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-72",
+            "points": 720.0,
+            "description": "FIXTURE-description-72",
+            "long_description": "FIXTURE-long_description-72"
+          },
+          {
+            "id": "FIXTURE-id-73",
+            "points": 730.0,
+            "description": "FIXTURE-description-73",
+            "long_description": "FIXTURE-long_description-73"
+          },
+          {
+            "id": "FIXTURE-id-74",
+            "points": 740.0,
+            "description": "FIXTURE-description-74",
+            "long_description": "FIXTURE-long_description-74"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-17",
+        "points": 170.0,
+        "description": "FIXTURE-description-17",
+        "long_description": "FIXTURE-long_description-7",
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-75",
+            "points": 750.0,
+            "description": "FIXTURE-description-75",
+            "long_description": "FIXTURE-long_description-75"
+          },
+          {
+            "id": "FIXTURE-id-76",
+            "points": 760.0,
+            "description": "FIXTURE-description-76",
+            "long_description": "FIXTURE-long_description-76"
+          },
+          {
+            "id": "FIXTURE-id-77",
+            "points": 770.0,
+            "description": "FIXTURE-description-77",
+            "long_description": "FIXTURE-long_description-77"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-18",
+        "points": 180.0,
+        "description": "FIXTURE-description-18",
+        "long_description": "FIXTURE-long_description-8",
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-78",
+            "points": 780.0,
+            "description": "FIXTURE-description-78",
+            "long_description": "FIXTURE-long_description-78"
+          },
+          {
+            "id": "FIXTURE-id-79",
+            "points": 790.0,
+            "description": "FIXTURE-description-79",
+            "long_description": "FIXTURE-long_description-79"
+          },
+          {
+            "id": "FIXTURE-id-80",
+            "points": 800.0,
+            "description": "FIXTURE-description-80",
+            "long_description": "FIXTURE-long_description-80"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-19",
+        "points": 190.0,
+        "description": "FIXTURE-description-19",
+        "long_description": "FIXTURE-long_description-9",
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-81",
+            "points": 810.0,
+            "description": "FIXTURE-description-81",
+            "long_description": "FIXTURE-long_description-81"
+          },
+          {
+            "id": "FIXTURE-id-82",
+            "points": 820.0,
+            "description": "FIXTURE-description-82",
+            "long_description": "FIXTURE-long_description-82"
+          },
+          {
+            "id": "FIXTURE-id-83",
+            "points": 830.0,
+            "description": "FIXTURE-description-83",
+            "long_description": "FIXTURE-long_description-83"
+          }
+        ]
+      }
+    ],
+    "rubric_settings": {
+      "id": 4,
+      "title": "FIXTURE-title-4",
+      "points_possible": 100.0,
+      "free_form_criterion_comments": false,
+      "hide_score_total": false,
+      "hide_points": false
+    },
+    "published": true,
+    "only_visible_to_overrides": false,
+    "visible_to_everyone": true,
+    "submission": {
+      "id": 7,
+      "user_id": 7,
+      "url": null,
+      "score": 9.5,
+      "grade": "C+",
+      "excused": false,
+      "attempt": 106,
+      "submission_type": "FIXTURE-submission_type-6",
+      "submitted_at": "2026-02-08T09:00:00Z",
+      "body": null,
+      "assignment_id": 7,
+      "graded_at": "2026-02-06T09:00:00Z",
+      "grade_matches_current_submission": true,
+      "grader_id": 4,
+      "workflow_state": "graded",
+      "late_policy_status": null,
+      "points_deducted": null,
+      "grading_period_id": null,
+      "cached_due_date": "2027-02-09T09:00:00Z",
+      "extra_attempts": null,
+      "posted_at": "2026-02-06T09:00:00Z",
+      "redo_request": false,
+      "sticker": null,
+      "custom_grade_status_id": null,
+      "late": false,
+      "missing": false,
+      "seconds_late": 107,
+      "entered_grade": "C+",
+      "entered_score": 9.5,
+      "preview_url": "https://canvas.example.edu/api/v1/preview_url/7",
+      "has_originality_report": true,
+      "attachments": [
+        {
+          "id": 5,
+          "folder_id": 5,
+          "display_name": "Sam Verzonnen",
+          "filename": "FIXTURE-filename-5",
+          "uuid": "FIXTUREuuid0000000000000000000003",
+          "upload_status": "FIXTURE-upload_status-5",
+          "content-type": "FIXTURE-content-type-5",
+          "url": "https://canvas.example.edu/files/5/download?download_frd=1&verifier=FIXTURE05",
+          "size": 105,
+          "created_at": "2026-02-07T09:00:00Z",
+          "updated_at": "2026-02-07T09:00:00Z",
+          "unlock_at": null,
+          "locked": false,
+          "hidden": false,
+          "lock_at": null,
+          "hidden_for_user": false,
+          "thumbnail_url": null,
+          "modified_at": "2026-02-07T09:00:00Z",
+          "mime_class": "FIXTURE-mime_class-5",
+          "media_entry_id": null,
+          "category": "FIXTURE-category-5",
+          "locked_for_user": false,
+          "preview_url": "FIXTURE-preview_url-5"
+        }
+      ]
+    },
+    "locked_for_user": false,
+    "submissions_download_url": "https://canvas.example.edu/api/v1/submissions_download_url/7",
+    "post_manually": false,
+    "anonymize_students": false,
+    "new_quizzes_anonymous_participants": false,
+    "require_lockdown_browser": false,
+    "restrict_quantitative_data": false
+  },
+  {
+    "id": 8,
+    "position": 108,
+    "description": "<p>Synthetic body 8 for description.</p>",
+    "points_possible": 50.0,
+    "grading_type": "points",
+    "created_at": "2026-02-10T09:00:00Z",
+    "updated_at": "2026-02-10T09:00:00Z",
+    "due_at": "2026-02-10T09:00:00Z",
+    "final_grader_id": null,
+    "grader_count": 108,
+    "graders_anonymous_to_graders": false,
+    "grader_comments_visible_to_graders": true,
+    "grader_names_visible_to_final_grader": true,
+    "lock_at": null,
+    "unlock_at": null,
+    "assignment_group_id": 8,
+    "peer_reviews": false,
+    "anonymous_peer_reviews": false,
+    "automatic_peer_reviews": false,
+    "intra_group_peer_reviews": false,
+    "post_to_sis": false,
+    "grade_group_students_individually": false,
+    "group_category_id": null,
+    "grading_standard_id": null,
+    "moderated_grading": false,
+    "hide_in_gradebook": false,
+    "omit_from_final_grade": false,
+    "suppress_assignment": false,
+    "anonymous_instructor_annotations": false,
+    "anonymous_grading": false,
+    "allowed_attempts": 108,
+    "annotatable_attachment_id": null,
+    "secure_params": "FIXTURE-secure_params-8",
+    "lti_context_id": "FIXTUREuuid0000000000000000000008",
+    "course_id": 8,
+    "name": "Lab report",
+    "submission_types": [
+      "online_text_entry",
+      "online_upload"
+    ],
+    "has_submitted_submissions": true,
+    "due_date_required": false,
+    "max_name_length": 108,
+    "in_closed_grading_period": false,
+    "graded_submissions_exist": true,
+    "is_quiz_assignment": false,
+    "can_duplicate": true,
+    "original_course_id": null,
+    "original_assignment_id": null,
+    "original_lti_resource_link_id": null,
+    "original_assignment_name": null,
+    "original_quiz_id": null,
+    "workflow_state": "published",
+    "important_dates": false,
+    "muted": true,
+    "html_url": "https://canvas.example.edu/api/v1/html_url/8",
+    "published": true,
+    "only_visible_to_overrides": false,
+    "visible_to_everyone": true,
+    "submission": {
+      "id": 8,
+      "user_id": 8,
+      "url": null,
+      "score": 6.5,
+      "grade": "A",
+      "excused": false,
+      "attempt": 107,
+      "submission_type": "FIXTURE-submission_type-7",
+      "submitted_at": "2026-02-09T09:00:00Z",
+      "body": null,
+      "assignment_id": 8,
+      "graded_at": "2026-02-07T09:00:00Z",
+      "grade_matches_current_submission": true,
+      "grader_id": 5,
+      "workflow_state": "graded",
+      "late_policy_status": null,
+      "points_deducted": null,
+      "grading_period_id": null,
+      "cached_due_date": "2027-02-10T09:00:00Z",
+      "extra_attempts": null,
+      "posted_at": "2026-02-07T09:00:00Z",
+      "redo_request": false,
+      "sticker": null,
+      "custom_grade_status_id": null,
+      "late": false,
+      "missing": false,
+      "seconds_late": 108,
+      "entered_grade": "A",
+      "entered_score": 6.5,
+      "preview_url": "https://canvas.example.edu/api/v1/preview_url/8",
+      "attachments": [
+        {
+          "id": 6,
+          "folder_id": 6,
+          "display_name": "Kim Bedacht",
+          "filename": "FIXTURE-filename-6",
+          "uuid": "FIXTUREuuid0000000000000000000004",
+          "upload_status": "FIXTURE-upload_status-6",
+          "content-type": "FIXTURE-content-type-6",
+          "url": "https://canvas.example.edu/files/6/download?download_frd=1&verifier=FIXTURE06",
+          "size": 106,
+          "created_at": "2026-02-08T09:00:00Z",
+          "updated_at": "2026-02-08T09:00:00Z",
+          "unlock_at": null,
+          "locked": false,
+          "hidden": false,
+          "lock_at": null,
+          "hidden_for_user": false,
+          "thumbnail_url": null,
+          "modified_at": "2026-02-08T09:00:00Z",
+          "mime_class": "FIXTURE-mime_class-6",
+          "media_entry_id": null,
+          "category": "FIXTURE-category-6",
+          "locked_for_user": false,
+          "preview_url": "FIXTURE-preview_url-6"
+        },
+        {
+          "id": 7,
+          "folder_id": 7,
+          "display_name": "Alex Voorbeeld",
+          "filename": "FIXTURE-filename-7",
+          "uuid": "FIXTUREuuid0000000000000000000005",
+          "upload_status": "FIXTURE-upload_status-7",
+          "content-type": "FIXTURE-content-type-7",
+          "url": "https://canvas.example.edu/files/7/download?download_frd=1&verifier=FIXTURE07",
+          "size": 107,
+          "created_at": "2026-02-09T09:00:00Z",
+          "updated_at": "2026-02-09T09:00:00Z",
+          "unlock_at": null,
+          "locked": false,
+          "hidden": false,
+          "lock_at": null,
+          "hidden_for_user": false,
+          "thumbnail_url": null,
+          "modified_at": "2026-02-09T09:00:00Z",
+          "mime_class": "FIXTURE-mime_class-7",
+          "media_entry_id": null,
+          "category": "FIXTURE-category-7",
+          "locked_for_user": false,
+          "preview_url": "FIXTURE-preview_url-7"
+        }
+      ]
+    },
+    "locked_for_user": false,
+    "submissions_download_url": "https://canvas.example.edu/api/v1/submissions_download_url/8",
+    "post_manually": false,
+    "anonymize_students": false,
+    "new_quizzes_anonymous_participants": false,
+    "require_lockdown_browser": false,
+    "restrict_quantitative_data": false
+  },
+  {
+    "id": 9,
+    "position": 109,
+    "description": "https://canvas.example.edu/files/9/download?download_frd=1&verifier=FIXTURE09",
+    "points_possible": 100.0,
+    "grading_type": "points",
+    "created_at": "2026-02-11T09:00:00Z",
+    "updated_at": "2026-02-11T09:00:00Z",
+    "due_at": "2026-02-11T09:00:00Z",
+    "final_grader_id": null,
+    "grader_count": 109,
+    "graders_anonymous_to_graders": false,
+    "grader_comments_visible_to_graders": true,
+    "grader_names_visible_to_final_grader": true,
+    "lock_at": null,
+    "unlock_at": "2027-02-08T09:00:00Z",
+    "assignment_group_id": 9,
+    "peer_reviews": false,
+    "anonymous_peer_reviews": false,
+    "automatic_peer_reviews": false,
+    "intra_group_peer_reviews": false,
+    "post_to_sis": false,
+    "grade_group_students_individually": false,
+    "group_category_id": 4,
+    "grading_standard_id": null,
+    "moderated_grading": false,
+    "hide_in_gradebook": false,
+    "omit_from_final_grade": false,
+    "suppress_assignment": false,
+    "anonymous_instructor_annotations": false,
+    "anonymous_grading": false,
+    "allowed_attempts": 109,
+    "annotatable_attachment_id": null,
+    "secure_params": "FIXTURE-secure_params-9",
+    "lti_context_id": "FIXTUREuuid0000000000000000000009",
+    "course_id": 9,
+    "name": "Midterm essay",
+    "submission_types": [
+      "online_upload"
+    ],
+    "has_submitted_submissions": true,
+    "due_date_required": false,
+    "max_name_length": 109,
+    "in_closed_grading_period": false,
+    "graded_submissions_exist": true,
+    "is_quiz_assignment": false,
+    "can_duplicate": true,
+    "original_course_id": null,
+    "original_assignment_id": null,
+    "original_lti_resource_link_id": null,
+    "original_assignment_name": null,
+    "original_quiz_id": null,
+    "workflow_state": "published",
+    "important_dates": false,
+    "muted": true,
+    "html_url": "https://canvas.example.edu/api/v1/html_url/9",
+    "use_rubric_for_grading": false,
+    "free_form_criterion_comments": false,
+    "rubric": [
+      {
+        "id": "FIXTURE-id-20",
+        "points": 200.0,
+        "description": "FIXTURE-description-20",
+        "long_description": "FIXTURE-long_description-10",
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-84",
+            "points": 840.0,
+            "description": "FIXTURE-description-84",
+            "long_description": "FIXTURE-long_description-84"
+          },
+          {
+            "id": "FIXTURE-id-85",
+            "points": 850.0,
+            "description": "FIXTURE-description-85",
+            "long_description": "FIXTURE-long_description-85"
+          },
+          {
+            "id": "FIXTURE-id-86",
+            "points": 860.0,
+            "description": "FIXTURE-description-86",
+            "long_description": "FIXTURE-long_description-86"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-21",
+        "points": 210.0,
+        "description": "FIXTURE-description-21",
+        "long_description": "FIXTURE-long_description-11",
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-87",
+            "points": 870.0,
+            "description": "FIXTURE-description-87",
+            "long_description": "FIXTURE-long_description-87"
+          },
+          {
+            "id": "FIXTURE-id-88",
+            "points": 880.0,
+            "description": "FIXTURE-description-88",
+            "long_description": "FIXTURE-long_description-88"
+          },
+          {
+            "id": "FIXTURE-id-89",
+            "points": 890.0,
+            "description": "FIXTURE-description-89",
+            "long_description": "FIXTURE-long_description-89"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-22",
+        "points": 220.0,
+        "description": "FIXTURE-description-22",
+        "long_description": "FIXTURE-long_description-12",
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-90",
+            "points": 900.0,
+            "description": "FIXTURE-description-90",
+            "long_description": "FIXTURE-long_description-90"
+          },
+          {
+            "id": "FIXTURE-id-91",
+            "points": 910.0,
+            "description": "FIXTURE-description-91",
+            "long_description": "FIXTURE-long_description-91"
+          },
+          {
+            "id": "FIXTURE-id-92",
+            "points": 920.0,
+            "description": "FIXTURE-description-92",
+            "long_description": "FIXTURE-long_description-92"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-23",
+        "points": 230.0,
+        "description": "FIXTURE-description-23",
+        "long_description": "FIXTURE-long_description-13",
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-93",
+            "points": 930.0,
+            "description": "FIXTURE-description-93",
+            "long_description": "FIXTURE-long_description-93"
+          },
+          {
+            "id": "FIXTURE-id-94",
+            "points": 940.0,
+            "description": "FIXTURE-description-94",
+            "long_description": "FIXTURE-long_description-94"
+          },
+          {
+            "id": "FIXTURE-id-95",
+            "points": 950.0,
+            "description": "FIXTURE-description-95",
+            "long_description": "FIXTURE-long_description-95"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-24",
+        "points": 240.0,
+        "description": "FIXTURE-description-24",
+        "long_description": "FIXTURE-long_description-14",
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-96",
+            "points": 960.0,
+            "description": "FIXTURE-description-96",
+            "long_description": "FIXTURE-long_description-96"
+          },
+          {
+            "id": "FIXTURE-id-97",
+            "points": 970.0,
+            "description": "FIXTURE-description-97",
+            "long_description": "FIXTURE-long_description-97"
+          },
+          {
+            "id": "FIXTURE-id-98",
+            "points": 980.0,
+            "description": "FIXTURE-description-98",
+            "long_description": "FIXTURE-long_description-98"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-25",
+        "points": 250.0,
+        "description": "FIXTURE-description-25",
+        "long_description": "FIXTURE-long_description-15",
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-99",
+            "points": 990.0,
+            "description": "FIXTURE-description-99",
+            "long_description": "FIXTURE-long_description-99"
+          },
+          {
+            "id": "FIXTURE-id-100",
+            "points": 1000.0,
+            "description": "FIXTURE-description-100",
+            "long_description": "FIXTURE-long_description-100"
+          },
+          {
+            "id": "FIXTURE-id-101",
+            "points": 1010.0,
+            "description": "FIXTURE-description-101",
+            "long_description": "FIXTURE-long_description-101"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-26",
+        "points": 260.0,
+        "description": "FIXTURE-description-26",
+        "long_description": "FIXTURE-long_description-16",
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-102",
+            "points": 1020.0,
+            "description": "FIXTURE-description-102",
+            "long_description": "FIXTURE-long_description-102"
+          },
+          {
+            "id": "FIXTURE-id-103",
+            "points": 1030.0,
+            "description": "FIXTURE-description-103",
+            "long_description": "FIXTURE-long_description-103"
+          },
+          {
+            "id": "FIXTURE-id-104",
+            "points": 1040.0,
+            "description": "FIXTURE-description-104",
+            "long_description": "FIXTURE-long_description-104"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-27",
+        "points": 270.0,
+        "description": "FIXTURE-description-27",
+        "long_description": "FIXTURE-long_description-17",
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-105",
+            "points": 1050.0,
+            "description": "FIXTURE-description-105",
+            "long_description": "FIXTURE-long_description-105"
+          },
+          {
+            "id": "FIXTURE-id-106",
+            "points": 1060.0,
+            "description": "FIXTURE-description-106",
+            "long_description": "FIXTURE-long_description-106"
+          },
+          {
+            "id": "FIXTURE-id-107",
+            "points": 1070.0,
+            "description": "FIXTURE-description-107",
+            "long_description": "FIXTURE-long_description-107"
+          }
+        ]
+      }
+    ],
+    "rubric_settings": {
+      "id": 5,
+      "title": "FIXTURE-title-5",
+      "points_possible": 10.0,
+      "free_form_criterion_comments": false,
+      "hide_score_total": false,
+      "hide_points": false
+    },
+    "published": true,
+    "only_visible_to_overrides": false,
+    "visible_to_everyone": true,
+    "submission": {
+      "id": 9,
+      "user_id": 9,
+      "url": null,
+      "score": 7.0,
+      "grade": "A-",
+      "excused": false,
+      "attempt": 108,
+      "submission_type": "FIXTURE-submission_type-8",
+      "submitted_at": "2026-02-10T09:00:00Z",
+      "body": null,
+      "assignment_id": 9,
+      "graded_at": "2026-02-08T09:00:00Z",
+      "grade_matches_current_submission": true,
+      "grader_id": 6,
+      "workflow_state": "graded",
+      "late_policy_status": null,
+      "points_deducted": null,
+      "grading_period_id": null,
+      "cached_due_date": "2027-02-11T09:00:00Z",
+      "extra_attempts": null,
+      "posted_at": "2026-02-08T09:00:00Z",
+      "redo_request": false,
+      "sticker": null,
+      "custom_grade_status_id": null,
+      "late": false,
+      "missing": false,
+      "seconds_late": 109,
+      "entered_grade": "A-",
+      "entered_score": 7.0,
+      "preview_url": "https://canvas.example.edu/api/v1/preview_url/9",
+      "attachments": [
+        {
+          "id": 8,
+          "folder_id": 8,
+          "display_name": "Robin Fictief",
+          "filename": "FIXTURE-filename-8",
+          "upload_status": "FIXTURE-upload_status-8",
+          "content-type": "FIXTURE-content-type-8",
+          "url": "https://canvas.example.edu/files/8/download?download_frd=1&verifier=FIXTURE08",
+          "size": 108,
+          "created_at": "2026-02-10T09:00:00Z",
+          "updated_at": "2026-02-10T09:00:00Z",
+          "unlock_at": null,
+          "locked": false,
+          "hidden": false,
+          "lock_at": null,
+          "hidden_for_user": false,
+          "thumbnail_url": null,
+          "modified_at": "2026-02-10T09:00:00Z",
+          "mime_class": "FIXTURE-mime_class-8",
+          "media_entry_id": null,
+          "category": "FIXTURE-category-8",
+          "locked_for_user": false,
+          "preview_url": "FIXTURE-preview_url-8"
+        },
+        {
+          "id": 9,
+          "folder_id": 9,
+          "display_name": "Sam Verzonnen",
+          "filename": "FIXTURE-filename-9",
+          "upload_status": "FIXTURE-upload_status-9",
+          "content-type": "FIXTURE-content-type-9",
+          "url": "https://canvas.example.edu/files/9/download?download_frd=1&verifier=FIXTURE09",
+          "size": 109,
+          "created_at": "2026-02-11T09:00:00Z",
+          "updated_at": "2026-02-11T09:00:00Z",
+          "unlock_at": null,
+          "locked": false,
+          "hidden": false,
+          "lock_at": null,
+          "hidden_for_user": false,
+          "thumbnail_url": null,
+          "modified_at": "2026-02-11T09:00:00Z",
+          "mime_class": "FIXTURE-mime_class-9",
+          "media_entry_id": null,
+          "category": "FIXTURE-category-9",
+          "locked_for_user": false,
+          "preview_url": "FIXTURE-preview_url-9"
+        },
+        {
+          "id": 10,
+          "folder_id": 10,
+          "display_name": "Kim Bedacht",
+          "filename": "FIXTURE-filename-10",
+          "upload_status": "FIXTURE-upload_status-10",
+          "content-type": "FIXTURE-content-type-10",
+          "url": "https://canvas.example.edu/files/10/download?download_frd=1&verifier=FIXTURE10",
+          "size": 110,
+          "created_at": "2026-02-12T09:00:00Z",
+          "updated_at": "2026-02-12T09:00:00Z",
+          "unlock_at": null,
+          "locked": false,
+          "hidden": false,
+          "lock_at": null,
+          "hidden_for_user": false,
+          "thumbnail_url": null,
+          "modified_at": "2026-02-12T09:00:00Z",
+          "mime_class": "FIXTURE-mime_class-10",
+          "media_entry_id": null,
+          "category": "FIXTURE-category-10",
+          "locked_for_user": false,
+          "preview_url": "FIXTURE-preview_url-10"
+        },
+        {
+          "id": 11,
+          "folder_id": 11,
+          "display_name": "Alex Voorbeeld",
+          "filename": "FIXTURE-filename-11",
+          "upload_status": "FIXTURE-upload_status-11",
+          "content-type": "FIXTURE-content-type-11",
+          "url": "https://canvas.example.edu/files/11/download?download_frd=1&verifier=FIXTURE11",
+          "size": 111,
+          "created_at": "2026-02-13T09:00:00Z",
+          "updated_at": "2026-02-13T09:00:00Z",
+          "unlock_at": null,
+          "locked": false,
+          "hidden": false,
+          "lock_at": null,
+          "hidden_for_user": false,
+          "thumbnail_url": null,
+          "modified_at": "2026-02-13T09:00:00Z",
+          "mime_class": "FIXTURE-mime_class-11",
+          "media_entry_id": null,
+          "category": "FIXTURE-category-11",
+          "locked_for_user": false,
+          "preview_url": "FIXTURE-preview_url-11"
+        }
+      ]
+    },
+    "locked_for_user": false,
+    "submissions_download_url": "https://canvas.example.edu/api/v1/submissions_download_url/9",
+    "post_manually": false,
+    "anonymize_students": false,
+    "new_quizzes_anonymous_participants": false,
+    "require_lockdown_browser": false,
+    "restrict_quantitative_data": false
+  },
+  {
+    "id": 10,
+    "position": 110,
+    "description": "<p>Synthetic body 10 for description.</p>",
+    "points_possible": 10.0,
+    "grading_type": "points",
+    "created_at": "2026-02-12T09:00:00Z",
+    "updated_at": "2026-02-12T09:00:00Z",
+    "due_at": "2026-02-12T09:00:00Z",
+    "final_grader_id": null,
+    "grader_count": 110,
+    "graders_anonymous_to_graders": false,
+    "grader_comments_visible_to_graders": true,
+    "grader_names_visible_to_final_grader": true,
+    "lock_at": null,
+    "unlock_at": null,
+    "assignment_group_id": 10,
+    "peer_reviews": false,
+    "anonymous_peer_reviews": false,
+    "automatic_peer_reviews": false,
+    "intra_group_peer_reviews": false,
+    "post_to_sis": false,
+    "grade_group_students_individually": false,
+    "group_category_id": null,
+    "grading_standard_id": null,
+    "moderated_grading": false,
+    "hide_in_gradebook": false,
+    "omit_from_final_grade": false,
+    "suppress_assignment": false,
+    "anonymous_instructor_annotations": false,
+    "anonymous_grading": false,
+    "allowed_attempts": 110,
+    "annotatable_attachment_id": null,
+    "secure_params": "FIXTURE-secure_params-10",
+    "lti_context_id": "FIXTUREuuid0000000000000000000010",
+    "course_id": 10,
+    "name": "Group project",
+    "submission_types": [
+      "online_text_entry"
+    ],
+    "has_submitted_submissions": true,
+    "due_date_required": false,
+    "max_name_length": 110,
+    "in_closed_grading_period": false,
+    "graded_submissions_exist": true,
+    "is_quiz_assignment": false,
+    "can_duplicate": true,
+    "original_course_id": null,
+    "original_assignment_id": null,
+    "original_lti_resource_link_id": null,
+    "original_assignment_name": null,
+    "original_quiz_id": null,
+    "workflow_state": "published",
+    "important_dates": false,
+    "muted": true,
+    "html_url": "https://canvas.example.edu/api/v1/html_url/10",
+    "use_rubric_for_grading": false,
+    "free_form_criterion_comments": false,
+    "rubric": [
+      {
+        "id": "FIXTURE-id-28",
+        "points": 280.0,
+        "description": "FIXTURE-description-28",
+        "long_description": "FIXTURE-long_description-18",
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-108",
+            "points": 1080.0,
+            "description": "FIXTURE-description-108",
+            "long_description": "FIXTURE-long_description-108"
+          },
+          {
+            "id": "FIXTURE-id-109",
+            "points": 1090.0,
+            "description": "FIXTURE-description-109",
+            "long_description": "FIXTURE-long_description-109"
+          },
+          {
+            "id": "FIXTURE-id-110",
+            "points": 1100.0,
+            "description": "FIXTURE-description-110",
+            "long_description": "FIXTURE-long_description-110"
+          },
+          {
+            "id": "FIXTURE-id-111",
+            "points": 1110.0,
+            "description": "FIXTURE-description-111",
+            "long_description": "FIXTURE-long_description-111"
+          },
+          {
+            "id": "FIXTURE-id-112",
+            "points": 1120.0,
+            "description": "FIXTURE-description-112",
+            "long_description": "FIXTURE-long_description-112"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-29",
+        "points": 290.0,
+        "description": "FIXTURE-description-29",
+        "long_description": "FIXTURE-long_description-19",
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-113",
+            "points": 1130.0,
+            "description": "FIXTURE-description-113",
+            "long_description": "FIXTURE-long_description-113"
+          },
+          {
+            "id": "FIXTURE-id-114",
+            "points": 1140.0,
+            "description": "FIXTURE-description-114",
+            "long_description": "FIXTURE-long_description-114"
+          },
+          {
+            "id": "FIXTURE-id-115",
+            "points": 1150.0,
+            "description": "FIXTURE-description-115",
+            "long_description": "FIXTURE-long_description-115"
+          },
+          {
+            "id": "FIXTURE-id-116",
+            "points": 1160.0,
+            "description": "FIXTURE-description-116",
+            "long_description": "FIXTURE-long_description-116"
+          },
+          {
+            "id": "FIXTURE-id-117",
+            "points": 1170.0,
+            "description": "FIXTURE-description-117",
+            "long_description": "FIXTURE-long_description-117"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-30",
+        "points": 300.0,
+        "description": "FIXTURE-description-30",
+        "long_description": "FIXTURE-long_description-20",
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-118",
+            "points": 1180.0,
+            "description": "FIXTURE-description-118",
+            "long_description": "FIXTURE-long_description-118"
+          },
+          {
+            "id": "FIXTURE-id-119",
+            "points": 1190.0,
+            "description": "FIXTURE-description-119",
+            "long_description": "FIXTURE-long_description-119"
+          },
+          {
+            "id": "FIXTURE-id-120",
+            "points": 1200.0,
+            "description": "FIXTURE-description-120",
+            "long_description": "FIXTURE-long_description-120"
+          },
+          {
+            "id": "FIXTURE-id-121",
+            "points": 1210.0,
+            "description": "FIXTURE-description-121",
+            "long_description": "FIXTURE-long_description-121"
+          },
+          {
+            "id": "FIXTURE-id-122",
+            "points": 1220.0,
+            "description": "FIXTURE-description-122",
+            "long_description": "FIXTURE-long_description-122"
+          }
+        ]
+      },
+      {
+        "id": "FIXTURE-id-31",
+        "points": 310.0,
+        "description": "FIXTURE-description-31",
+        "long_description": "FIXTURE-long_description-21",
+        "criterion_use_range": false,
+        "ratings": [
+          {
+            "id": "FIXTURE-id-123",
+            "points": 1230.0,
+            "description": "FIXTURE-description-123",
+            "long_description": "FIXTURE-long_description-123"
+          },
+          {
+            "id": "FIXTURE-id-124",
+            "points": 1240.0,
+            "description": "FIXTURE-description-124",
+            "long_description": "FIXTURE-long_description-124"
+          },
+          {
+            "id": "FIXTURE-id-125",
+            "points": 1250.0,
+            "description": "FIXTURE-description-125",
+            "long_description": "FIXTURE-long_description-125"
+          },
+          {
+            "id": "FIXTURE-id-126",
+            "points": 1260.0,
+            "description": "FIXTURE-description-126",
+            "long_description": "FIXTURE-long_description-126"
+          },
+          {
+            "id": "FIXTURE-id-127",
+            "points": 1270.0,
+            "description": "FIXTURE-description-127",
+            "long_description": "FIXTURE-long_description-127"
+          }
+        ]
+      }
+    ],
+    "rubric_settings": {
+      "id": 6,
+      "title": "FIXTURE-title-6",
+      "points_possible": 20.0,
+      "free_form_criterion_comments": false,
+      "hide_score_total": false,
+      "hide_points": false
+    },
+    "published": true,
+    "only_visible_to_overrides": false,
+    "visible_to_everyone": true,
+    "submission": {
+      "id": 10,
+      "user_id": 10,
+      "url": null,
+      "score": 8.0,
+      "grade": "B+",
+      "excused": false,
+      "attempt": 109,
+      "submission_type": "FIXTURE-submission_type-9",
+      "submitted_at": "2026-02-11T09:00:00Z",
+      "body": "https://canvas.example.edu/files/3/download?download_frd=1&verifier=FIXTURE03",
+      "assignment_id": 10,
+      "graded_at": "2026-02-09T09:00:00Z",
+      "grade_matches_current_submission": true,
+      "grader_id": 7,
+      "workflow_state": "graded",
+      "late_policy_status": null,
+      "points_deducted": null,
+      "grading_period_id": null,
+      "cached_due_date": "2027-02-12T09:00:00Z",
+      "extra_attempts": null,
+      "posted_at": "2026-02-09T09:00:00Z",
+      "redo_request": false,
+      "sticker": null,
+      "custom_grade_status_id": null,
+      "late": false,
+      "missing": false,
+      "seconds_late": 110,
+      "entered_grade": "B+",
+      "entered_score": 8.0,
+      "preview_url": "https://canvas.example.edu/api/v1/preview_url/10"
+    },
+    "locked_for_user": false,
+    "submissions_download_url": "https://canvas.example.edu/api/v1/submissions_download_url/10",
+    "post_manually": false,
+    "anonymize_students": false,
+    "new_quizzes_anonymous_participants": false,
+    "require_lockdown_browser": false,
+    "restrict_quantitative_data": false
+  },
+  {
+    "id": 11,
+    "position": 111,
+    "description": "<p>Synthetic body 11 for description.</p>",
+    "points_possible": 20.0,
+    "grading_type": "points",
+    "created_at": "2026-02-13T09:00:00Z",
+    "updated_at": "2026-02-13T09:00:00Z",
+    "due_at": "2026-02-13T09:00:00Z",
+    "final_grader_id": null,
+    "grader_count": 111,
+    "graders_anonymous_to_graders": false,
+    "grader_comments_visible_to_graders": true,
+    "grader_names_visible_to_final_grader": true,
+    "lock_at": "2027-02-09T09:00:00Z",
+    "unlock_at": "2027-02-09T09:00:00Z",
+    "assignment_group_id": 11,
+    "peer_reviews": false,
+    "anonymous_peer_reviews": false,
+    "automatic_peer_reviews": false,
+    "intra_group_peer_reviews": false,
+    "post_to_sis": false,
+    "grade_group_students_individually": false,
+    "group_category_id": null,
+    "grading_standard_id": null,
+    "moderated_grading": false,
+    "hide_in_gradebook": false,
+    "omit_from_final_grade": false,
+    "suppress_assignment": false,
+    "anonymous_instructor_annotations": false,
+    "anonymous_grading": false,
+    "allowed_attempts": 111,
+    "annotatable_attachment_id": null,
+    "lock_info": {
+      "lock_at": "2027-02-09T09:00:00Z",
+      "can_view": true,
+      "asset_string": "FIXTURE-asset_string-7"
+    },
+    "secure_params": "FIXTURE-secure_params-11",
+    "lti_context_id": "FIXTUREuuid0000000000000000000011",
+    "course_id": 11,
+    "name": "Reading response",
+    "submission_types": [
+      "online_text_entry",
+      "online_upload"
+    ],
+    "has_submitted_submissions": true,
+    "due_date_required": false,
+    "max_name_length": 111,
+    "in_closed_grading_period": false,
+    "availability_status": {
+      "status": "FIXTURE-status-7",
+      "date": null
+    },
+    "graded_submissions_exist": true,
+    "is_quiz_assignment": false,
+    "can_duplicate": true,
+    "original_course_id": null,
+    "original_assignment_id": null,
+    "original_lti_resource_link_id": null,
+    "original_assignment_name": null,
+    "original_quiz_id": null,
+    "workflow_state": "published",
+    "important_dates": false,
+    "muted": true,
+    "html_url": "https://canvas.example.edu/api/v1/html_url/11",
+    "published": true,
+    "only_visible_to_overrides": false,
+    "visible_to_everyone": true,
+    "submission": {
+      "id": 11,
+      "user_id": 11,
+      "url": null,
+      "score": null,
+      "grade": null,
+      "excused": null,
+      "attempt": null,
+      "submission_type": null,
+      "submitted_at": null,
+      "body": null,
+      "assignment_id": 11,
+      "graded_at": null,
+      "grade_matches_current_submission": true,
+      "grader_id": null,
+      "workflow_state": "unsubmitted",
+      "late_policy_status": null,
+      "points_deducted": null,
+      "grading_period_id": null,
+      "cached_due_date": "2027-02-13T09:00:00Z",
+      "extra_attempts": null,
+      "posted_at": null,
+      "redo_request": false,
+      "sticker": null,
+      "custom_grade_status_id": null,
+      "late": false,
+      "missing": true,
+      "seconds_late": 111,
+      "entered_grade": null,
+      "entered_score": null,
+      "preview_url": "https://canvas.example.edu/api/v1/preview_url/11"
+    },
+    "locked_for_user": true,
+    "lock_explanation": "FIXTURE-lock_explanation-7",
+    "submissions_download_url": "https://canvas.example.edu/api/v1/submissions_download_url/11",
+    "post_manually": false,
+    "anonymize_students": false,
+    "new_quizzes_anonymous_participants": false,
+    "require_lockdown_browser": false,
+    "restrict_quantitative_data": false
+  },
+  {
+    "id": 12,
+    "position": 112,
+    "description": "<p>Synthetic body 12 for description.</p>",
+    "points_possible": 25.0,
+    "grading_type": "points",
+    "created_at": "2026-02-14T09:00:00Z",
+    "updated_at": "2026-02-14T09:00:00Z",
+    "due_at": "2026-02-14T09:00:00Z",
+    "final_grader_id": null,
+    "grader_count": 112,
+    "graders_anonymous_to_graders": false,
+    "grader_comments_visible_to_graders": true,
+    "grader_names_visible_to_final_grader": true,
+    "lock_at": null,
+    "unlock_at": null,
+    "assignment_group_id": 12,
+    "peer_reviews": false,
+    "anonymous_peer_reviews": false,
+    "automatic_peer_reviews": false,
+    "intra_group_peer_reviews": false,
+    "post_to_sis": false,
+    "grade_group_students_individually": false,
+    "group_category_id": null,
+    "grading_standard_id": null,
+    "moderated_grading": false,
+    "hide_in_gradebook": false,
+    "omit_from_final_grade": false,
+    "suppress_assignment": false,
+    "anonymous_instructor_annotations": false,
+    "anonymous_grading": false,
+    "allowed_attempts": 112,
+    "annotatable_attachment_id": null,
+    "secure_params": "FIXTURE-secure_params-12",
+    "lti_context_id": "FIXTUREuuid0000000000000000000012",
+    "course_id": 12,
+    "name": "Problem set 4",
+    "submission_types": [
+      "online_text_entry"
+    ],
+    "has_submitted_submissions": true,
+    "due_date_required": false,
+    "max_name_length": 112,
+    "in_closed_grading_period": false,
+    "graded_submissions_exist": true,
+    "is_quiz_assignment": false,
+    "can_duplicate": true,
+    "original_course_id": null,
+    "original_assignment_id": null,
+    "original_lti_resource_link_id": null,
+    "original_assignment_name": null,
+    "original_quiz_id": null,
+    "workflow_state": "published",
+    "important_dates": false,
+    "muted": true,
+    "html_url": "https://canvas.example.edu/api/v1/html_url/12",
+    "published": true,
+    "only_visible_to_overrides": false,
+    "visible_to_everyone": true,
+    "submission": {
+      "id": 12,
+      "user_id": 12,
+      "url": null,
+      "score": null,
+      "grade": null,
+      "excused": null,
+      "attempt": null,
+      "submission_type": null,
+      "submitted_at": null,
+      "body": null,
+      "assignment_id": 12,
+      "graded_at": null,
+      "grade_matches_current_submission": true,
+      "grader_id": null,
+      "workflow_state": "unsubmitted",
+      "late_policy_status": null,
+      "points_deducted": null,
+      "grading_period_id": null,
+      "cached_due_date": "2027-02-14T09:00:00Z",
+      "extra_attempts": null,
+      "posted_at": null,
+      "redo_request": false,
+      "sticker": null,
+      "custom_grade_status_id": null,
+      "late": false,
+      "missing": true,
+      "seconds_late": 112,
+      "entered_grade": null,
+      "entered_score": null,
+      "preview_url": "https://canvas.example.edu/api/v1/preview_url/12"
+    },
+    "locked_for_user": false,
+    "submissions_download_url": "https://canvas.example.edu/api/v1/submissions_download_url/12",
+    "post_manually": false,
+    "anonymize_students": false,
+    "new_quizzes_anonymous_participants": false,
+    "require_lockdown_browser": false,
+    "restrict_quantitative_data": false
+  }
+]

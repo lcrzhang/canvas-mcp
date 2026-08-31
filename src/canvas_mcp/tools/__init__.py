@@ -9,6 +9,7 @@ from collections.abc import Callable
 from typing import Any
 
 from canvas_mcp.client import CanvasClient
+from canvas_mcp.tools.assignments import make_list_assignments
 from canvas_mcp.tools.courses import make_list_courses
 from canvas_mcp.tools.grades import make_list_grades
 
@@ -21,5 +22,6 @@ def build_tools(client: CanvasClient) -> dict[str, Callable[..., Any]]:
     """
     return {
         "list_courses": make_list_courses(client),
+        "list_assignments": make_list_assignments(client),
         "list_grades": make_list_grades(client),
     }

@@ -13,8 +13,10 @@ from pathlib import Path
 import pytest
 
 from canvas_mcp.filters import (
+    ASSIGNMENT_FIELDS,
     COURSE_FIELDS,
     SUBMISSION_FIELDS,
+    slim_assignment,
     slim_course,
     slim_submission,
 )
@@ -22,6 +24,7 @@ from canvas_mcp.filters import (
 FIXTURES = Path(__file__).resolve().parent.parent / "fixtures"
 FIXTURE = FIXTURES / "courses.json"
 SUBMISSIONS_FIXTURE = FIXTURES / "submissions.json"
+ASSIGNMENTS_FIXTURE = FIXTURES / "assignments.json"
 
 SAFE_COURSE = {
     "id": 1,
@@ -196,3 +199,74 @@ def test_no_untrusted_html_from_the_fixture_reaches_the_output() -> None:
     output = json.dumps([slim_submission(s) for s in raw])
     for marker in ("<p>", "http", "secure_params", "preview_url"):
         assert marker not in output
+
+
+# --- assignments ----------------------------------------------------------
+
+SAFE_ASSIGNMENT = {
+    "id": 7,
+    "name": "Week 1 exercise",
+    "due_at": "2026-09-08T12:00:00Z",
+    "points_possible": 10.0,
+    "locked_for_user": False,
+    "submission": {"submitted_at": "2026-09-07T10:00:00Z"},
+}
+
+FORBIDDEN_ASSIGNMENT_LIST_FIELDS = {
+    "description": "<p>SENTINEL-teacher-html</p>",
+    "secure_params": "SENTINEL-secure-params",
+    "lti_context_id": "SENTINEL-lti",
+    "html_url": "SENTINEL-assignment-url",
+    "submissions_download_url": "SENTINEL-download",
+    "rubric": [{"description": "SENTINEL-rubric"}],
+    "lock_explanation": "SENTINEL-lock-explanation",
+}
+
+
+def test_assignment_output_is_exactly_the_allowlist() -> None:
+    assert tuple(slim_assignment(SAFE_ASSIGNMENT)) == ASSIGNMENT_FIELDS
+
+
+@pytest.mark.parametrize("field", sorted(FORBIDDEN_ASSIGNMENT_LIST_FIELDS))
+def test_listed_assignment_field_never_reaches_the_output(field: str) -> None:
+    assignment = {**SAFE_ASSIGNMENT, field: FORBIDDEN_ASSIGNMENT_LIST_FIELDS[field]}
+    assert "SENTINEL" not in json.dumps(slim_assignment(assignment))
+
+
+def test_the_students_own_submitted_work_never_reaches_the_output() -> None:
+    assignment = {
+        **SAFE_ASSIGNMENT,
+        "submission": {
+            "submitted_at": "2026-09-07T10:00:00Z",
+            "body": "SENTINEL-my-essay",
+            "url": "SENTINEL-my-upload",
+        },
+    }
+    assert "SENTINEL" not in json.dumps(slim_assignment(assignment))
+
+
+def test_submitted_is_none_when_nothing_is_known() -> None:
+    """Claiming 'not submitted' on missing information is a plausible wrong
+    answer, which is worse than saying nothing."""
+    bare = {k: v for k, v in SAFE_ASSIGNMENT.items() if k != "submission"}
+    assert slim_assignment(bare)["submitted"] is None
+
+
+def test_submitted_distinguishes_handed_in_from_started() -> None:
+    started = {**SAFE_ASSIGNMENT, "submission": {"submitted_at": None}}
+    assert slim_assignment(started)["submitted"] is False
+    assert slim_assignment(SAFE_ASSIGNMENT)["submitted"] is True
+
+
+def test_locked_is_reported_rather_than_used_to_hide() -> None:
+    locked = {**SAFE_ASSIGNMENT, "locked_for_user": True}
+    assert slim_assignment(locked)["locked"] is True
+    assert slim_assignment(locked)["name"] == "Week 1 exercise"
+
+
+def test_the_assignment_reduction_is_dramatic() -> None:
+    raw = json.loads(ASSIGNMENTS_FIXTURE.read_text())
+    compact = {"separators": (",", ":")}
+    before = len(json.dumps(raw, **compact))
+    after = len(json.dumps([slim_assignment(a) for a in raw], **compact))
+    assert before / after > 20

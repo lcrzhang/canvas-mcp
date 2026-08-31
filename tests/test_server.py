@@ -13,16 +13,18 @@ import httpx2
 import pytest
 
 from canvas_mcp.client import CanvasClient, CanvasError
-from canvas_mcp.filters import SUBMISSION_FIELDS
+from canvas_mcp.filters import ASSIGNMENT_FIELDS, SUBMISSION_FIELDS
 from canvas_mcp.scopes import DEFAULT_SCOPES, TOOL_SCOPES
 from canvas_mcp.server import build_client, build_server, parse_args
 from canvas_mcp.tools import build_tools
+from canvas_mcp.tools.assignments import is_upcoming, make_list_assignments
 from canvas_mcp.tools.courses import make_list_courses, term_has_ended
 from canvas_mcp.tools.grades import make_list_grades
 
 FIXTURES = Path(__file__).resolve().parent.parent / "fixtures"
 FIXTURE = FIXTURES / "courses.json"
 SUBMISSIONS_FIXTURE = FIXTURES / "submissions.json"
+ASSIGNMENTS_FIXTURE = FIXTURES / "assignments.json"
 
 
 def stub() -> object:
@@ -125,7 +127,6 @@ def test_term_filter_matches_case_insensitively_and_partially() -> None:
 # still arriving; here is where it went. Adding a tool fails this test until
 # its name is removed from the list, which is the point.
 NOT_YET_BUILT = {
-    "list_assignments",
     "get_assignment",
     "list_announcements",
     "list_materials",
@@ -140,9 +141,14 @@ def test_every_policy_row_names_a_tool_that_exists_or_is_listed_as_pending() -> 
 
 
 def test_the_real_tools_register_under_the_default_scopes() -> None:
+    """Asserted by claim rather than by inventory: the exact list grows every
+    step, and keeping it in step is what the policy tripwire above is for."""
     with fixture_client() as client:
         server = build_server(build_tools(client))
-    assert tool_names(server) == ["list_courses"]
+    names = tool_names(server)
+    assert "list_courses" in names
+    assert "list_assignments" in names
+    assert "list_grades" not in names
 
 
 def test_list_grades_appears_only_when_its_scope_is_asked_for() -> None:
@@ -150,7 +156,7 @@ def test_list_grades_appears_only_when_its_scope_is_asked_for() -> None:
         server = build_server(
             build_tools(client), scopes=[*DEFAULT_SCOPES, "grades:read"]
         )
-    assert tool_names(server) == ["list_courses", "list_grades"]
+    assert "list_grades" in tool_names(server)
 
 
 def test_list_grades_returns_slimmed_submissions() -> None:
@@ -245,3 +251,55 @@ def test_term_filter_still_applies_within_current_courses() -> None:
         assert list_courses(term_filter="2026/27")
         assert list_courses(term_filter="2024/25") == []
         assert list_courses(term_filter="2024/25", current_only=False)
+
+
+# --- assignments ----------------------------------------------------------
+
+VISIBLE = {"id": 1, "name": "Visible", "due_at": "2027-01-01T00:00:00Z"}
+HIDDEN = {"id": 2, "name": "Hidden", "hidden_for_user": True}
+PAST = {"id": 3, "name": "Past", "due_at": "2025-01-01T00:00:00Z"}
+UNDATED = {"id": 4, "name": "Undated", "due_at": None}
+
+
+@pytest.mark.parametrize(
+    ("due_at", "upcoming"),
+    [
+        ("2027-01-01T00:00:00Z", True),
+        ("2025-01-01T00:00:00Z", False),
+        (None, True),  # nothing to decide it has passed
+        ("not a date", True),
+    ],
+)
+def test_is_upcoming(due_at: str | None, upcoming: bool) -> None:
+    assert is_upcoming({"due_at": due_at}, NOW) is upcoming
+
+
+def test_hidden_assignments_are_dropped_but_locked_ones_are_not() -> None:
+    """SCOPE.md section 5 says hidden means the item does not exist for the
+    tool. Locked means it cannot be submitted to, which a student needs told."""
+    locked = {**VISIBLE, "locked_for_user": True}
+    with courses_client([locked, HIDDEN]) as client:
+        listed = make_list_assignments(client)(course_id=1)
+    assert [a["name"] for a in listed] == ["Visible"]
+    assert listed[0]["locked"] is True
+
+
+def test_everything_is_returned_by_default_including_past_deadlines() -> None:
+    with courses_client([VISIBLE, PAST, UNDATED]) as client:
+        listed = make_list_assignments(client)(course_id=1)
+    assert len(listed) == 3
+
+
+def test_only_upcoming_keeps_undated_work() -> None:
+    with courses_client([VISIBLE, PAST, UNDATED]) as client:
+        listed = make_list_assignments(client)(course_id=1, only_upcoming=True)
+    assert sorted(a["name"] for a in listed) == ["Undated", "Visible"]
+
+
+def test_list_assignments_runs_against_the_committed_fixture() -> None:
+    payload = json.loads(ASSIGNMENTS_FIXTURE.read_text())
+    with courses_client(payload) as client:
+        listed = make_list_assignments(client)(course_id=1)
+    assert len(listed) == len(payload)
+    assert all(tuple(a) == ASSIGNMENT_FIELDS for a in listed)
+    assert "secure_params" not in json.dumps(listed)
