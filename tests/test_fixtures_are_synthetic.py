@@ -149,3 +149,41 @@ def test_course_code_is_a_code_and_not_the_course_name() -> None:
     converted = to_synthetic(REAL_LOOKING)
     assert converted["course_code"] != converted["name"]
     assert converted["course_code"].startswith("FIX")
+
+
+def test_a_nested_name_is_named_for_what_it_is() -> None:
+    """The same key means different things depending on its parent.
+
+    Without this, a term and a user were both given course names, which reads
+    as a broken tool rather than as sample data — a real reader said so within
+    one sentence of seeing the demo.
+    """
+    document = {
+        "name": "Datastructuren",
+        "term": {"name": "Semester 1 2025-2026"},
+        "user": {"name": "Jan de Vries"},
+        "assignment": {"name": "Werkcollege 3"},
+    }
+    converted = to_synthetic(document)
+    assert "Semester" in converted["term"]["name"]
+    assert converted["user"]["name"] != converted["name"]
+    assert converted["assignment"]["name"] != converted["name"]
+
+
+def test_names_do_not_repeat_across_a_list_of_courses() -> None:
+    """A counter shared with nested terms and users made course names skip
+    entries in the pool and start repeating."""
+    courses = [{"name": f"Course {i}", "term": {"name": f"Term {i}"}} for i in range(6)]
+    names = [course["name"] for course in to_synthetic(courses)]
+    assert len(set(names)) == len(names)
+
+
+def test_a_score_never_exceeds_the_points_it_sits_next_to() -> None:
+    document = {"score": 9.0, "points_possible": 10.0}
+    converted = to_synthetic(document)
+    assert converted["score"] <= converted["points_possible"]
+
+
+def test_a_grade_reads_as_a_grade() -> None:
+    converted = to_synthetic({"grade": "8.5"})
+    assert "FIXTURE" not in converted["grade"]

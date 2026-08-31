@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 11 merged early** — demo mode, and the server confirmed working in a real client on 2026-08-31
+Status: **step 6 — `list_assignments`** · fixture realism fixed after the live test
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -123,10 +123,23 @@ and admin plumbing section 5 of `SCOPE.md` predicted — `blueprint`, `template`
 `license`, `storage_quota_mb`, `grade_passback_setting`. Those are exactly the
 fields a hand-written fixture would have missed.
 
-Known wart: a term's `name` gets a course name from the pool, because the
-converter keys on the field name and cannot see that it is nested under `term`.
-Harmless for tests, odd to read. Fixing it needs parent context threaded
-through the converter, which is a change to `to_synthetic`, not to this step.
+**Fixed on 2026-08-31, after the live test.** The wart was that a term's
+`name` got a course name, because the converter keyed on the field name and
+could not see it was nested under `term`. It was recorded here as harmless.
+
+It was not. The first reader of the demo said "term and name seem to be mixed
+up" within one sentence, and concluded the tool was confused rather than the
+data. Demo mode exists to convince a reader (`SCOPE.md` section 8), so the
+quality of that data is load-bearing, not cosmetic. The evidence changed and
+the judgement with it.
+
+`to_synthetic` now carries the parent key, so `name` resolves against terms,
+users, assignments or courses. Counters are kept per `(parent, key)` rather
+than per key: a shared `name` counter was also consumed by nested terms and
+users, which made course names skip pool entries and repeat. Grades became
+letters, so nothing invites a reader to check whether `grade` and `score`
+agree — independent counters cannot promise that. Scores draw from a range
+below the smallest `points_possible`, so a score never exceeds its maximum.
 
 `PRESERVED_KEYS` is the single exception, and it has a second gate: a value is
 kept only if it also looks like an enum. The first version allowed spaces in
@@ -390,11 +403,11 @@ module → subheader section → items.
 under them by `indent`. Respect `locked_for_user` and `hidden_for_user`. The
 course file index is 403 for students; modules are the only way in.
 
-### [~] 11. Fixture mode
+### [x] 11. Fixture mode
 
 **Delivers:** `canvas-mcp --demo` runs with no token and no network.
 
-**Branch:** `feat/demo-mode` · **PR:** #25
+**Branch:** `feat/demo-mode` · **Issue:** #25 · **PR:** #26 (merged)
 
 **Notes:** a transport that reads `fixtures/` instead of the network, not a
 second implementation — `CanvasClient` already takes `transport=`, which is the

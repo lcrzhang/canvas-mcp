@@ -131,7 +131,31 @@ _COURSE_NAMES = (
     "Theory of Plausible Machines",
     "Advanced Placeholder Studies",
     "Seminar in Invented Methods",
+    "Foundations of Nothing in Particular",
+    "Comparative Hypotheticals",
+    "Methods of Approximate Reasoning",
 )
+_TERM_NAMES = (
+    "Semester 1 2026-2027",
+    "Semester 2 2026-2027",
+    "Summer 2027",
+)
+_ASSIGNMENT_NAMES = (
+    "Weekly exercise 1",
+    "Lab report",
+    "Midterm essay",
+    "Group project",
+    "Reading response",
+    "Problem set 4",
+    "Final assignment",
+)
+# Points a real assignment is worth, rather than a counter climbing past 100.
+_POINTS = (10.0, 20.0, 25.0, 50.0, 100.0)
+# Kept below the smallest entry in _POINTS, so a synthetic score never exceeds
+# the maximum it sits next to. Independent counters cannot guarantee a
+# relationship; keeping the ranges apart can.
+_SCORES = (6.5, 7.0, 8.0, 8.5, 9.5)
+_LETTER_GRADES = ("A", "A-", "B+", "B", "C+")
 _PERSON_NAMES = (
     "Robin Fictief",
     "Sam Verzonnen",
@@ -157,9 +181,24 @@ def _preserved(key: str, value: str) -> bool:
     return key in PRESERVED_KEYS and bool(_ENUM_SHAPE.match(value))
 
 
-def _synthetic_string(key: str, value: str, n: int) -> str:
+def _synthetic_string(key: str, value: str, n: int, parent: str = "") -> str:
     if _preserved(key, value):
         return value
+    if key == "name":
+        # The same key means different things depending on what it hangs off.
+        # Without the parent, a term and a user were both given course names,
+        # which read as a broken tool rather than as sample data.
+        if parent == "term":
+            return _TERM_NAMES[n % len(_TERM_NAMES)]
+        if parent == "assignment":
+            return _ASSIGNMENT_NAMES[n % len(_ASSIGNMENT_NAMES)]
+        if parent == "user":
+            return _PERSON_NAMES[n % len(_PERSON_NAMES)]
+    if key in ("grade", "entered_grade"):
+        # A letter grade rather than a number. FIXTURE-grade-1 reads as a bug,
+        # and a number next to `score` invites a reader to check whether the
+        # two agree — which independent counters cannot promise.
+        return _LETTER_GRADES[n % len(_LETTER_GRADES)]
     if key == "ics" or value.endswith(".ics"):
         return f"https://{SYNTHETIC_HOST}/feeds/calendars/FIXTURE{n:02d}.ics"
     if "verifier=" in value:
@@ -189,7 +228,12 @@ def _synthetic_string(key: str, value: str, n: int) -> str:
     return f"FIXTURE-{key}-{n}"
 
 
-def to_synthetic(data: Any, key: str = "root", counters: dict | None = None) -> Any:
+def to_synthetic(
+    data: Any,
+    key: str = "root",
+    counters: dict | None = None,
+    parent: str = "",
+) -> Any:
     """Rebuild a decoded JSON document with every value replaced.
 
     Structure is preserved exactly — same keys, same nesting, same list
@@ -202,19 +246,27 @@ def to_synthetic(data: Any, key: str = "root", counters: dict | None = None) -> 
     if counters is None:
         counters = {}
     if isinstance(data, dict):
-        return {k: to_synthetic(v, k, counters) for k, v in data.items()}
+        return {k: to_synthetic(v, k, counters, key) for k, v in data.items()}
     if isinstance(data, list):
-        return [to_synthetic(v, key, counters) for v in data]
+        return [to_synthetic(v, key, counters, parent) for v in data]
     if isinstance(data, bool) or data is None:
         return data
 
-    counters[key] = counters.get(key, 0) + 1
-    n = counters[key]
+    # Counted per (parent, key), not per key: a shared `name` counter was also
+    # consumed by nested terms and users, so course names skipped pool entries
+    # and started repeating.
+    slot = f"{parent}.{key}"
+    counters[slot] = counters.get(slot, 0) + 1
+    n = counters[slot]
     if isinstance(data, str):
-        return _synthetic_string(key, data, n)
+        return _synthetic_string(key, data, n, parent)
     if isinstance(data, int):
         return n if key.endswith("id") else 100 + n
     if isinstance(data, float):
+        if key == "points_possible":
+            return _POINTS[n % len(_POINTS)]
+        if key in ("score", "entered_score"):
+            return _SCORES[n % len(_SCORES)]
         return float(10 * n)
     return data
 
