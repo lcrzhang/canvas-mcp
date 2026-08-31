@@ -223,20 +223,21 @@ decision in the table above; writing the code was delegated once the design was
 settled, on the grounds that the reasoning was the learning goal, not the
 typing. `CLAUDE.md` records that split.
 
-**Consequence for step 5.** `TOOL_SCOPES` lists all six v0.1 tools, and the
-registry refuses to start when a table row has no matching tool. At step 5 only
-`list_courses` exists, so the server cannot construct a registry yet. Three
-ways out, and it is a decision rather than a detail:
+**Found while planning step 5, and resolved.** `TOOL_SCOPES` lists all six v0.1
+tools, and the first version of the registry also refused to start when a table
+row had no matching tool. At step 5 only two tools exist, so the server could
+not have started at all.
 
-1. grow `TOOL_SCOPES` one row per step, as each tool lands
-2. build `list_grades` in step 5 alongside `list_courses`, which makes the
-   demonstration real from the first end-to-end step
-3. drop the orphan check and keep only the unpoliced-tool check
+Resolved by splitting the check by consequence rather than by symmetry:
 
-Only the second direction of the check protects anything: a tool with no policy
-row could run unpoliced, while a policy row with no tool is stale documentation.
-Option 3 is therefore not unsafe — but it removes the thing that would catch a
-renamed tool.
+- **a tool with no policy row** could run unpoliced — a leak. Stays enforced at
+  construction.
+- **a policy row with no tool** is stale documentation. Moved to the test
+  suite, which runs on every PR and can see every tool once they exist.
+
+Building the tools one step at a time now works, and a renamed tool is still
+caught. Same principle as everywhere else, applied at the right layer: enforce
+what prevents damage, assert what guards documentation.
 
 ### [ ] 5. MCP server and `list_courses`
 
@@ -249,6 +250,18 @@ taking?" against the real API.
 
 **Notes:** first end-to-end step. Resolve `enrollment_term_id` to a term name
 via `include[]=term` — a bare `417` is useless to a model.
+
+`list_grades` is built here too, alongside `list_courses`. It was in the
+backlog; moving it forward makes the demonstration real at the earliest
+possible moment — two tools registered, one visible, one not, and the second
+appears only when someone types `grades:read`. That is the project's claim,
+runnable, from the first step that runs.
+
+Also add the test that step 4 moved out of the runtime: every row in
+`TOOL_SCOPES` names a tool that actually exists.
+
+Print one line at startup naming the enabled and disabled scopes. Diagnostics,
+not logging — no request data, nothing near a token.
 
 ### [ ] 6. `list_assignments`
 
