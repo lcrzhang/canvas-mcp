@@ -10,11 +10,18 @@ at a time using the stepwise-build workflow: brief, implement, report, stop.
 - add a dependency without asking
 - build anything listed under non-goals in `SCOPE.md` (section 7)
 - expand a step beyond what the brief described
-- touch `.env` or any file containing a real credential
+- read, print or copy the value of `.env`, or of any file holding a real
+  credential
 
 The real `CANVAS_TOKEN` lives in `../.env`, outside this repository, so that a
-mistake in `.gitignore` cannot leak it. Read it from the environment; never
-accept a token as a tool parameter.
+mistake in `.gitignore` cannot leak it. Code reads it from the process
+environment; it is never a parameter and never printed.
+
+**One exception, agreed with Leo on 2026-08-30.** The agent may load `.env`
+into a subprocess environment (`set -a; . ../.env; set +a`) in order to run
+`tools/make_fixture.py`, the only command that needs live credentials. It may
+not open the file, echo the value, or pass it to anything else. The capture
+prints field names and counts, never values.
 
 ## Git
 
@@ -36,7 +43,9 @@ accept a token as a tool parameter.
 - `src/canvas_mcp/scopes.py` — the deny-by-default registry (roadmap step 4).
   This is the learning goal of the project.
 - tool descriptions and the tuning pass on them (roadmap step 13)
-- capturing and anonymising fixtures from the live API (roadmap step 3)
+- deciding *when* a live capture runs. The capture itself is automated in
+  `tools/make_fixture.py`, which fetches, converts and checks in one process;
+  the raw response never reaches disk and never reaches the agent's context
 - the claims and argumentation in `README.md` (roadmap step 12) — structure may
   be drafted, conclusions may not
 - `.env` and anything containing a real token
