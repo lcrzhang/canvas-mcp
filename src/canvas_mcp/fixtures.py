@@ -169,6 +169,11 @@ _COURSE_KEYS = frozenset({"name", "original_name", "friendly_name"})
 
 _ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}([T ]|$)")
 _BASE_DATE = date(2026, 2, 2)
+# Fields that mean "this closes later". They are dated a year past the base so
+# a captured fixture still reads as a running term rather than an archived one
+# — a demo whose courses have all ended shows nothing, which is worse than a
+# demo whose dates are approximate.
+_FUTURE_DATE_KEYS = frozenset({"end_at", "lock_at", "unlock_at", "cached_due_date"})
 
 
 def _preserved(key: str, value: str) -> bool:
@@ -209,7 +214,10 @@ def _synthetic_string(key: str, value: str, n: int, parent: str = "") -> str:
     if value.startswith(("http://", "https://")):
         return f"https://{SYNTHETIC_HOST}/api/v1/{key}/{n}"
     if _ISO_DATE.match(value):
-        stamp = _BASE_DATE + timedelta(days=n)
+        base = _BASE_DATE
+        if key in _FUTURE_DATE_KEYS:
+            base += timedelta(days=365)
+        stamp = base + timedelta(days=n)
         return f"{stamp.isoformat()}T09:00:00Z" if "T" in value else stamp.isoformat()
     if "email" in key or key == "login_id":
         return f"person{n}@example.edu"
