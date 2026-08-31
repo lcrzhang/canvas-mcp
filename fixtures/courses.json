@@ -23,13 +23,13 @@
     "course_color": null,
     "friendly_name": null,
     "term": {
-      "id": 2,
-      "name": "Theory of Plausible Machines",
+      "id": 1,
+      "name": "Semester 2 2026-2027",
       "start_at": null,
       "end_at": null,
       "workflow_state": "active",
       "grading_period_group_id": null,
-      "created_at": "2026-02-04T09:00:00Z"
+      "created_at": "2026-02-03T09:00:00Z"
     },
     "apply_assignment_group_weights": false,
     "calendar": {
@@ -61,11 +61,11 @@
     "restrict_enrollments_to_course_dates": false
   },
   {
-    "id": 3,
-    "name": "Advanced Placeholder Studies",
+    "id": 2,
+    "name": "Theory of Plausible Machines",
     "course_code": "FIX0002SYN",
     "account_id": 2,
-    "created_at": "2026-02-05T09:00:00Z",
+    "created_at": "2026-02-04T09:00:00Z",
     "start_at": null,
     "default_view": "FIXTURE-default_view-2",
     "enrollment_term_id": 2,
@@ -84,13 +84,13 @@
     "course_color": null,
     "friendly_name": null,
     "term": {
-      "id": 4,
-      "name": "Seminar in Invented Methods",
+      "id": 2,
+      "name": "Summer 2027",
       "start_at": null,
       "end_at": "2026-02-03T09:00:00Z",
       "workflow_state": "active",
       "grading_period_group_id": null,
-      "created_at": "2026-02-06T09:00:00Z"
+      "created_at": "2026-02-04T09:00:00Z"
     },
     "apply_assignment_group_weights": false,
     "calendar": {
@@ -114,11 +114,11 @@
     "restrict_enrollments_to_course_dates": false
   },
   {
-    "id": 5,
-    "name": "Introduction to Imaginary Systems",
+    "id": 3,
+    "name": "Advanced Placeholder Studies",
     "course_code": "FIX0003SYN",
     "account_id": 3,
-    "created_at": "2026-02-07T09:00:00Z",
+    "created_at": "2026-02-05T09:00:00Z",
     "start_at": "2026-02-04T09:00:00Z",
     "default_view": "FIXTURE-default_view-3",
     "enrollment_term_id": 3,
@@ -137,13 +137,13 @@
     "course_color": null,
     "friendly_name": null,
     "term": {
-      "id": 6,
-      "name": "Applied Handwaving",
+      "id": 3,
+      "name": "Semester 1 2026-2027",
       "start_at": null,
       "end_at": "2026-02-04T09:00:00Z",
       "workflow_state": "active",
       "grading_period_group_id": null,
-      "created_at": "2026-02-08T09:00:00Z"
+      "created_at": "2026-02-05T09:00:00Z"
     },
     "apply_assignment_group_weights": false,
     "calendar": {
@@ -167,11 +167,11 @@
     "restrict_enrollments_to_course_dates": true
   },
   {
-    "id": 7,
-    "name": "Theory of Plausible Machines",
+    "id": 4,
+    "name": "Seminar in Invented Methods",
     "course_code": "FIX0004SYN",
     "account_id": 4,
-    "created_at": "2026-02-09T09:00:00Z",
+    "created_at": "2026-02-06T09:00:00Z",
     "start_at": null,
     "default_view": "FIXTURE-default_view-4",
     "enrollment_term_id": 4,
@@ -190,13 +190,13 @@
     "course_color": null,
     "friendly_name": null,
     "term": {
-      "id": 8,
-      "name": "Advanced Placeholder Studies",
+      "id": 4,
+      "name": "Semester 2 2026-2027",
       "start_at": null,
       "end_at": "2026-02-05T09:00:00Z",
       "workflow_state": "active",
       "grading_period_group_id": null,
-      "created_at": "2026-02-10T09:00:00Z"
+      "created_at": "2026-02-06T09:00:00Z"
     },
     "apply_assignment_group_weights": false,
     "calendar": {
@@ -220,11 +220,11 @@
     "restrict_enrollments_to_course_dates": false
   },
   {
-    "id": 9,
-    "name": "Seminar in Invented Methods",
+    "id": 5,
+    "name": "Foundations of Nothing in Particular",
     "course_code": "FIX0005SYN",
     "account_id": 5,
-    "created_at": "2026-02-11T09:00:00Z",
+    "created_at": "2026-02-07T09:00:00Z",
     "start_at": null,
     "default_view": "FIXTURE-default_view-5",
     "enrollment_term_id": 5,
@@ -243,13 +243,13 @@
     "course_color": null,
     "friendly_name": null,
     "term": {
-      "id": 10,
-      "name": "Introduction to Imaginary Systems",
+      "id": 5,
+      "name": "Summer 2027",
       "start_at": null,
       "end_at": "2026-02-06T09:00:00Z",
       "workflow_state": "active",
       "grading_period_group_id": null,
-      "created_at": "2026-02-12T09:00:00Z"
+      "created_at": "2026-02-07T09:00:00Z"
     },
     "apply_assignment_group_weights": false,
     "calendar": {
@@ -273,11 +273,11 @@
     "restrict_enrollments_to_course_dates": false
   },
   {
-    "id": 11,
-    "name": "Applied Handwaving",
+    "id": 6,
+    "name": "Comparative Hypotheticals",
     "course_code": "FIX0006SYN",
     "account_id": 6,
-    "created_at": "2026-02-13T09:00:00Z",
+    "created_at": "2026-02-08T09:00:00Z",
     "start_at": null,
     "default_view": "FIXTURE-default_view-6",
     "enrollment_term_id": 6,
@@ -296,13 +296,13 @@
     "course_color": null,
     "friendly_name": null,
     "term": {
-      "id": 12,
-      "name": "Theory of Plausible Machines",
+      "id": 6,
+      "name": "Semester 1 2026-2027",
       "start_at": null,
       "end_at": "2026-02-07T09:00:00Z",
       "workflow_state": "active",
       "grading_period_group_id": null,
-      "created_at": "2026-02-14T09:00:00Z"
+      "created_at": "2026-02-08T09:00:00Z"
     },
     "apply_assignment_group_weights": true,
     "calendar": {
