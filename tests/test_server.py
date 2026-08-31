@@ -6,6 +6,7 @@ it is the project's claim, asserted rather than argued.
 
 import asyncio
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx2
@@ -16,7 +17,7 @@ from canvas_mcp.filters import SUBMISSION_FIELDS
 from canvas_mcp.scopes import DEFAULT_SCOPES, TOOL_SCOPES
 from canvas_mcp.server import build_client, build_server, parse_args
 from canvas_mcp.tools import build_tools
-from canvas_mcp.tools.courses import make_list_courses
+from canvas_mcp.tools.courses import make_list_courses, term_has_ended
 from canvas_mcp.tools.grades import make_list_grades
 
 FIXTURES = Path(__file__).resolve().parent.parent / "fixtures"
@@ -179,3 +180,68 @@ def test_demo_mode_404s_an_endpoint_it_has_no_fixture_for() -> None:
     client = build_client(demo=True)
     with pytest.raises(CanvasError, match="not found"):
         client.get("/courses/1/modules")
+
+
+# --- current courses ------------------------------------------------------
+
+NOW = datetime(2026, 8, 31, tzinfo=UTC)
+
+
+@pytest.mark.parametrize(
+    ("end_at", "ended"),
+    [
+        ("2025-07-01T00:00:00Z", True),
+        ("2027-07-01T00:00:00Z", False),
+        (None, False),  # an open-ended term is a real thing
+        ("not a date", False),  # never hide a course over a parse failure
+    ],
+)
+def test_term_has_ended(end_at: str | None, ended: bool) -> None:
+    assert term_has_ended({"term": {"end_at": end_at}}, NOW) is ended
+
+
+def test_a_course_without_a_term_is_never_hidden() -> None:
+    assert term_has_ended({}, NOW) is False
+
+
+def courses_client(courses: list[dict]) -> CanvasClient:
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        return httpx2.Response(200, json=courses)
+
+    return CanvasClient(transport=httpx2.MockTransport(handler))
+
+
+FINISHED = {
+    "id": 1,
+    "name": "Matching KI",
+    "course_code": "OLD",
+    "term": {"name": "2024/25 semester 2", "end_at": "2025-07-01T00:00:00Z"},
+}
+RUNNING = {
+    "id": 2,
+    "name": "Datastructuren",
+    "course_code": "NEW",
+    "term": {"name": "2026/27 semester 1", "end_at": "2027-02-01T00:00:00Z"},
+}
+
+
+def test_finished_terms_are_left_out_by_default() -> None:
+    """Canvas keeps an enrolment active long after the term ends, so the
+    unfiltered answer mixes this year's courses with ones from years ago."""
+    with courses_client([FINISHED, RUNNING]) as client:
+        names = [course["name"] for course in make_list_courses(client)()]
+    assert names == ["Datastructuren"]
+
+
+def test_current_only_false_shows_everything() -> None:
+    with courses_client([FINISHED, RUNNING]) as client:
+        courses = make_list_courses(client)(current_only=False)
+    assert len(courses) == 2
+
+
+def test_term_filter_still_applies_within_current_courses() -> None:
+    with courses_client([FINISHED, RUNNING]) as client:
+        list_courses = make_list_courses(client)
+        assert list_courses(term_filter="2026/27")
+        assert list_courses(term_filter="2024/25") == []
+        assert list_courses(term_filter="2024/25", current_only=False)
