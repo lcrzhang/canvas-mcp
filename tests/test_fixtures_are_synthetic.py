@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from canvas_mcp.fixtures import find_real_looking_values
+from canvas_mcp.fixtures import find_real_looking_values, to_synthetic
 
 FIXTURE_DIR = Path(__file__).resolve().parent.parent / "fixtures"
 
@@ -66,3 +66,80 @@ def test_every_committed_fixture_is_synthetic() -> None:
     for path in sorted(FIXTURE_DIR.glob("*.json")) if FIXTURE_DIR.exists() else []:
         findings = find_real_looking_values(json.loads(path.read_text()))
         assert findings == [], f"{path.name} contains real-looking data: {findings}"
+
+
+# --- conversion -----------------------------------------------------------
+
+REAL_LOOKING = {
+    "id": 60059,
+    "name": "Datastructuren en Algoritmen",
+    "course_code": "5062DAAL6Y",
+    "uuid": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+    "workflow_state": "available",
+    "is_public": False,
+    "position": None,
+    "created_at": "2025-09-01T08:30:00Z",
+    "calendar": {"ics": "https://canvas.uva.nl/feeds/calendars/abc123.ics"},
+    "teachers": [
+        {"display_name": "Jan de Vries", "email": "j.devries@uva.nl", "id": 4471},
+    ],
+    "files": [
+        {
+            "url": "https://canvas.uva.nl/files/1/download?verifier=9f8e7d6c5b4a",
+            "content_type": "application/pdf",
+            "size": 10241,
+        }
+    ],
+}
+
+
+def shape_of(data: object) -> object:
+    """Keys, nesting, list lengths and types — everything except values."""
+    if isinstance(data, dict):
+        return {k: shape_of(v) for k, v in data.items()}
+    if isinstance(data, list):
+        return [shape_of(v) for v in data]
+    return type(data).__name__
+
+
+def strings_in(data: object) -> list[str]:
+    if isinstance(data, dict):
+        return [s for v in data.values() for s in strings_in(v)]
+    if isinstance(data, list):
+        return [s for v in data for s in strings_in(v)]
+    return [data] if isinstance(data, str) else []
+
+
+def test_converted_output_passes_the_guard() -> None:
+    assert find_real_looking_values(to_synthetic(REAL_LOOKING)) == []
+
+
+def test_structure_survives_exactly() -> None:
+    assert shape_of(to_synthetic(REAL_LOOKING)) == shape_of(REAL_LOOKING)
+
+
+def test_no_original_string_survives_except_allowed_enums() -> None:
+    converted = to_synthetic(REAL_LOOKING)
+    survivors = set(strings_in(REAL_LOOKING)) & set(strings_in(converted))
+    assert survivors == {"available", "application/pdf"}
+
+
+def test_booleans_and_nulls_are_kept() -> None:
+    converted = to_synthetic(REAL_LOOKING)
+    assert converted["is_public"] is False
+    assert converted["position"] is None
+
+
+def test_an_enum_key_carrying_free_text_is_replaced_anyway() -> None:
+    converted = to_synthetic({"type": "Uploaded by Jan de Vries on 2025-09-01"})
+    assert "Jan de Vries" not in converted["type"]
+
+
+def test_url_shapes_are_preserved_so_filter_tests_stay_meaningful() -> None:
+    converted = to_synthetic(REAL_LOOKING)
+    assert converted["calendar"]["ics"].endswith(".ics")
+    assert "verifier=FIXTURE" in converted["files"][0]["url"]
+
+
+def test_conversion_is_deterministic() -> None:
+    assert to_synthetic(REAL_LOOKING) == to_synthetic(REAL_LOOKING)
