@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 3 — filter layer** · branch `feat/filters` open
+Status: **step 4 — scope registry** · branch `test/scopes` open
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -133,14 +133,14 @@ kept only if it also looks like an enum. The first version allowed spaces in
 that shape, which let `Uploaded by <name> on <date>` survive under `type`. Enums
 have no spaces; free text does. Caught by a test, not by review.
 
-### [~] 3. Filter layer
+### [x] 3. Filter layer
 
 **Delivers:** `slim_course()` reduces a raw course by an order of magnitude;
 tests assert that `calendar.ics`, `uuid` and any `verifier=` URL never survive.
 
 **Files:** `src/canvas_mcp/filters.py`, `tests/test_filters.py`
 
-**Branch:** `feat/filters` · **Issue:** #17
+**Branch:** `feat/filters` · **Issue:** #17 · **PR:** #18 (merged)
 
 **Notes:** the fixture moved to step 3a, which automated the capture — it is no
 longer converted by hand, and the raw response reaches neither disk nor the
@@ -185,18 +185,59 @@ The detector lives in `src/canvas_mcp/fixtures.py` rather than in the test,
 because the converter imports it too — and step 11's demo loader belongs in the
 same module.
 
-### [ ] 4. Scope registry — **HUMAN**
+### [~] 4. Scope registry — design **HUMAN**
 
 **Delivers:** deny-by-default tool registration; `--scopes courses:read` exposes
 exactly one tool; an unregistered scope raises at startup, not at call time.
 
 **Files:** `src/canvas_mcp/scopes.py`
 
-**Branch:** `feat/scopes`
+**Branch:** `test/scopes` · **Issue:** #19 · **PR:** #20
 
 **Notes:** this is the learning goal of the project. `grades:read` exists but is
 off by default — that gap between what the token allows and what the server
 allows is the point.
+
+Designed together on 2026-08-30; `tests/test_scopes.py` is the specification
+and was written first. Decisions taken, each with the reason in one line:
+
+| Decision | Choice | Why |
+|---|---|---|
+| a tool outside scope | not registered, invisible | a forgotten registration is an annoyance, a forgotten check is a leak |
+| where the scope lives | one table in `scopes.py` | the policy fits on a page and can be pointed at |
+| preventing drift | the constructor refuses | table and tools must match or the server does not start |
+| unknown scope name | raises at construction | a typo must not yield a silently empty server |
+| the default | an explicit list, not "everything except" | growing the default becomes a decision, and the README cannot drift |
+| wildcards | none | `courses:*` is "everything except" turned around |
+| who filters | the registry hands out tools | `server.py` cannot register what it was never given |
+
+Rejected: a call-time `require()` inside each tool. It gives better
+observability — you can log what was attempted — but one forgotten line is a
+leak, and there is no logging in this project to make the benefit real.
+
+This is the same move as the fixture guard and the filter allowlist: enforce
+it, do not trust it.
+
+The tests were written first and the implementation followed. Leo made every
+decision in the table above; writing the code was delegated once the design was
+settled, on the grounds that the reasoning was the learning goal, not the
+typing. `CLAUDE.md` records that split.
+
+**Found while planning step 5, and resolved.** `TOOL_SCOPES` lists all six v0.1
+tools, and the first version of the registry also refused to start when a table
+row had no matching tool. At step 5 only two tools exist, so the server could
+not have started at all.
+
+Resolved by splitting the check by consequence rather than by symmetry:
+
+- **a tool with no policy row** could run unpoliced — a leak. Stays enforced at
+  construction.
+- **a policy row with no tool** is stale documentation. Moved to the test
+  suite, which runs on every PR and can see every tool once they exist.
+
+Building the tools one step at a time now works, and a renamed tool is still
+caught. Same principle as everywhere else, applied at the right layer: enforce
+what prevents damage, assert what guards documentation.
 
 ### [ ] 5. MCP server and `list_courses`
 
@@ -209,6 +250,18 @@ taking?" against the real API.
 
 **Notes:** first end-to-end step. Resolve `enrollment_term_id` to a term name
 via `include[]=term` — a bare `417` is useless to a model.
+
+`list_grades` is built here too, alongside `list_courses`. It was in the
+backlog; moving it forward makes the demonstration real at the earliest
+possible moment — two tools registered, one visible, one not, and the second
+appears only when someone types `grades:read`. That is the project's claim,
+runnable, from the first step that runs.
+
+Also add the test that step 4 moved out of the runtime: every row in
+`TOOL_SCOPES` names a tool that actually exists.
+
+Print one line at startup naming the enabled and disabled scopes. Diagnostics,
+not logging — no request data, nothing near a token.
 
 ### [ ] 6. `list_assignments`
 
