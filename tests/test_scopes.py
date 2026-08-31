@@ -126,12 +126,19 @@ def test_a_tool_missing_from_the_policy_table_fails_at_construction() -> None:
         ScopeRegistry(tools)
 
 
-def test_a_policy_entry_without_a_tool_fails_at_construction() -> None:
+def test_a_policy_row_without_a_tool_is_allowed_while_tools_are_built() -> None:
+    """The mirror of the check above, and deliberately not enforced.
+
+    A policy row naming a tool that does not exist yet is stale documentation,
+    not a leak. Enforcing it at construction would stop the server from
+    starting until every tool in the table had been written, which is the
+    opposite of building one step at a time. Step 5 adds the test that catches
+    a genuinely stale row, once every tool is known.
+    """
     tools = all_tools()
-    orphaned = next(iter(TOOL_SCOPES))
-    del tools[orphaned]
-    with pytest.raises(ScopeError, match=orphaned):
-        ScopeRegistry(tools)
+    del tools[next(iter(TOOL_SCOPES))]
+    registry = ScopeRegistry(tools)
+    assert next(iter(TOOL_SCOPES)) not in registry.enabled_tools()
 
 
 def test_every_scope_in_the_table_is_spelled_consistently() -> None:

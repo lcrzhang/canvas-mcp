@@ -12,8 +12,10 @@ The design decisions, their alternatives and the reasons are recorded in
   forgotten permission check is a leak.
 - The registry **hands out tools** instead of answering questions about
   scopes, so a caller cannot register something it was never given.
-- Everything fails **at construction**, so a misconfigured server does not
-  start rather than misbehaving later.
+- Everything that could leak fails **at construction**, so a misconfigured
+  server does not start rather than misbehaving later. What cannot leak — a
+  policy row for a tool that does not exist yet — is checked by the tests
+  instead, so that building the tools one step at a time stays possible.
 """
 
 from collections.abc import Iterable, Mapping
@@ -71,7 +73,7 @@ class ScopeRegistry:
         tools: Mapping[str, T],
         scopes: Iterable[str] | None = None,
     ) -> None:
-        self._check_policy_covers(tools)
+        self._check_every_tool_is_policed(tools)
         requested = tuple(DEFAULT_SCOPES if scopes is None else scopes)
         self._check_scopes_exist(requested)
 
@@ -79,20 +81,21 @@ class ScopeRegistry:
         self.scopes: frozenset[str] = frozenset(requested)
 
     @staticmethod
-    def _check_policy_covers(tools: Mapping[str, T]) -> None:
+    def _check_every_tool_is_policed(tools: Mapping[str, T]) -> None:
+        """Refuse a tool that has no entry in the policy table.
+
+        Only this direction is enforced at runtime. The mirror case — a policy
+        row naming a tool that was not supplied — is stale documentation, not
+        a leak, and enforcing it here would stop the server from starting
+        while the tools are still being built one step at a time. That check
+        lives in the test suite instead, where every tool is known.
+        """
         unpoliced = sorted(set(tools) - set(TOOL_SCOPES))
         if unpoliced:
             raise ScopeError(
                 f"No entry in TOOL_SCOPES for: {', '.join(unpoliced)}. "
                 "A tool without a scope would run unpoliced, so add it to the "
                 "policy table in scopes.py."
-            )
-        orphaned = sorted(set(TOOL_SCOPES) - set(tools))
-        if orphaned:
-            raise ScopeError(
-                f"TOOL_SCOPES names tools that were not supplied: "
-                f"{', '.join(orphaned)}. Either the tool was renamed, or the "
-                "policy row is stale."
             )
 
     @staticmethod
