@@ -17,6 +17,7 @@ from canvas_mcp.filters import (
     ANNOUNCEMENT_FIELDS,
     ASSIGNMENT_DETAIL_FIELDS,
     ASSIGNMENT_FIELDS,
+    MODULE_FIELDS,
     SUBMISSION_FIELDS,
 )
 from canvas_mcp.scopes import DEFAULT_SCOPES, TOOL_SCOPES
@@ -33,6 +34,7 @@ from canvas_mcp.tools.assignments import (
 )
 from canvas_mcp.tools.courses import make_list_courses, term_has_ended
 from canvas_mcp.tools.grades import make_list_grades
+from canvas_mcp.tools.materials import make_list_materials
 
 FIXTURES = Path(__file__).resolve().parent.parent / "fixtures"
 FIXTURE = FIXTURES / "courses.json"
@@ -139,9 +141,7 @@ def test_term_filter_matches_case_insensitively_and_partially() -> None:
 # check out of the registry so the server could start while the tools were
 # still arriving; here is where it went. Adding a tool fails this test until
 # its name is removed from the list, which is the point.
-NOT_YET_BUILT = {
-    "list_materials",
-}
+NOT_YET_BUILT: set[str] = set()
 
 
 def test_every_policy_row_names_a_tool_that_exists_or_is_listed_as_pending() -> None:
@@ -196,7 +196,9 @@ def test_demo_mode_needs_no_token_and_no_network(
 def test_demo_mode_404s_an_endpoint_it_has_no_fixture_for() -> None:
     client = build_client(demo=True)
     with pytest.raises(CanvasError, match="not found"):
-        client.get("/courses/1/modules")
+        # An endpoint with no fixture. Modules used to sit here until step 10
+        # gave them one, which is why this is a route nothing serves.
+        client.get("/courses/1/quizzes")
 
 
 # --- current courses ------------------------------------------------------
@@ -378,3 +380,34 @@ def test_list_announcements_runs_against_the_committed_fixture() -> None:
     assert len(listed) == DEFAULT_LIMIT
     assert all(tuple(a) == ANNOUNCEMENT_FIELDS for a in listed)
     assert "avatar_image_url" not in json.dumps(listed)
+
+
+# --- materials ------------------------------------------------------------
+
+
+def test_list_materials_runs_against_the_committed_fixture() -> None:
+    client = build_client(demo=True)
+    modules = build_tools(client)["list_materials"](course_id=1)
+    assert modules
+    assert all(tuple(m) == MODULE_FIELDS for m in modules)
+    files = [
+        i
+        for m in modules
+        for s in m["sections"]
+        for i in s["items"]
+        if i["type"] == "File"
+    ]
+    # Modules are the only route to a file id; without one, v0.2 is unreachable.
+    assert files and all(f["id"] is not None for f in files)
+
+
+def test_module_filter_matches_partially_and_case_insensitively() -> None:
+    modules = [
+        {"name": "Week 1 — Introduction", "state": "completed", "items": []},
+        {"name": "Practical information", "state": "completed", "items": []},
+    ]
+    with courses_client(modules) as client:
+        list_materials = make_list_materials(client)
+        assert len(list_materials(course_id=1)) == 2
+        assert len(list_materials(course_id=1, module_filter="week 1")) == 1
+        assert list_materials(course_id=1, module_filter="week 9") == []
