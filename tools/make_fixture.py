@@ -61,6 +61,36 @@ def richest_course(subpath: str, params: dict[str, Any]) -> Callable[..., str]:
 # Every capture this project supports, so that what was fetched is readable
 # rather than remembered. A path may be a string, or a function that resolves
 # one against the live API.
+def course_with_subheaders(client: CanvasClient) -> str:
+    """Prefer a course whose modules actually use SubHeaders.
+
+    Sectioning in `list_materials` groups items under the subheaders a teacher
+    wrote. A fixture from a course that uses none cannot exercise it, and the
+    first modules capture landed on exactly such a course. Falls back to the
+    course with the most items when no course uses them.
+    """
+    courses = list(client.paginate("/courses", params={"enrollment_state": "active"}))
+    if not courses:
+        raise CanvasError("No active courses to capture from.")
+
+    best, best_headers, best_items = None, 0, 0
+    for index, course in enumerate(courses, start=1):
+        path = f"/courses/{course['id']}/modules"
+        modules = list(client.paginate(path, params={"include[]": ["items"]}))
+        items = [i for m in modules for i in (m.get("items") or [])]
+        headers = sum(1 for i in items if i.get("type") == "SubHeader")
+        print(
+            f"  course {index} of {len(courses)}: "
+            f"{len(modules)} modules, {len(items)} items, {headers} subheaders"
+        )
+        if (headers, len(items)) > (best_headers, best_items):
+            best, best_headers, best_items = path, headers, len(items)
+
+    if best is None:
+        raise CanvasError("No modules in any active course.")
+    return best
+
+
 # path/resolver, query parameters, and what one item in the response is. The
 # third entry matters: the converter names a field after its parent, and a
 # top-level object has none. Without it an assignment's `name` fell back to the
@@ -86,8 +116,10 @@ CAPTURES: dict[str, tuple[str | Callable[[CanvasClient], str], dict[str, Any], s
         "assignment",
     ),
     # Modules are the only way in: the course file index is 403 for students.
+    # Preferring a course that uses SubHeaders, because grouping items under
+    # them is the part of list_materials with no other way to be exercised.
     "modules": (
-        richest_course("modules", {"include[]": ["items"]}),
+        course_with_subheaders,
         {"include[]": ["items"]},
         "module",
     ),

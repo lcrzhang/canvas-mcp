@@ -11,7 +11,7 @@ that echoes a token into a CI log has leaked it just the same.
 
 import json
 import re
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -21,6 +21,9 @@ ALLOWED_HOSTS = frozenset({"localhost", "127.0.0.1"})
 
 # Values the conversion is expected to produce carry this prefix.
 SYNTHETIC_PREFIX = "FIXTURE"
+
+# A module item that labels a section rather than being one.
+SUBHEADER_TYPE = "SubHeader"
 
 _URL_HOST = re.compile(r"https?://([^/\s\"']+)")
 _EMAIL_DOMAIN = re.compile(r"[\w.+-]+@([\w-]+(?:\.[\w-]+)+)")
@@ -153,6 +156,13 @@ _MODULE_NAMES = (
     "Week 6 — Revision",
     "Practical information",
 )
+_SECTION_TITLES = (
+    "Lectures",
+    "Practical sessions",
+    "Reading",
+    "Hand in here",
+    "Before the exam",
+)
 _MATERIAL_TITLES = (
     "Lecture 1 slides",
     "Reader chapter 3",
@@ -245,6 +255,8 @@ def _synthetic_string(key: str, value: str, n: int, parent: str = "") -> str:
             return _MODULE_NAMES[n % len(_MODULE_NAMES)]
     if key == "title":
         # A module item is material, an announcement is a notice.
+        if parent == "subheader":
+            return _SECTION_TITLES[n % len(_SECTION_TITLES)]
         pool = _MATERIAL_TITLES if parent == "items" else _TITLES
         return pool[n % len(pool)]
     if key in ("grade", "entered_grade"):
@@ -304,7 +316,11 @@ def to_synthetic(
     if counters is None:
         counters = {}
     if isinstance(data, dict):
-        return {k: to_synthetic(v, k, counters, key) for k, v in data.items()}
+        # The parent passed down is the child's *role*, usually just the key.
+        # A SubHeader is the exception: it is a section label rather than
+        # material, and only its own `type` says so.
+        scope = "subheader" if data.get("type") == SUBHEADER_TYPE else key
+        return {k: to_synthetic(v, k, counters, scope) for k, v in data.items()}
     if isinstance(data, list):
         return [to_synthetic(v, key, counters, parent) for v in data]
     if isinstance(data, bool) or data is None:
@@ -368,8 +384,31 @@ DEMO_ROUTES: tuple[tuple[re.Pattern[str], str, bool], ...] = (
 )
 
 
+def shift_dates(data: Any, days: int) -> Any:
+    """Move every ISO date in a document forward by `days`.
+
+    The file keeps fixed dates, so a regenerated fixture still produces an
+    empty diff. Demo mode shifts them as it loads, so a capture from last year
+    still reads as a running term instead of an archived one. Without this the
+    demo quietly empties itself once the dates fall behind the clock.
+    """
+    if isinstance(data, dict):
+        return {k: shift_dates(v, days) for k, v in data.items()}
+    if isinstance(data, list):
+        return [shift_dates(v, days) for v in data]
+    if isinstance(data, str) and _ISO_DATE.match(data):
+        try:
+            shifted = datetime.fromisoformat(data) + timedelta(days=days)
+        except ValueError:
+            return data
+        return shifted.isoformat().replace("+00:00", "Z")
+    return data
+
+
 def load_fixture(name: str) -> Any:
-    return json.loads((FIXTURE_DIR / name).read_text())
+    """Read a fixture, with its dates moved up to today."""
+    payload = json.loads((FIXTURE_DIR / name).read_text())
+    return shift_dates(payload, (date.today() - _BASE_DATE).days)
 
 
 def demo_transport() -> Any:
