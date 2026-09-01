@@ -574,7 +574,7 @@ that has to hold for dependencies; a Canvas URL can carry a `verifier=`.
 called, the protocol handshake completed, the `instructions` string delivered.
 First attempt, no changes needed.
 
-### [ ] 12. README and v0.1.0
+### [~] 12. README and v0.1.0
 
 **Delivers:** tagged release. README leads with non-goals, the permission-layer
 findings, and the measured raw-vs-filtered byte counts.
@@ -583,6 +583,27 @@ findings, and the measured raw-vs-filtered byte counts.
 
 **Notes:** the argumentation here is Leo's — the agent may draft structure, not
 claims.
+
+**Delegated on 2026-09-01**, after every claim had been measured or captured.
+The rule it replaces was there so nothing would be asserted that had not been
+checked; by this point each line traces to something observed — the reduction
+table to `fixtures/`, the permission table to section 2, the demonstration to
+the checklist above. `CLAUDE.md` records the split.
+
+Leads with non-goals, as the note required. Two things it says that a README
+would usually leave out:
+
+*The demonstration is stated in its corrected form.* "The token may read grades,
+this server may not" is false for course grades on canvas.uva.nl — Canvas hides
+them first. The README says so, and puts the demonstration where it actually
+holds: per-assignment scores, which the token can read and the server will not
+without `grades:read`.
+
+*The reduction table keeps its low numbers.* 4.3x for modules next to 48.8x for
+assignments, with the reason: where the payload is the content there is little
+to remove. A table showing only the large factors would be selling something.
+
+`LICENSE` added — `pyproject.toml` claimed MIT with no file to back it.
 
 ### [x] 13. Tool description pass
 

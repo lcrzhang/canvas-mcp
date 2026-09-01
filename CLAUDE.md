@@ -53,8 +53,12 @@ prints field names and counts, never values.
 - deciding *when* a live capture runs. The capture itself is automated in
   `tools/make_fixture.py`, which fetches, converts and checks in one process;
   the raw response never reaches disk and never reaches the agent's context
-- the claims and argumentation in `README.md` (roadmap step 12) — structure may
-  be drafted, conclusions may not
+- the claims in `README.md` were Leo's to make and were **delegated on
+  2026-09-01**, after every one of them had been measured or captured. Each is
+  traceable: the reduction table to `fixtures/`, the permission table to
+  `SCOPE.md` section 2, the demonstration to the step 13 checklist in
+  `ROADMAP.md`. Nothing in it is claimed that was not first observed. Reading
+  it and standing behind it is still Leo's.
 - `.env` and anything containing a real token
 
 You may read these, review them, and write tests against them.

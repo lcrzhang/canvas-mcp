@@ -38,7 +38,7 @@ def test_a_fully_synthetic_document_is_clean() -> None:
     ("document", "expected"),
     [
         ({"ics": "https://canvas.uva.nl/feeds/x.ics"}, "real host"),
-        ({"email": "docent@uva.nl"}, "real domain"),
+        ({"email": "not-a-real-mailbox@uva.nl"}, "real domain"),
         ({"url": "https://canvas.example.edu/f?verifier=1a2b3c"}, "verifier="),
         ({"token": "12345~abcdefghijklmnopqrstuvwxyz0123456789"}, "access token"),
         ({"uuid": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"}, "UUID"),
@@ -86,7 +86,7 @@ REAL_LOOKING = {
     "created_at": "2025-09-01T08:30:00Z",
     "calendar": {"ics": "https://canvas.uva.nl/feeds/calendars/abc123.ics"},
     "teachers": [
-        {"display_name": "Jan de Vries", "email": "j.devries@uva.nl", "id": 4471},
+        {"display_name": "Jan de Vries", "email": "not-a-real-mailbox@uva.nl", "id": 4471},
     ],
     "files": [
         {
