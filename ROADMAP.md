@@ -574,7 +574,7 @@ that has to hold for dependencies; a Canvas URL can carry a `verifier=`.
 called, the protocol handshake completed, the `instructions` string delivered.
 First attempt, no changes needed.
 
-### [~] 12. README and v0.1.0
+### [x] 12. README and v0.1.0
 
 **Delivers:** tagged release. README leads with non-goals, the permission-layer
 findings, and the measured raw-vs-filtered byte counts.
@@ -709,7 +709,7 @@ step 14 needs.
 
 ## Milestone v0.2 — file content
 
-### [ ] 14. `read_file` with page ranges
+### [~] 14. `read_file` with page ranges
 
 **Delivers:** "what is on slides 10-15 of lec01_intro?" works.
 
@@ -717,6 +717,34 @@ step 14 needs.
 `extract_text(path, pages) -> str`, so the backend stays swappable. Hard size
 cap; refuse above it with a clear error. A page with no text layer returns
 empty — detect that and say so rather than returning nothing.
+
+Split into 14a and 14b: the extraction layer, which needs no network, and then
+the fetch and the tool. Together they are ~270 lines.
+
+**14a done, 2026-09-01.** `pypdf`, chosen over PyMuPDF: PyMuPDF extracts better
+and is AGPL, which the repository cannot take on now that it is public. It
+takes bytes rather than a path, so nothing has to be written to disk to be
+read.
+
+The signature moved from `extract_text(path, pages)` to `extract_text(data,
+pages)` for that reason. `page_count` joins it as the second and last function
+that knows what a PDF is.
+
+Page ranges are one-based and inclusive, because that is what is printed on the
+page and what a student types. A range running past the end stops at the end; a
+range starting past it is an error naming the real length. Asking for more than
+20 pages is refused — beyond that it is a request for a document rather than a
+passage, and the answer would be truncated anyway.
+
+A page with no text layer beside one with text is marked `[page 2] no text`
+rather than dropped. A document with no text at all is refused, and the error
+says it is probably a scan and that this server does not do OCR. Silence would
+read as "the page is blank" about a page full of scanned writing.
+
+**No PDF fixture.** The tests assemble a minimal PDF whose text they already
+know, which proves more than a captured one and keeps a teacher's slides out of
+the repository. Empty page contents give a page with no text layer, which is
+what a scan looks like from here.
 
 ---
 
