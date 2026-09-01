@@ -9,6 +9,8 @@ Demo mode uses the same builder.
 import pytest
 
 from canvas_mcp.extract import (
+    DEFAULT_EXTRACTOR,
+    EXTRACTORS,
     MAX_PAGES,
     ExtractionError,
     collapse_overlays,
@@ -192,3 +194,34 @@ def test_an_unreadable_page_is_never_folded_into_its_neighbour() -> None:
     slide before it."""
     pages = [(0, frame("Readable")), (1, "")]
     assert len(collapse_overlays(pages)) == 2
+
+
+# --- two backends, on purpose and temporarily -----------------------------
+
+
+@pytest.mark.parametrize("extractor", sorted(EXTRACTORS))
+def test_both_backends_read_the_same_document(extractor: str) -> None:
+    deck = build_pdf("Sorting is comparison based", "Quicksort picks a pivot")
+    slides = extract_slides(deck, [0, 1], extractor=extractor)
+    text = format_slides(slides)
+    assert "Sorting is comparison based" in text
+    assert "Quicksort picks a pivot" in text
+
+
+@pytest.mark.parametrize("extractor", sorted(EXTRACTORS))
+def test_both_backends_refuse_something_that_is_not_a_pdf(extractor: str) -> None:
+    """A backend swap must not change which failures are explained."""
+    with pytest.raises(ExtractionError, match="not a readable PDF"):
+        extract_slides(b"this is a text file", [0], extractor=extractor)
+
+
+def test_an_unknown_backend_names_the_ones_there_are() -> None:
+    with pytest.raises(ExtractionError, match="pdfplumber, pypdf"):
+        extract_slides(build_pdf("x"), [0], extractor="pymupdf")
+
+
+def test_the_default_is_the_backend_with_evidence_behind_it() -> None:
+    """pdfplumber is expected to do better and has not been measured. Making it
+    the default on that expectation is the mistake this project has already
+    made twice."""
+    assert DEFAULT_EXTRACTOR == "pypdf"

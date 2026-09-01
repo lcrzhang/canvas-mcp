@@ -841,6 +841,31 @@ then stopped. The page-limit error names a limit and a way forward; this one
 now says to open the file in Canvas or look for a PDF in the same module. The
 grammar was wrong too — "is a text/plain".
 
+### [~] 18. Two extractors, until one is measured
+
+**Delivers:** `--extractor pypdf|pdfplumber`, so the same file can be read with
+both.
+
+**Files:** `src/canvas_mcp/extract.py`, `src/canvas_mcp/tools/files.py`,
+`src/canvas_mcp/server.py`
+
+**Branch:** `feat/compare-extractors`
+
+**Notes:** a live read on 2026-09-01 measured what `pypdf` costs on a real
+deck. Word boundaries vanish at formatting changes — `whilecurr_nodeis
+notnonedo` — which ruins pseudocode in an algorithms course. A 3×3 table became
+`O(1)O(n)O(n 2)` over `1∈ ∈ ∈` with no recoverable column.
+
+`pdfplumber` splits words on the distance between glyphs rather than on what
+the content stream groups, so it should handle the first and partly the second.
+**It is not the default.** *Should* is not a measurement, and switching a
+backend on expectation is the mistake made twice already here — the schema
+"defect" that was not one, and the "broken" module filter that was working.
+
+Both are installed on purpose and temporarily. One goes once the same file has
+been read with both, and the backend is named on the startup line so the answer
+says which produced it.
+
 ## Known dates
 
 - **The token expires by 2026-11-27.** Personal access tokens last at most 90
