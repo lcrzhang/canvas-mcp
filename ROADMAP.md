@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 8 — `get_assignment`**
+Status: **step 9 — `list_announcements`**
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -410,14 +410,14 @@ parent and a top-level object has none: an assignment's `name` fell back to the
 course pool, so the demo listed course names where it meant assignments. Same
 defect class as the one the live test surfaced on 2026-08-31, in a new place.
 
-### [~] 7. Sanitizer
+### [x] 7. Sanitizer
 
 **Delivers:** teacher HTML becomes plain text, capped, with an explicit
 `[truncated]` marker and visible delimiters around untrusted content.
 
 **Files:** `src/canvas_mcp/sanitize.py`, `tests/test_sanitize.py`
 
-**Branch:** `feat/sanitize`
+**Branch:** `feat/sanitize` · **Issue:** #31 · **PR:** #32 (merged)
 
 **Notes:** test with a fixture containing an injection attempt. The README must
 state that this mitigates, not solves — the real defence is the absence of
@@ -441,11 +441,28 @@ model nothing without it.
 The cap reports how much was cut rather than trailing off, so a model can say
 the text was shortened instead of answering from half of it.
 
-### [ ] 8. `get_assignment`
+### [~] 8. `get_assignment`
 
 **Delivers:** "what is the week 1 assignment about?" works, sanitized.
 
 **Branch:** `feat/get-assignment`
+
+**Notes:** `slim_assignment_detail` is a second function rather than a flag on
+`slim_assignment`. The list view must never carry a description, and a boolean
+parameter is easier to get wrong than two names.
+
+A missing description comes back as None, not as an empty pair of delimiters.
+Empty delimiters would say "there is content here" when there is not, which is
+a small lie a model would repeat.
+
+The test that the detail view withholds everything the list view does had to
+exclude `description` — which is the point of the step, and now written down as
+one line instead of implied.
+
+Demo routes gained id selection, so `/courses/N/assignments/M` serves the
+matching item from the list fixture. The converter's stand-in for teacher HTML
+became three realistic bodies with markup, an entity and a link, so the demo
+shows the sanitizer doing work rather than echoing a placeholder.
 
 ### [ ] 9. `list_announcements`
 

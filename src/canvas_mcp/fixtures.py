@@ -156,6 +156,20 @@ _POINTS = (10.0, 20.0, 25.0, 50.0, 100.0)
 # relationship; keeping the ranges apart can.
 _SCORES = (6.5, 7.0, 8.0, 8.5, 9.5)
 _LETTER_GRADES = ("A", "A-", "B+", "B", "C+")
+# Stand-ins for teacher-written HTML. They carry markup, an entity and a link,
+# so a demo of the sanitizer shows it doing work rather than echoing a
+# placeholder.
+_HTML_BODIES = (
+    "<h3>Goal</h3><p>Implement a sorting routine and compare it with the one "
+    "in the reader.</p><ul><li>Hand in a single PDF</li><li>Max 2 pages</li>"
+    '</ul><p>Template: <a href="https://canvas.example.edu/files/1">'
+    "download</a></p>",
+    "<p>Read chapter&nbsp;3 and answer the four questions at the end. Work in "
+    "pairs is allowed; write both names on the front page.</p>",
+    "<p>Short reflection on the lecture. Half a page is enough.</p>"
+    '<p>See the <a href="https://canvas.example.edu/pages/rubric">rubric</a> '
+    "before you start.</p>",
+)
 _PERSON_NAMES = (
     "Robin Fictief",
     "Sam Verzonnen",
@@ -232,7 +246,9 @@ def _synthetic_string(key: str, value: str, n: int, parent: str = "") -> str:
     if key == "uuid" or _UUID.match(value):
         return f"FIXTUREuuid{n:022d}"
     if "<" in value and ">" in value:
-        return f"<p>Synthetic body {n} for {key}.</p>"
+        # Realistic enough that the demo shows the sanitizer doing something:
+        # markup in, plain text with a working link out.
+        return _HTML_BODIES[n % len(_HTML_BODIES)]
     return f"FIXTURE-{key}-{n}"
 
 
@@ -293,9 +309,20 @@ DEMO_TOKEN = "demo-mode-no-credential"
 
 # Request path -> fixture file. Anything not listed 404s with a message saying
 # demo mode is the reason, rather than looking like a Canvas failure.
-DEMO_ROUTES: tuple[tuple[re.Pattern[str], str], ...] = (
-    (re.compile(r"^/api/v1/courses/?$"), "courses.json"),
-    (re.compile(r"^/api/v1/courses/\d+/students/submissions/?$"), "submissions.json"),
+# pattern, fixture, and whether the last path segment selects one item by id.
+DEMO_ROUTES: tuple[tuple[re.Pattern[str], str, bool], ...] = (
+    (re.compile(r"^/api/v1/courses/?$"), "courses.json", False),
+    (
+        re.compile(r"^/api/v1/courses/\d+/students/submissions/?$"),
+        "submissions.json",
+        False,
+    ),
+    (re.compile(r"^/api/v1/courses/\d+/assignments/?$"), "assignments.json", False),
+    (
+        re.compile(r"^/api/v1/courses/\d+/assignments/(?P<id>\d+)/?$"),
+        "assignments.json",
+        True,
+    ),
 )
 
 
@@ -313,9 +340,18 @@ def demo_transport() -> Any:
             # Answered inline so the startup check runs in demo mode too,
             # rather than being skipped and going untested.
             return httpx2.Response(200, json={"id": 1, "name": "Demo Student"})
-        for pattern, fixture in DEMO_ROUTES:
-            if pattern.match(path):
-                return httpx2.Response(200, json=load_fixture(fixture))
+        for pattern, fixture, by_id in DEMO_ROUTES:
+            match = pattern.match(path)
+            if not match:
+                continue
+            payload = load_fixture(fixture)
+            if not by_id:
+                return httpx2.Response(200, json=payload)
+            wanted = int(match.group("id"))
+            for item in payload:
+                if item.get("id") == wanted:
+                    return httpx2.Response(200, json=item)
+            return httpx2.Response(404, json={"message": f"no fixture item {wanted}"})
         return httpx2.Response(
             404,
             json={

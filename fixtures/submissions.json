@@ -85,7 +85,7 @@
     "assignment": {
       "id": 1,
       "position": 101,
-      "description": "<p>Synthetic body 1 for description.</p>",
+      "description": "<p>Read chapter&nbsp;3 and answer the four questions at the end. Work in pairs is allowed; write both names on the front page.</p>",
       "points_possible": 20.0,
       "grading_type": "points",
       "created_at": "2026-02-03T09:00:00Z",
@@ -185,7 +185,7 @@
     "assignment": {
       "id": 2,
       "position": 102,
-      "description": "<p>Synthetic body 2 for description.</p>",
+      "description": "<p>Short reflection on the lecture. Half a page is enough.</p><p>See the <a href=\"https://canvas.example.edu/pages/rubric\">rubric</a> before you start.</p>",
       "points_possible": 25.0,
       "grading_type": "points",
       "created_at": "2026-02-04T09:00:00Z",
@@ -271,7 +271,7 @@
     "attempt": 102,
     "submission_type": "FIXTURE-submission_type-2",
     "submitted_at": "2026-02-04T09:00:00Z",
-    "body": "<p>Synthetic body 1 for body.</p>",
+    "body": "<p>Read chapter&nbsp;3 and answer the four questions at the end. Work in pairs is allowed; write both names on the front page.</p>",
     "assignment_id": 3,
     "graded_at": "2026-02-04T09:00:00Z",
     "grade_matches_current_submission": true,
@@ -295,7 +295,7 @@
     "assignment": {
       "id": 3,
       "position": 103,
-      "description": "<p>Synthetic body 3 for description.</p>",
+      "description": "<h3>Goal</h3><p>Implement a sorting routine and compare it with the one in the reader.</p><ul><li>Hand in a single PDF</li><li>Max 2 pages</li></ul><p>Template: <a href=\"https://canvas.example.edu/files/1\">download</a></p>",
       "points_possible": 50.0,
       "grading_type": "pass_fail",
       "created_at": "2026-02-05T09:00:00Z",
@@ -431,7 +431,7 @@
     "assignment": {
       "id": 4,
       "position": 104,
-      "description": "<p>Synthetic body 4 for description.</p>",
+      "description": "<p>Read chapter&nbsp;3 and answer the four questions at the end. Work in pairs is allowed; write both names on the front page.</p>",
       "points_possible": 100.0,
       "grading_type": "points",
       "created_at": "2026-02-06T09:00:00Z",
@@ -778,7 +778,7 @@
     "assignment": {
       "id": 5,
       "position": 105,
-      "description": "<p>Synthetic body 5 for description.</p>",
+      "description": "<p>Short reflection on the lecture. Half a page is enough.</p><p>See the <a href=\"https://canvas.example.edu/pages/rubric\">rubric</a> before you start.</p>",
       "points_possible": 10.0,
       "grading_type": "points",
       "created_at": "2026-02-07T09:00:00Z",
@@ -1151,7 +1151,7 @@
     "assignment": {
       "id": 6,
       "position": 106,
-      "description": "<p>Synthetic body 6 for description.</p>",
+      "description": "<h3>Goal</h3><p>Implement a sorting routine and compare it with the one in the reader.</p><ul><li>Hand in a single PDF</li><li>Max 2 pages</li></ul><p>Template: <a href=\"https://canvas.example.edu/files/1\">download</a></p>",
       "points_possible": 20.0,
       "grading_type": "points",
       "created_at": "2026-02-08T09:00:00Z",
@@ -1396,7 +1396,7 @@
     "attempt": 106,
     "submission_type": "FIXTURE-submission_type-6",
     "submitted_at": "2026-02-08T09:00:00Z",
-    "body": "<p>Synthetic body 2 for body.</p>",
+    "body": "<p>Short reflection on the lecture. Half a page is enough.</p><p>See the <a href=\"https://canvas.example.edu/pages/rubric\">rubric</a> before you start.</p>",
     "assignment_id": 7,
     "graded_at": null,
     "grade_matches_current_submission": true,
@@ -1420,7 +1420,7 @@
     "assignment": {
       "id": 7,
       "position": 107,
-      "description": "<p>Synthetic body 7 for description.</p>",
+      "description": "<p>Read chapter&nbsp;3 and answer the four questions at the end. Work in pairs is allowed; write both names on the front page.</p>",
       "points_possible": 25.0,
       "grading_type": "points",
       "created_at": "2026-02-09T09:00:00Z",
@@ -1530,7 +1530,7 @@
     "assignment": {
       "id": 8,
       "position": 108,
-      "description": "<p>Synthetic body 8 for description.</p>",
+      "description": "<p>Short reflection on the lecture. Half a page is enough.</p><p>See the <a href=\"https://canvas.example.edu/pages/rubric\">rubric</a> before you start.</p>",
       "points_possible": 50.0,
       "grading_type": "points",
       "created_at": "2026-02-10T09:00:00Z",
@@ -2340,7 +2340,7 @@
     "assignment": {
       "id": 11,
       "position": 111,
-      "description": "<p>Synthetic body 11 for description.</p>",
+      "description": "<p>Short reflection on the lecture. Half a page is enough.</p><p>See the <a href=\"https://canvas.example.edu/pages/rubric\">rubric</a> before you start.</p>",
       "points_possible": 20.0,
       "grading_type": "points",
       "created_at": "2026-02-13T09:00:00Z",
@@ -2607,7 +2607,7 @@
     "assignment": {
       "id": 12,
       "position": 112,
-      "description": "<p>Synthetic body 12 for description.</p>",
+      "description": "<h3>Goal</h3><p>Implement a sorting routine and compare it with the one in the reader.</p><ul><li>Hand in a single PDF</li><li>Max 2 pages</li></ul><p>Template: <a href=\"https://canvas.example.edu/files/1\">download</a></p>",
       "points_possible": 25.0,
       "grading_type": "points",
       "created_at": "2026-02-14T09:00:00Z",

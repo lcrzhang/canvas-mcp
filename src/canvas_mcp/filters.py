@@ -11,6 +11,8 @@ out missing rather than leaked.
 
 from typing import Any
 
+from canvas_mcp.sanitize import sanitize
+
 # The complete output of slim_course(). Tests assert this exactly, so widening
 # it is a deliberate act with a failing test attached.
 COURSE_FIELDS = ("id", "name", "course_code", "term")
@@ -102,4 +104,27 @@ def slim_assignment(assignment: dict[str, Any]) -> dict[str, Any]:
         "points": assignment.get("points_possible"),
         "submitted": bool(submission.get("submitted_at")) if submission else None,
         "locked": bool(assignment.get("locked_for_user")),
+    }
+
+
+# slim_assignment plus the one field that needs sanitizing. Kept as a separate
+# function rather than a flag: the list view must never carry a description,
+# and a boolean parameter is easier to get wrong than two names.
+ASSIGNMENT_DETAIL_FIELDS = (*ASSIGNMENT_FIELDS, "description")
+
+
+def slim_assignment_detail(assignment: dict[str, Any]) -> dict[str, Any]:
+    """One assignment, including its description as bounded plain text.
+
+    The description is written by a teacher, so it goes through
+    `sanitize.sanitize()`: markup out, size capped, and wrapped in delimiters
+    that name where it came from. See `SCOPE.md` section 6 — that mitigates,
+    it does not solve.
+    """
+    description = assignment.get("description")
+    return {
+        **slim_assignment(assignment),
+        "description": (
+            sanitize(description, "assignment description") if description else None
+        ),
     }

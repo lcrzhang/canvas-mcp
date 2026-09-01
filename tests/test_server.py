@@ -13,11 +13,19 @@ import httpx2
 import pytest
 
 from canvas_mcp.client import CanvasClient, CanvasError
-from canvas_mcp.filters import ASSIGNMENT_FIELDS, SUBMISSION_FIELDS
+from canvas_mcp.filters import (
+    ASSIGNMENT_DETAIL_FIELDS,
+    ASSIGNMENT_FIELDS,
+    SUBMISSION_FIELDS,
+)
 from canvas_mcp.scopes import DEFAULT_SCOPES, TOOL_SCOPES
 from canvas_mcp.server import build_client, build_server, parse_args
 from canvas_mcp.tools import build_tools
-from canvas_mcp.tools.assignments import is_upcoming, make_list_assignments
+from canvas_mcp.tools.assignments import (
+    is_upcoming,
+    make_get_assignment,
+    make_list_assignments,
+)
 from canvas_mcp.tools.courses import make_list_courses, term_has_ended
 from canvas_mcp.tools.grades import make_list_grades
 
@@ -127,7 +135,6 @@ def test_term_filter_matches_case_insensitively_and_partially() -> None:
 # still arriving; here is where it went. Adding a tool fails this test until
 # its name is removed from the list, which is the point.
 NOT_YET_BUILT = {
-    "get_assignment",
     "list_announcements",
     "list_materials",
 }
@@ -303,3 +310,20 @@ def test_list_assignments_runs_against_the_committed_fixture() -> None:
     assert len(listed) == len(payload)
     assert all(tuple(a) == ASSIGNMENT_FIELDS for a in listed)
     assert "secure_params" not in json.dumps(listed)
+
+
+def test_get_assignment_reads_one_assignment_through_the_demo_route() -> None:
+    client = build_client(demo=True)
+    detail = build_tools(client)["get_assignment"](course_id=1, assignment_id=1)
+    assert tuple(detail) == ASSIGNMENT_DETAIL_FIELDS
+    assert detail["id"] == 1
+    assert "written by a third party" in detail["description"]
+
+
+def test_get_assignment_refuses_one_hidden_from_this_student() -> None:
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        return httpx2.Response(200, json={"id": 9, "hidden_for_user": True})
+
+    with CanvasClient(transport=httpx2.MockTransport(handler)) as client:
+        with pytest.raises(CanvasError, match="not visible"):
+            make_get_assignment(client)(course_id=1, assignment_id=9)
