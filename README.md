@@ -10,7 +10,7 @@ personal token, **this server is the only place where less than everything can
 be enforced**. That is what the project is about, not a detail of it.
 
 ```
-$ canvas-mcp                                    5 tools
+$ canvas-mcp                                    6 tools
 $ canvas-mcp --scopes courses:read,grades:read  2 tools
 ```
 
@@ -113,6 +113,7 @@ documentation.
 | `GET /users/self/enrollments` | 200, **no score fields** | 2026-08-31 |
 | `GET /courses?include[]=total_scores` | 200, **no score fields** | 2026-08-31 |
 | `GET /courses/:id/students/submissions?student_ids[]=self` | 200, scores present | 2026-08-31 |
+| `GET /courses/:id/files/:id` → the file's `url` | **302** to a signed location | 2026-09-01 |
 
 Three of these shaped the project:
 
@@ -135,6 +136,11 @@ will not unless started with `grades:read`.
 **An active enrolment is not a running term.** `enrollment_state=active` keeps
 courses from terms that ended years ago. `list_courses` filters on the term's
 end date by default; pass `current_only=false` for the rest.
+
+**A file's `url` is a redirect.** Canvas answers it with a 302 to a signed
+location that needs no credential — so the download has to follow redirects,
+and the token must not follow with it. It does not: the header is dropped on a
+cross-host redirect, and a test says so.
 
 ## What the filters remove
 
@@ -227,7 +233,7 @@ token shape, a UUID.
 
 ```bash
 pip install -e ".[dev]"
-pytest          # 223 tests, no network, no token
+pytest          # no network, no token
 ruff check .
 ruff format --check .
 ```
@@ -256,8 +262,13 @@ along the way.
 
 ## Status
 
-v0.2: seven tools, read-only, tested against canvas.uva.nl and confirmed
-running in Claude Desktop. `read_file` reads the text of a PDF, reachable only
-through the file ids `list_materials` returns.
+v0.2, on 2026-09-01: seven tools, read-only, 272 tests, confirmed running in
+Claude Desktop against canvas.uva.nl. Every claim above was measured or
+captured on the date beside it.
+
+Known and written down rather than fixed: a Canvas Page is listed but cannot be
+read, since only a File carries an id; extraction quality on multi-column
+slides is untested, and `pdfplumber` is the fallback if it disappoints; and
+adding one scope means naming the whole default list again.
 
 MIT.
