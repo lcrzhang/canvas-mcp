@@ -167,7 +167,22 @@ author's name, pronouns and avatar, and a student's own submitted work.
 
 `read_file` takes the id `list_materials` returns and reads the text of a PDF,
 one passage at a time: `page_range` is written the way it is printed — `"12"`
-or `"10-15"`, counting from 1 — and at most twenty pages at once.
+or `"10-15"`, counting from 1.
+
+**A lecture deck has far more pages than slides.** LaTeX writes one page per
+build-up step, so a 30-slide lecture is often 90 pages: one real deck read
+here had 94 pages, and a 20-page range in it held 4 slides. Consecutive pages
+that are frames of the same slide are collapsed into one entry, labelled with
+the pages it came from, and the reply says how many slides the range held.
+Sixty pages may be read at once; twenty slides come back.
+
+Two pages count as one slide when they open with the same text and one's words
+are contained in the other's — in either direction, because `\only` makes
+content disappear as well as appear, and the fullest frame is kept rather than
+the last. Deliberately not based on the slide number some beamer themes print
+in the footer: a regex against arbitrary LaTeX that misfires would merge
+unrelated slides, silently. A page with no text is never folded into its
+neighbour, because it is a page that could not be read rather than a repeat.
 
 Only PDFs, and only ones with a text layer. A scan comes back as a refusal
 saying it is probably an image and that this server does no OCR, rather than as

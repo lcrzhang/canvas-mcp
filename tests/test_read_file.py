@@ -8,6 +8,7 @@ import httpx2
 import pytest
 
 from canvas_mcp.client import CanvasClient, CanvasError
+from canvas_mcp.extract import MAX_SLIDES
 from canvas_mcp.fixtures import build_pdf, demo_pdf
 from canvas_mcp.sanitize import BEGIN, END
 from canvas_mcp.server import build_client
@@ -186,3 +187,40 @@ def test_a_failed_download_names_the_path_and_not_the_verifier() -> None:
     message = str(excinfo.value)
     assert "/files/7/download" in message
     assert "verifier" not in message
+
+
+# --- build-up frames, through the tool ------------------------------------
+
+
+def build_up_deck() -> bytes:
+    """Four slides written the way LaTeX writes them: one page per \\pause."""
+    return build_pdf(
+        "Collections. A list keeps order.",
+        "Collections. A list keeps order. A set does not.",
+        "Collections. A list keeps order. A set does not. A map has keys.",
+        "Complexity. Constant time is best.",
+        "Complexity. Constant time is best. Linear is next.",
+    )
+
+
+def test_the_reply_says_how_many_slides_a_range_held() -> None:
+    """Five pages, two slides — the count is what tells a caller whether the
+    range was worth the call."""
+    with serving(READABLE, body=build_up_deck()) as client:
+        result = make_read_file(client)(course_id=1, file_id=7)
+
+    assert result["pages"] == "1-5 of 5"
+    assert result["slides"] == "2 of 2 in that range"
+    assert "build-up frames of one slide" in result["text"]
+    assert "A map has keys" in result["text"]
+
+
+def test_too_many_slides_are_cut_with_a_way_forward() -> None:
+    """Collapsing bounds the output, but a range of genuinely distinct slides
+    still has to stop somewhere."""
+    distinct = build_pdf(*(f"Slide {i}. Something about topic {i}." for i in range(25)))
+    with serving(READABLE, body=distinct) as client:
+        result = make_read_file(client)(course_id=1, file_id=7)
+
+    assert result["slides"] == f"{MAX_SLIDES} of 25 in that range"
+    assert "Ask for a narrower range" in result["text"]
