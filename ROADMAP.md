@@ -813,6 +813,29 @@ A test asserts the installed metadata matches `__version__`, which failed the
 moment it was written because the local editable install was itself stale —
 the same class of problem, caught one layer down.
 
+`slides` became a number. It was `"4 of 4 in that range"`, which read as though
+something had been cut when nothing had, and could not be used without parsing
+it. Reported by the tester, who also noted both halves were always equal — they
+differ only when slides are dropped, and the text already says so there.
+
+**Verified on 2026-09-01 after a restart.** 20 pages of the lecture came back
+as 4 slides, grouped 45-48, 49-52, 53, 54-64 — matching the footers 26 to 29
+exactly, with the page numbers in the headers summing to the range requested.
+The kept text is character-for-character identical to the source pages.
+
+The over-collapse test passed on the handout: 20 pages, 20 slides, no grouping
+at all. That includes the pair the tester singled out as the risk — pages 15
+and 16 share a title and a citation line and differ only in their bullets. A
+title-based rule would have merged them.
+
+**A misreading worth recording, because a reader will make it too.** The report
+concluded from `GUARD 7 9 v` that the *last* frame is kept. The code keeps the
+*longest*, which in that slide happens to be the last. The concern behind the
+observation — that a slide replacing content rather than adding it would lose
+the earlier state — does not arise: frames whose words are not contained in
+each other's are never collapsed at all, so a before-and-after slide stays two
+entries.
+
 **Also from that round:** a non-PDF refusal named the file and the type and
 then stopped. The page-limit error names a limit and a way forward; this one
 now says to open the file in Canvas or look for a PDF in the same module. The
