@@ -17,6 +17,9 @@ dependencies = [
     "httpx2>=2.12",
     # mcp 2.x: FastMCP was renamed MCPServer and the API is snake_case.
     "mcp>=2.1",
+    # PDF text extraction. Chosen over PyMuPDF, which extracts better but is
+    # AGPL — a licence this repository cannot take on now that it is public.
+    "pypdf>=5",
 ]
 
 [project.scripts]
