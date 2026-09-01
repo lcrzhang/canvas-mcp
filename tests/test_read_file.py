@@ -219,7 +219,7 @@ def test_the_reply_says_how_many_slides_a_range_held() -> None:
         result = make_read_file(client)(course_id=1, file_id=7)
 
     assert result["pages"] == "1-5 of 5"
-    assert result["slides"] == "2 of 2 in that range"
+    assert result["slides"] == 2
     assert "build-up frames of one slide" in result["text"]
     assert "A map has keys" in result["text"]
 
@@ -231,5 +231,13 @@ def test_too_many_slides_are_cut_with_a_way_forward() -> None:
     with serving(READABLE, body=distinct) as client:
         result = make_read_file(client)(course_id=1, file_id=7)
 
-    assert result["slides"] == f"{MAX_SLIDES} of 25 in that range"
+    assert result["slides"] == MAX_SLIDES
     assert "Ask for a narrower range" in result["text"]
+
+
+def test_the_slide_count_is_a_number_a_caller_can_use() -> None:
+    """It was "4 of 4 in that range", which read as though something had been
+    cut when nothing had, and needed parsing to be used at all."""
+    with serving(READABLE, body=build_up_deck()) as client:
+        result = make_read_file(client)(course_id=1, file_id=7)
+    assert isinstance(result["slides"], int)
