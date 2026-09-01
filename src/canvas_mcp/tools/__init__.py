@@ -18,6 +18,17 @@ from canvas_mcp.tools.courses import make_list_courses
 from canvas_mcp.tools.grades import make_list_grades
 from canvas_mcp.tools.materials import make_list_materials
 
+# What a client shows a person. The function name is for the model, this is
+# for the human reading their client's tool list.
+TOOL_TITLES = {
+    "list_courses": "My courses",
+    "list_assignments": "Deadlines",
+    "get_assignment": "Assignment details",
+    "list_announcements": "Announcements",
+    "list_materials": "Course materials",
+    "list_grades": "Scores per assignment",
+}
+
 
 def build_tools(client: CanvasClient) -> dict[str, Callable[..., Any]]:
     """Every tool this project implements, by name.

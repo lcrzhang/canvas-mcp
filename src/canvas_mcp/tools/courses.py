@@ -40,18 +40,19 @@ def make_list_courses(client: CanvasClient) -> Callable[..., list[dict[str, Any]
         term_filter: str | None = None,
         current_only: bool = True,
     ) -> list[dict[str, Any]]:
-        """List the courses the student is enrolled in.
+        """Which courses the student is enrolled in, with their ids.
 
-        Returns the course id, name, course code and term name. The id is what
-        every other Canvas tool needs, so this is usually the first call.
+        Start here. Every other Canvas tool needs a course id, and this is the
+        only way to get one. Returns id, name, course code and term name.
 
-        By default only courses whose term is still running are returned.
-        Canvas keeps an enrolment active long after a term ends, so without
-        this the list mixes this year's courses with ones from years ago. Pass
-        current_only=false to see everything, including finished terms.
+        Only courses whose term is still running are returned. Canvas keeps an
+        enrolment active for years after a term ends, so the unfiltered list
+        mixes this semester with 2024 — pass current_only=false when the
+        student asks about a course they finished.
 
-        Optionally filter by term name, for example "Semester 1" — matching is
-        case-insensitive and partial.
+        term_filter matches part of a term name, case-insensitively: "semester
+        1" or "2026". It filters what is already returned, so combine it with
+        current_only=false to reach a past term.
         """
         raw = list(client.paginate("/courses", params=COURSES_PARAMS))
         if current_only:

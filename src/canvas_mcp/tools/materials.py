@@ -22,18 +22,22 @@ def make_list_materials(client: CanvasClient) -> Callable[..., list[dict[str, An
         course_id: int,
         module_filter: str | None = None,
     ) -> list[dict[str, Any]]:
-        """Show what a course publishes, module by module.
+        """What a course publishes: slides, readers, pages, per week.
 
-        Returns each module with its items grouped under the subheaders the
-        teacher wrote, and for every item its title, its type (File, Page,
-        Assignment, Quiz) and the id a file needs to be read later.
+        Use this for "which slides belong to week 3" or "where is the reader".
+        It is the only route to a course's files — Canvas closes the file list
+        itself to students, so a file id can only come from here.
 
-        Optionally filter by module name, for example "Week 1" — matching is
-        case-insensitive and partial.
+        Returns each module with its items grouped under the headings the
+        teacher wrote. Every item has a title, a type (File, Page, Assignment,
+        Quiz) and an id. Assignments appear here too, but list_assignments is
+        the better tool for deadlines.
 
-        This is the only route to a course's files: the file index itself is
-        closed to students. A locked module is listed by name without its
-        contents, so the shape of the course stays visible.
+        module_filter matches part of a module name, case-insensitively:
+        "week 3" or "practical".
+
+        A locked module is listed by name with no contents, so the shape of the
+        course stays visible even where the material is not.
         """
         modules = [
             slim_module(module)
