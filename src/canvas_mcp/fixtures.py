@@ -123,6 +123,10 @@ PRESERVED_KEYS = frozenset(
 # under an allowlisted key almost always has them. Spaces were allowed in
 # the first version, which let "Uploaded by <name> on <date>" through as an
 # enum. Slash and dot are allowed so MIME types survive.
+# Small integers that carry structure rather than identity. `indent` is the
+# nesting depth of a module item, and grouping items under their SubHeader
+# depends on it — a counter in its place makes the tree meaningless.
+_PRESERVED_INT_KEYS = frozenset({"indent"})
 _ENUM_SHAPE = re.compile(r"^[A-Za-z0-9_\-./+]{1,60}$")
 
 _COURSE_NAMES = (
@@ -139,6 +143,23 @@ _TERM_NAMES = (
     "Semester 1 2026-2027",
     "Semester 2 2026-2027",
     "Summer 2027",
+)
+_MODULE_NAMES = (
+    "Week 1 — Introduction",
+    "Week 2 — Sorting",
+    "Week 3 — Complexity",
+    "Week 4 — Trees",
+    "Week 5 — Graphs",
+    "Week 6 — Revision",
+    "Practical information",
+)
+_MATERIAL_TITLES = (
+    "Lecture 1 slides",
+    "Reader chapter 3",
+    "Practicum 2 handout",
+    "Worked examples",
+    "Exam from last year",
+    "Reading list",
 )
 _TITLES = (
     "Week 3: lecture moved to Thursday",
@@ -220,8 +241,12 @@ def _synthetic_string(key: str, value: str, n: int, parent: str = "") -> str:
             return _ASSIGNMENT_NAMES[n % len(_ASSIGNMENT_NAMES)]
         if parent == "user":
             return _PERSON_NAMES[n % len(_PERSON_NAMES)]
+        if parent == "module":
+            return _MODULE_NAMES[n % len(_MODULE_NAMES)]
     if key == "title":
-        return _TITLES[n % len(_TITLES)]
+        # A module item is material, an announcement is a notice.
+        pool = _MATERIAL_TITLES if parent == "items" else _TITLES
+        return pool[n % len(pool)]
     if key in ("grade", "entered_grade"):
         # A letter grade rather than a number. FIXTURE-grade-1 reads as a bug,
         # and a number next to `score` invites a reader to check whether the
@@ -294,6 +319,8 @@ def to_synthetic(
     if isinstance(data, str):
         return _synthetic_string(key, data, n, parent)
     if isinstance(data, int):
+        if key in _PRESERVED_INT_KEYS:
+            return data
         return n if key.endswith("id") else 100 + n
     if isinstance(data, float):
         if key == "points_possible":
@@ -321,6 +348,7 @@ DEMO_TOKEN = "demo-mode-no-credential"
 # pattern, fixture, and whether the last path segment selects one item by id.
 DEMO_ROUTES: tuple[tuple[re.Pattern[str], str, bool], ...] = (
     (re.compile(r"^/api/v1/courses/?$"), "courses.json", False),
+    (re.compile(r"^/api/v1/courses/\d+/modules/?$"), "modules.json", False),
     (
         re.compile(r"^/api/v1/courses/\d+/students/submissions/?$"),
         "submissions.json",

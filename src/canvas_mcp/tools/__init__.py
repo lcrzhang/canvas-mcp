@@ -16,6 +16,7 @@ from canvas_mcp.tools.assignments import (
 )
 from canvas_mcp.tools.courses import make_list_courses
 from canvas_mcp.tools.grades import make_list_grades
+from canvas_mcp.tools.materials import make_list_materials
 
 
 def build_tools(client: CanvasClient) -> dict[str, Callable[..., Any]]:
@@ -29,5 +30,6 @@ def build_tools(client: CanvasClient) -> dict[str, Callable[..., Any]]:
         "list_assignments": make_list_assignments(client),
         "get_assignment": make_get_assignment(client),
         "list_announcements": make_list_announcements(client),
+        "list_materials": make_list_materials(client),
         "list_grades": make_list_grades(client),
     }

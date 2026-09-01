@@ -17,11 +17,16 @@ from canvas_mcp.filters import (
     ASSIGNMENT_DETAIL_FIELDS,
     ASSIGNMENT_FIELDS,
     COURSE_FIELDS,
+    MODULE_FIELDS,
+    SUBHEADER,
     SUBMISSION_FIELDS,
+    group_into_sections,
     slim_announcement,
     slim_assignment,
     slim_assignment_detail,
     slim_course,
+    slim_module,
+    slim_module_item,
     slim_submission,
 )
 from canvas_mcp.sanitize import BEGIN, END
@@ -378,3 +383,87 @@ def test_the_body_arrives_as_bounded_attributed_plain_text() -> None:
 def test_an_announcement_without_a_body_is_none() -> None:
     empty = {**SAFE_ANNOUNCEMENT, "message": None}
     assert slim_announcement(empty)["message"] is None
+
+
+# --- materials ------------------------------------------------------------
+
+
+def item(title: str, type_: str = "Page", **extra: object) -> dict:
+    return {"id": 999, "title": title, "type": type_, "indent": 0, **extra}
+
+
+def test_a_module_item_reports_the_content_id_not_its_own() -> None:
+    """read_file needs the content id. The item's own id would send it to a
+    file that does not exist."""
+    slimmed = slim_module_item(item("Slides", "File", content_id=42))
+    assert slimmed["id"] == 42
+    assert slimmed["title"] == "Slides"
+
+
+@pytest.mark.parametrize("field", ["html_url", "url", "page_url"])
+def test_module_item_urls_never_reach_the_output(field: str) -> None:
+    slimmed = slim_module_item(item("Slides", "File", **{field: "SENTINEL-url"}))
+    assert "SENTINEL" not in json.dumps(slimmed)
+
+
+def test_items_before_any_subheader_get_a_nameless_section() -> None:
+    sections = group_into_sections([item("One"), item("Two")])
+    assert len(sections) == 1
+    assert sections[0]["section"] is None
+    assert [i["title"] for i in sections[0]["items"]] == ["One", "Two"]
+
+
+def test_a_subheader_opens_a_section_and_is_not_an_item_in_it() -> None:
+    sections = group_into_sections(
+        [item("Week 1", SUBHEADER), item("Slides"), item("Reader")]
+    )
+    assert [s["section"] for s in sections] == ["Week 1"]
+    assert [i["title"] for i in sections[0]["items"]] == ["Slides", "Reader"]
+    assert SUBHEADER not in json.dumps(sections)
+
+
+def test_each_subheader_starts_a_new_section() -> None:
+    sections = group_into_sections(
+        [
+            item("Intro"),
+            item("Week 1", SUBHEADER),
+            item("Slides"),
+            item("Week 2", SUBHEADER),
+            item("Reader"),
+        ]
+    )
+    assert [s["section"] for s in sections] == [None, "Week 1", "Week 2"]
+    assert [len(s["items"]) for s in sections] == [1, 1, 1]
+
+
+def test_an_empty_subheader_still_shows_the_teacher_wrote_one() -> None:
+    sections = group_into_sections([item("Week 3", SUBHEADER)])
+    assert sections == [{"section": "Week 3", "items": []}]
+
+
+def test_a_hidden_item_is_dropped() -> None:
+    sections = group_into_sections(
+        [item("Visible"), item("Gone", hidden_for_user=True)]
+    )
+    assert [i["title"] for i in sections[0]["items"]] == ["Visible"]
+
+
+def test_a_locked_module_keeps_its_name_and_loses_its_contents() -> None:
+    """Hiding the module entirely would hide the shape of the course, which is
+    not what section 5 is protecting."""
+    locked = slim_module(
+        {"name": "Week 5", "state": "locked", "items": [item("Slides")]}
+    )
+    assert tuple(locked) == MODULE_FIELDS
+    assert locked["module"] == "Week 5"
+    assert locked["locked"] is True
+    assert locked["sections"] == []
+    assert "Slides" not in json.dumps(locked)
+
+
+def test_an_unlocked_module_keeps_its_items() -> None:
+    open_module = slim_module(
+        {"name": "Week 1", "state": "completed", "items": [item("Slides")]}
+    )
+    assert open_module["locked"] is False
+    assert open_module["sections"][0]["items"][0]["title"] == "Slides"
