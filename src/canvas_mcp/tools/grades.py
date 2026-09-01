@@ -22,14 +22,18 @@ def make_list_grades(client: CanvasClient) -> Callable[..., list[dict[str, Any]]
     """Build the tool, with the client closed over rather than passed in."""
 
     def list_grades(course_id: int) -> list[dict[str, Any]]:
-        """Show the scores for one course, per assignment.
+        """What the student scored, assignment by assignment, in one course.
 
-        Returns the assignment name, the score, the maximum, the letter grade
-        if the course uses one, and flags for late, missing or excused work.
-        Requires a course id from list_courses. Covers a single course on
-        purpose: there is no way to ask about every course at once.
+        Returns the assignment name, the score, the maximum, a letter grade
+        where the course uses one, and flags for late, missing or excused work.
+        Needs a course id from list_courses.
 
-        Final course grades are not available — this institution hides them.
+        One course per call, on purpose — there is no way to ask about every
+        course at once, so a question about several means several calls.
+
+        Final course grades are not available at all: this institution hides
+        them in Canvas, so no tool here can reach them. Say so rather than
+        estimating one from these scores.
         """
         submissions = client.paginate(
             # Coerced rather than trusted: this argument is chosen by a model.

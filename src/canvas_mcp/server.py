@@ -19,7 +19,7 @@ from mcp.types import ToolAnnotations
 from canvas_mcp.client import CanvasClient, CanvasError
 from canvas_mcp.fixtures import DEMO_TOKEN, demo_transport
 from canvas_mcp.scopes import DEFAULT_SCOPES, ScopeError, ScopeRegistry
-from canvas_mcp.tools import build_tools
+from canvas_mcp.tools import TOOL_TITLES, build_tools
 
 INSTRUCTIONS = """\
 Read-only access to one student's Canvas courses. Every tool answers about the
@@ -45,6 +45,7 @@ def build_server(
         server.add_tool(
             tool,
             name=name,
+            title=TOOL_TITLES.get(name),
             annotations=ToolAnnotations(read_only_hint=True),
         )
     report(registry)
