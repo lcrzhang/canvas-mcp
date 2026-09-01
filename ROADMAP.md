@@ -629,6 +629,30 @@ answer, which no test can see, so it has to be run against a real client:
 Run each, note what it called, and change the description of whichever tool it
 should have picked.
 
+**First result, 2026-09-01 — the grades question.** With `grades:read` off, a
+model asked for scores searched its tool list, found nothing, and said so
+without estimating or retrying. That is the behaviour the invisible-over-
+forbidden choice was made for, now observed rather than argued.
+
+But it explained the absence as *"this server is still being built, there is no
+tool for scores yet"*. The tool exists and is switched off, and a model cannot
+tell the difference — that is inherent to not registering it. So it filled the
+gap with something plausible and wrong, which is precisely this project's named
+failure mode, arriving in the one place no test was looking.
+
+Fixed in the server `instructions` rather than in a tool description: the
+server now states that anything missing is missing by configuration, that a
+model should say so rather than guess why, and that it must not estimate the
+answer a missing tool would have given. It does not say *what* is missing —
+that would undo the choice — and the string is identical whatever is enabled,
+so its length cannot be read as a hint.
+
+**A configuration mistake found alongside it.** The setup instructions written
+on 2026-08-31 pinned `--scopes courses:read,grades:read`, so removing grades
+left a single tool and four of the six had never run in a real client at all.
+The default scope set exists exactly so that nobody has to write one; the
+instructions should have omitted the flag.
+
 ---
 
 ## Milestone v0.2 — file content

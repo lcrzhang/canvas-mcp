@@ -74,3 +74,30 @@ def test_the_default_tool_list_is_the_one_a_student_gets() -> None:
     names = {tool.name for tool in asyncio.run(server.list_tools())}
     assert "list_grades" not in names
     assert len(names) == len(TOOL_SCOPES) - 1
+
+
+# --- what the server says about itself ------------------------------------
+
+
+def test_the_instructions_explain_an_absence_without_naming_it() -> None:
+    """Observed on 2026-09-01: asked for grades with `grades:read` off, a model
+    reported the tool as "not built yet". The tool exists and is switched off,
+    and the model cannot tell — that is the point of not registering it. So the
+    server says absence is configuration, without saying what is absent."""
+    server = build_server(build_tools(build_client(demo=True)))
+    instructions = server.instructions or ""
+
+    assert "configuration" in instructions
+    assert "estimate" in instructions
+    # It must not leak what was withheld — that would undo the choice.
+    assert "grades" not in instructions.lower()
+    assert "list_" not in instructions
+
+
+def test_the_instructions_are_the_same_whatever_is_enabled() -> None:
+    """A different string per configuration would let a model infer the shape
+    of what it cannot see."""
+    demo = build_tools(build_client(demo=True))
+    narrow = build_server(demo, scopes=["courses:read"]).instructions
+    wide = build_server(demo, scopes=ALL_SCOPES).instructions
+    assert narrow == wide
