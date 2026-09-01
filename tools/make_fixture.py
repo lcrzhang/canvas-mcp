@@ -85,6 +85,12 @@ CAPTURES: dict[str, tuple[str | Callable[[CanvasClient], str], dict[str, Any], s
         {"include[]": ["submission"], "order_by": "due_at"},
         "assignment",
     ),
+    # Modules are the only way in: the course file index is 403 for students.
+    "modules": (
+        richest_course("modules", {"include[]": ["items"]}),
+        {"include[]": ["items"]},
+        "module",
+    ),
     "announcements": (
         richest_course("discussion_topics", {"only_announcements": True}),
         {"only_announcements": True},
