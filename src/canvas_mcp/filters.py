@@ -128,3 +128,23 @@ def slim_assignment_detail(assignment: dict[str, Any]) -> dict[str, Any]:
             sanitize(description, "assignment description") if description else None
         ),
     }
+
+
+# `SCOPE.md` section 3: title, date, plain-text body. The author is left out
+# deliberately — it is a third party's name, pronouns and avatar url, and none
+# of that is needed to answer "are there new announcements".
+ANNOUNCEMENT_FIELDS = ("title", "posted_at", "message")
+
+
+def slim_announcement(announcement: dict[str, Any]) -> dict[str, Any]:
+    """Reduce one announcement to its title, date and text.
+
+    The body is written by a teacher, so it goes through the sanitizer: markup
+    out, size capped, wrapped in delimiters naming where it came from.
+    """
+    message = announcement.get("message")
+    return {
+        "title": announcement.get("title"),
+        "posted_at": announcement.get("posted_at"),
+        "message": sanitize(message, "announcement") if message else None,
+    }
