@@ -10,6 +10,7 @@ from typing import Any
 
 from canvas_mcp.client import CanvasClient, CanvasError
 from canvas_mcp.extract import (
+    DEFAULT_EXTRACTOR,
     MAX_SLIDES,
     ExtractionError,
     extract_slides,
@@ -28,8 +29,15 @@ MAX_FILE_BYTES = 25_000_000
 READABLE_TYPES = ("application/pdf",)
 
 
-def make_read_file(client: CanvasClient) -> Callable[..., dict[str, Any]]:
-    """Build the tool, with the client closed over rather than passed in."""
+def make_read_file(
+    client: CanvasClient,
+    extractor: str = DEFAULT_EXTRACTOR,
+) -> Callable[..., dict[str, Any]]:
+    """Build the tool, with the client closed over rather than passed in.
+
+    `extractor` names the PDF backend. It is a comparison switch, not a
+    feature: see `extract.py`.
+    """
 
     def read_file(
         course_id: int,
@@ -96,7 +104,7 @@ def make_read_file(client: CanvasClient) -> Callable[..., dict[str, Any]]:
         try:
             total = page_count(data)
             wanted = parse_page_range(page_range, total)
-            slides = extract_slides(data, wanted)
+            slides = extract_slides(data, wanted, extractor)
         except ExtractionError as exc:
             # Already phrased for a reader; do not bury it in a generic error.
             raise CanvasError(str(exc)) from exc

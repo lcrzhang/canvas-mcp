@@ -202,8 +202,21 @@ blank pages — silence would read as "that page is empty" about a page full of
 handwriting. A file over 25 MB is refused before it is transferred.
 
 Everything that knows what a PDF is lives in two functions, so the extraction
-backend can be replaced without touching a tool. It is `pypdf`: PyMuPDF
-extracts better and is AGPL, which this project cannot take on.
+backend can be replaced without touching a tool. Two are installed while they
+are compared: `--extractor pypdf` (the default) and `--extractor pdfplumber`.
+
+A live read on 2026-09-01 showed what `pypdf` costs on a real lecture deck.
+Word boundaries vanish where formatting changes — `whilecurr_nodeis notnonedo`
+for `while curr_node is not none do` — which makes pseudocode unreadable in a
+course about algorithms. A 3×3 table of asymptotic bounds came out as
+`O(1)O(n)O(n 2)` above `1∈ ∈ ∈`, with no way to tell which column a symbol
+belonged to. `pdfplumber` splits words on the distance between glyphs instead
+of on what the content stream groups, so it should do better on the first and
+partly on the second.
+
+It is not the default, because *should* is not a measurement. One of the two
+will be removed once the same file has been read with both. PyMuPDF beats
+either and is AGPL, which this project cannot take on.
 
 ## Untrusted content
 

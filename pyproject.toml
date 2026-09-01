@@ -17,9 +17,17 @@ dependencies = [
     "httpx2>=2.12",
     # mcp 2.x: FastMCP was renamed MCPServer and the API is snake_case.
     "mcp>=2.1",
-    # PDF text extraction. Chosen over PyMuPDF, which extracts better but is
-    # AGPL — a licence this repository cannot take on now that it is public.
+    # PDF text extraction, two of them, on purpose and temporarily. A live
+    # test showed pypdf losing word boundaries at formatting changes
+    # ("whilecurr_nodeis notnonedo") and flattening a table beyond recovery.
+    # pdfplumber splits words on the distance between glyphs instead, which
+    # should do better — should, until it is measured on the same file.
+    # One of these will be removed once it has been.
+    #
+    # PyMuPDF extracts better than either and is AGPL, which this repository
+    # cannot take on now that it is public.
     "pypdf>=5",
+    "pdfplumber>=0.11",
 ]
 
 [project.scripts]
