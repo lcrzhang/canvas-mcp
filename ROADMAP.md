@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 13 — tool descriptions** · open points closed
+Status: **step 12 — README and v0.1.0**
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -584,7 +584,7 @@ findings, and the measured raw-vs-filtered byte counts.
 **Notes:** the argumentation here is Leo's — the agent may draft structure, not
 claims.
 
-### [ ] 13. Tool description pass — **HUMAN**
+### [~] 13. Tool description pass
 
 **Delivers:** empirical check that the model picks the right tool. Iterate on
 descriptions until it does.
@@ -593,11 +593,41 @@ descriptions until it does.
 the part that cannot be delegated: the failure mode is a plausible wrong
 answer, not an exception.
 
-Found during the live test on 2026-08-31: the generated schema for
-`list_courses` is `{"term_filter": {}}` — no type at all, while `course_id`
-correctly gets `{"type": "number"}`. A `str | None` annotation produces an
-empty schema, so a model is told nothing about what it may pass. Schemas belong
-with descriptions: both are what a model reads before choosing.
+**Correction, 2026-09-01.** This step recorded a schema defect: that
+`list_courses` generated `{"term_filter": {}}` with no type. That was wrong.
+The claim came from a tool listing rendered by a client, not from the server,
+and `MCPServer` generates `{"anyOf": [{"type": "string"}, {"type": "null"}],
+"default": null}` — which is correct. A bug was reported on the strength of a
+rendering, without checking the source. `tests/test_tool_contract.py` now
+asserts the property that was assumed broken, so it stays true.
+
+**Done, 2026-09-01.** Every description was rewritten around the question a
+model has to answer before calling: *which of these six*. The first line of
+each is now the question it answers rather than a summary of its output, and
+overlapping pairs point at each other — `list_assignments` sends content
+questions to `get_assignment` and material questions to `list_materials`;
+`list_materials` says assignments appear there too but deadlines belong
+elsewhere.
+
+Every tool gained a human-readable `title`. The function name is what the model
+reads; the title is what a person sees in their client's tool list.
+
+**What could not be delegated, and is still open.** The roadmap always said
+this step is an empirical check that the model picks the right tool. Rewriting
+the descriptions is not that check. The failure mode is a plausible wrong
+answer, which no test can see, so it has to be run against a real client:
+
+| Ask | Should call | Wrong answer looks like |
+|---|---|---|
+| "what do I have to do for X this week" | `list_assignments` | listing modules, or every deadline including past ones |
+| "what does the week 3 assignment ask" | `list_courses` → `list_assignments` → `get_assignment` | answering from the title alone |
+| "where are the slides for week 3" | `list_materials` | `list_assignments`, because slides are attached to one |
+| "did they say anything about the exam" | `list_announcements` | searching assignment descriptions |
+| "how am I doing in X" | refusal, or `list_grades` if enabled | estimating a course grade from assignment scores |
+| "what did I take last year" | `list_courses(current_only=false)` | "you are taking nothing", from the filtered list |
+
+Run each, note what it called, and change the description of whichever tool it
+should have picked.
 
 ---
 

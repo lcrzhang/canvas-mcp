@@ -45,7 +45,11 @@ prints field names and counts, never values.
   the alternatives and reasons recorded in `ROADMAP.md`. Writing the code was
   delegated afterwards, on the grounds that the reasoning was the learning
   goal. Changing any of those decisions is Leo's call, not a refactor.
-- tool descriptions and the tuning pass on them (roadmap step 13)
+- the empirical half of the tool description pass (roadmap step 13): running
+  the ambiguous questions against a real client and seeing which tool gets
+  picked. The descriptions themselves were delegated on 2026-09-01; the
+  checklist to run against them is in `ROADMAP.md` step 13. No test can do
+  this — the failure mode is a plausible wrong answer, not an exception.
 - deciding *when* a live capture runs. The capture itself is automated in
   `tools/make_fixture.py`, which fetches, converts and checks in one process;
   the raw response never reaches disk and never reaches the agent's context
