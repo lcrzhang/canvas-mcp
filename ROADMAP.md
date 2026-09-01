@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 12 — README and v0.1.0 (HUMAN)** · all ten tools built
+Status: **step 13 — tool descriptions** · open points closed
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -274,10 +274,13 @@ a course: erring towards showing too much is the safe direction here.
 
 That change also broke the demo, which is how the fixture's dates were found to
 be stale — every synthetic term had already ended. Fields meaning "this closes
-later" are now dated a year past the base date. That buys roughly a year before
-a captured fixture reads as archived again. The durable fix would be for demo
-mode to shift dates relative to today at load time, which keeps the file
-deterministic and the demo current; not worth it until it bites.
+later" are now dated a year past the base date.
+
+**Done properly on 2026-09-01.** `load_fixture` shifts every date forward by the
+distance from the fixture's base date to today. The file keeps fixed dates, so
+regenerating still diffs cleanly, and the demo cannot quietly empty itself once
+the clock moves past them. A test asserts the committed courses are in running
+terms when loaded — the check that would have caught it the first time.
 
 **Notes:** first end-to-end step. Resolve `enrollment_term_id` to a term name
 via `include[]=term` — a bare `417` is useless to a model.
@@ -489,14 +492,14 @@ because here the body *is* the content, so there is little to remove. The
 delimiters cost about 130 bytes per item, which is most of what the wrapper
 adds and another reason the default limit is small.
 
-### [~] 10. `list_materials`
+### [x] 10. `list_materials`
 
 **Delivers:** "which slides belong to week 1?" works. Module tree flattened to
 module → subheader section → items.
 
 **Files:** `src/canvas_mcp/tools/materials.py`, `fixtures/modules.json`
 
-**Branch:** `feat/list-materials`
+**Branch:** `feat/list-materials` · **Issue:** #37 · **PR:** #38 (merged)
 
 **Notes:** `SubHeader` items are labels, not content — group following items
 under them by `indent`. Respect `locked_for_user` and `hidden_for_user`. The
@@ -508,9 +511,15 @@ Canvas draws an item, not what it belongs to; using it for membership would
 misplace an item the moment a teacher indents something for looks. The note
 above asked for "group following items under them", and that is what this does.
 
-**No SubHeader exists in the captured course.** All 24 items are Page, File or
-Assignment across 7 modules, so the grouping is proven against constructed
-cases rather than real ones. Worth re-checking against a course that uses them.
+**Closed on 2026-09-01.** The first capture picked the course with the most
+items, which happened to use no SubHeader at all. Probing every active course
+found four in one and one in another. The resolver now prefers a course that
+uses them, and the grouping is verified against real data: four named sections
+in one module, and items before the first subheader in a nameless one.
+
+Worth remembering as a capture rule — the richest course is not the most
+representative one, and "the feature has no example in the fixture" is easy to
+mistake for "the feature is fine".
 
 **Neither `locked_for_user` nor `hidden_for_user` appears on a module.** Canvas
 filters on enrolment before the response is built — the same finding section 2
