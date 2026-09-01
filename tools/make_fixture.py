@@ -85,6 +85,11 @@ CAPTURES: dict[str, tuple[str | Callable[[CanvasClient], str], dict[str, Any], s
         {"include[]": ["submission"], "order_by": "due_at"},
         "assignment",
     ),
+    "announcements": (
+        richest_course("discussion_topics", {"only_announcements": True}),
+        {"only_announcements": True},
+        "announcement",
+    ),
 }
 
 
