@@ -20,7 +20,6 @@ from mcp.types import ToolAnnotations
 
 from canvas_mcp import __version__
 from canvas_mcp.client import CanvasClient, CanvasError
-from canvas_mcp.extract import DEFAULT_EXTRACTOR, EXTRACTORS
 from canvas_mcp.fixtures import DEMO_TOKEN, demo_transport
 from canvas_mcp.scopes import DEFAULT_SCOPES, ScopeError, ScopeRegistry
 from canvas_mcp.tools import TOOL_TITLES, build_tools
@@ -65,7 +64,6 @@ def surfacing(tool: Callable[..., Any]) -> Callable[..., Any]:
 def build_server(
     tools: dict[str, Callable[..., Any]],
     scopes: list[str] | None = None,
-    extractor: str = "",
 ) -> MCPServer:
     """Wire the enabled tools into a server, and nothing else.
 
@@ -81,11 +79,11 @@ def build_server(
             title=TOOL_TITLES.get(name),
             annotations=ToolAnnotations(read_only_hint=True),
         )
-    report(registry, extractor)
+    report(registry)
     return server
 
 
-def report(registry: ScopeRegistry, extractor: str = "") -> None:
+def report(registry: ScopeRegistry) -> None:
     """One line on stderr saying what is exposed.
 
     stderr, not stdout: the stdio transport speaks the protocol on stdout, and
@@ -100,8 +98,6 @@ def report(registry: ScopeRegistry, extractor: str = "") -> None:
     print(f"canvas-mcp {__version__}", file=sys.stderr)
     print(f"canvas-mcp: enabled {enabled}", file=sys.stderr)
     print(f"canvas-mcp: disabled {disabled}", file=sys.stderr)
-    if extractor:
-        print(f"canvas-mcp: pdf backend {extractor}", file=sys.stderr)
 
 
 def build_client(*, demo: bool = False) -> CanvasClient:
@@ -127,15 +123,6 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
         "--version",
         action="version",
         version=f"canvas-mcp {__version__}",
-    )
-    parser.add_argument(
-        "--extractor",
-        choices=sorted(EXTRACTORS),
-        default=DEFAULT_EXTRACTOR,
-        help=(
-            "Which PDF backend read_file uses. A comparison switch while the "
-            "two are measured against the same file, not a setting to keep."
-        ),
     )
     parser.add_argument(
         "--demo",
@@ -180,8 +167,7 @@ def main(argv: list[str] | None = None) -> int:
         # Demo mode answers /users/self from the transport, so this path is the
         # same in both modes instead of being skipped in one of them.
         client.verify_token()
-        tools = build_tools(client, extractor=args.extractor)
-        server = build_server(tools, scopes=scopes, extractor=args.extractor)
+        server = build_server(build_tools(client), scopes=scopes)
     except (CanvasError, ScopeError) as exc:
         print(f"canvas-mcp: {exc}", file=sys.stderr)
         return 1

@@ -432,12 +432,3 @@ def test_the_version_matches_the_one_the_package_declares() -> None:
     from canvas_mcp import __version__
 
     assert version("canvas-mcp") == __version__
-
-
-def test_the_startup_line_names_the_pdf_backend(
-    capsys: pytest.CaptureFixture[str],
-) -> None:
-    """Which backend answered is the whole question while the two are being
-    compared, so it belongs next to the version."""
-    build_server({"list_courses": stub()}, extractor="pdfplumber")
-    assert "pdf backend pdfplumber" in capsys.readouterr().err

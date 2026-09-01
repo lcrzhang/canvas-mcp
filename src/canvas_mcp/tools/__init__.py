@@ -9,7 +9,6 @@ from collections.abc import Callable
 from typing import Any
 
 from canvas_mcp.client import CanvasClient
-from canvas_mcp.extract import DEFAULT_EXTRACTOR
 from canvas_mcp.tools.announcements import make_list_announcements
 from canvas_mcp.tools.assignments import (
     make_get_assignment,
@@ -33,10 +32,7 @@ TOOL_TITLES = {
 }
 
 
-def build_tools(
-    client: CanvasClient,
-    extractor: str = DEFAULT_EXTRACTOR,
-) -> dict[str, Callable[..., Any]]:
+def build_tools(client: CanvasClient) -> dict[str, Callable[..., Any]]:
     """Every tool this project implements, by name.
 
     The names must match `TOOL_SCOPES` in `scopes.py`; the registry refuses to
@@ -48,6 +44,6 @@ def build_tools(
         "get_assignment": make_get_assignment(client),
         "list_announcements": make_list_announcements(client),
         "list_materials": make_list_materials(client),
-        "read_file": make_read_file(client, extractor),
+        "read_file": make_read_file(client),
         "list_grades": make_list_grades(client),
     }

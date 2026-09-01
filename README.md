@@ -201,22 +201,30 @@ saying it is probably an image and that this server does no OCR, rather than as
 blank pages — silence would read as "that page is empty" about a page full of
 handwriting. A file over 25 MB is refused before it is transferred.
 
-Everything that knows what a PDF is lives in two functions, so the extraction
-backend can be replaced without touching a tool. Two are installed while they
-are compared: `--extractor pypdf` (the default) and `--extractor pdfplumber`.
+Everything that knows what a PDF is lives in two functions, so the backend can
+be replaced without touching a tool. It is `pypdf`, and that was measured
+rather than assumed.
 
-A live read on 2026-09-01 showed what `pypdf` costs on a real lecture deck.
-Word boundaries vanish where formatting changes — `whilecurr_nodeis notnonedo`
-for `while curr_node is not none do` — which makes pseudocode unreadable in a
-course about algorithms. A 3×3 table of asymptotic bounds came out as
+`pdfplumber` was installed alongside it and read the same lecture deck.
+Expectation: better, because it splits words on the distance between glyphs
+rather than on whatever the content stream groups — and `pypdf` does lose word
+boundaries at formatting changes, turning `while curr_node is not none do` into
+`whilecurr_nodeis notnonedo`.
+
+Result: worse, and not repairable. `pdfplumber` reads a page line by line, so
+a two-column slide comes out interleaved — `Higher-level, Meetings:` — where
+`pypdf` reads one column and then the other. `x_tolerance` changes word
+splitting, not order. `layout=True` is visually faithful and pads every line to
+the width of the page, which a model pays for by the token. Reading a slide in
+the wrong order costs more than losing spaces inside it.
+
+What neither does well is tables. A 3×3 grid of asymptotic bounds comes out as
 `O(1)O(n)O(n 2)` above `1∈ ∈ ∈`, with no way to tell which column a symbol
-belonged to. `pdfplumber` splits words on the distance between glyphs instead
-of on what the content stream groups, so it should do better on the first and
-partly on the second.
+belonged to. PyMuPDF beats both and is AGPL, which this project cannot take
+on.
 
-It is not the default, because *should* is not a measurement. One of the two
-will be removed once the same file has been read with both. PyMuPDF beats
-either and is AGPL, which this project cannot take on.
+The comparison is kept as a test: a two-column page must come back one column
+at a time.
 
 ## Untrusted content
 

@@ -3,15 +3,14 @@
 Everything that knows about PDFs lives here, behind `pages_of` and
 `page_count`. Swapping backends means replacing those.
 
-**Two backends are installed on purpose, and temporarily.** A live test on
-2026-09-01 showed `pypdf` losing word boundaries where formatting changes
-("whilecurr_nodeis notnonedo") and flattening a table past recovery.
-`pdfplumber` splits words on the distance between glyphs rather than on
-whatever the content stream happens to group, which should do better — should,
-until it is measured on the same file. `--extractor` exists so it can be, and
-one of the two goes once it has been. The default stays `pypdf`: switching on
-expectation is how a claim gets made without checking, which has happened twice
-in this project already. `SCOPE.md`
+`pdfplumber` was measured against `pypdf` on the same lecture deck and lost.
+It reads a page line by line, so a two-column slide comes out interleaved —
+`Higher-level, Meetings:` — where `pypdf` reads one column and then the other.
+No parameter fixes it: `x_tolerance` changes word splitting, not order, and
+`layout=True` is visually faithful at the cost of padding every line to the
+page width, which a model pays for by the token. It did fix ligatures and lost
+word spaces elsewhere, and neither outweighs reading a slide in the wrong
+order. `SCOPE.md`
 section 7 rules out OCR, so a page with no text layer is refused with an
 explanation rather than returned as an empty string — silence would read as
 "this page is blank", which is a plausible wrong answer about a page that is
@@ -22,8 +21,6 @@ import io
 import re
 from collections.abc import Iterable
 
-import pdfplumber
-from pdfplumber.utils.exceptions import PdfminerException
 from pypdf import PdfReader
 from pypdf.errors import PdfReadError
 
@@ -84,28 +81,9 @@ def _pypdf_pages(data: bytes, indexes: list[int]) -> list[str]:
     return [(reader.pages[i].extract_text() or "").strip() for i in indexes]
 
 
-def _pdfplumber_pages(data: bytes, indexes: list[int]) -> list[str]:
-    try:
-        with pdfplumber.open(io.BytesIO(data)) as document:
-            return [(document.pages[i].extract_text() or "").strip() for i in indexes]
-    except PdfminerException as exc:
-        raise ExtractionError(f"This file is not a readable PDF: {exc}") from exc
-
-
-EXTRACTORS = {"pypdf": _pypdf_pages, "pdfplumber": _pdfplumber_pages}
-DEFAULT_EXTRACTOR = "pypdf"
-
-
-def pages_of(data: bytes, indexes: list[int], extractor: str) -> list[str]:
-    """The text of the pages asked for, from the backend asked for."""
-    try:
-        read_pages = EXTRACTORS[extractor]
-    except KeyError:
-        raise ExtractionError(
-            f"Unknown extractor {extractor!r}. Available: "
-            f"{', '.join(sorted(EXTRACTORS))}."
-        ) from None
-    return read_pages(data, indexes)
+def pages_of(data: bytes, indexes: list[int]) -> list[str]:
+    """The text of the pages asked for. The seam a backend swap goes through."""
+    return _pypdf_pages(data, indexes)
 
 
 def page_count(data: bytes) -> int:
@@ -188,11 +166,10 @@ def collapse_overlays(pages: list[tuple[int, str]]) -> list[tuple[list[int], str
 def extract_slides(
     data: bytes,
     pages: Iterable[int],
-    extractor: str = DEFAULT_EXTRACTOR,
 ) -> list[tuple[list[int], str]]:
     """The pages asked for, with build-up frames collapsed into slides."""
     wanted = list(pages)
-    extracted = list(zip(wanted, pages_of(data, wanted, extractor), strict=True))
+    extracted = list(zip(wanted, pages_of(data, wanted), strict=True))
 
     if not any(text for _, text in extracted):
         raise ExtractionError(

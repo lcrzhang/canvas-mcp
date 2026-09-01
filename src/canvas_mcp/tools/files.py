@@ -10,7 +10,6 @@ from typing import Any
 
 from canvas_mcp.client import CanvasClient, CanvasError
 from canvas_mcp.extract import (
-    DEFAULT_EXTRACTOR,
     MAX_SLIDES,
     ExtractionError,
     extract_slides,
@@ -29,15 +28,8 @@ MAX_FILE_BYTES = 25_000_000
 READABLE_TYPES = ("application/pdf",)
 
 
-def make_read_file(
-    client: CanvasClient,
-    extractor: str = DEFAULT_EXTRACTOR,
-) -> Callable[..., dict[str, Any]]:
-    """Build the tool, with the client closed over rather than passed in.
-
-    `extractor` names the PDF backend. It is a comparison switch, not a
-    feature: see `extract.py`.
-    """
+def make_read_file(client: CanvasClient) -> Callable[..., dict[str, Any]]:
+    """Build the tool, with the client closed over rather than passed in."""
 
     def read_file(
         course_id: int,
@@ -58,7 +50,8 @@ def make_read_file(
         Lecture slides have far more pages than slides — LaTeX writes one page
         per build-up step, so a 30-slide lecture is often 90 pages. Frames of
         the same slide are collapsed into one entry labelled with the pages it
-        came from, and "slides" says how many came back.
+        came from, and "entries" says how many came back — one entry per
+        slide where frames were recognised, one per page where they were not.
 
         The limit is 60 pages in and 20 slides out, so ask for a wide range:
         sixty pages of a deck is usually fifteen or twenty slides. If more than
@@ -104,7 +97,7 @@ def make_read_file(
         try:
             total = page_count(data)
             wanted = parse_page_range(page_range, total)
-            slides = extract_slides(data, wanted, extractor)
+            slides = extract_slides(data, wanted)
         except ExtractionError as exc:
             # Already phrased for a reader; do not bury it in a generic error.
             raise CanvasError(str(exc)) from exc
@@ -120,10 +113,13 @@ def make_read_file(
         return {
             "file": meta.get("display_name"),
             "pages": f"{wanted[0] + 1}-{wanted[-1] + 1} of {total}",
-            # A number, not a sentence. "4 of 4 in that range" read as though
-            # something had been cut when nothing had, and could not be used
-            # without parsing it. When slides are dropped the text says so.
-            "slides": min(found, MAX_SLIDES),
+            # Entries, not slides. An entry is one slide where build-up
+            # frames were recognised and one page where they were not — and
+            # the tool cannot tell how many slides a range really holds. A
+            # field called "slides" said 12 for four slides the day the
+            # extractor changed under it, which is the kind of number that
+            # gets quoted.
+            "entries": min(found, MAX_SLIDES),
             "text": untrusted(text, f"{meta.get('display_name')}, a course file"),
         }
 

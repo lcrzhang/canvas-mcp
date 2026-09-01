@@ -9,8 +9,6 @@ Demo mode uses the same builder.
 import pytest
 
 from canvas_mcp.extract import (
-    DEFAULT_EXTRACTOR,
-    EXTRACTORS,
     MAX_PAGES,
     ExtractionError,
     collapse_overlays,
@@ -22,6 +20,48 @@ from canvas_mcp.extract import (
     parse_page_range,
 )
 from canvas_mcp.fixtures import build_pdf
+
+
+def positioned_pdf(words: list[tuple[str, int]]) -> bytes:
+    """A page where each word is placed by itself, the way LaTeX writes one.
+
+    `build_pdf` puts a whole line in one text object, which cannot show how a
+    backend orders words that sit in separate columns.
+    """
+    ops = ["BT /F1 11 Tf"]
+    for word, y in words:
+        x = 60 if word[0].islower() or word[0] == "H" else 330
+        ops.append(f"1 0 0 1 {x} {y} Tm ({word}) Tj")
+    ops.append("ET")
+    stream = "\n".join(ops).encode()
+
+    objects = [
+        (1, b"<< /Type /Catalog /Pages 2 0 R >>"),
+        (2, b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>"),
+        (
+            3,
+            b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 780] "
+            b"/Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>",
+        ),
+        (4, b"<< /Length %d >>\nstream\n" % len(stream) + stream + b"\nendstream"),
+        (5, b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"),
+    ]
+    out = bytearray(b"%PDF-1.4\n")
+    offsets: dict[int, int] = {}
+    for number, body in objects:
+        offsets[number] = len(out)
+        out += b"%d 0 obj\n" % number + body + b"\nendobj\n"
+    start = len(out)
+    size = max(offsets) + 1
+    out += b"xref\n0 %d \n0000000000 65535 f \n" % size
+    for number in range(1, size):
+        out += b"%010d 00000 n \n" % offsets[number]
+    out += b"trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n" % (
+        size,
+        start,
+    )
+    return bytes(out)
+
 
 TWO_PAGES = build_pdf("Sorting is comparison based", "Quicksort picks a pivot")
 
@@ -196,32 +236,22 @@ def test_an_unreadable_page_is_never_folded_into_its_neighbour() -> None:
     assert len(collapse_overlays(pages)) == 2
 
 
-# --- two backends, on purpose and temporarily -----------------------------
+# --- one backend, chosen by measurement -----------------------------------
 
 
-@pytest.mark.parametrize("extractor", sorted(EXTRACTORS))
-def test_both_backends_read_the_same_document(extractor: str) -> None:
-    deck = build_pdf("Sorting is comparison based", "Quicksort picks a pivot")
-    slides = extract_slides(deck, [0, 1], extractor=extractor)
-    text = format_slides(slides)
-    assert "Sorting is comparison based" in text
-    assert "Quicksort picks a pivot" in text
+def test_a_two_column_page_is_read_one_column_at_a_time() -> None:
+    """The measurement that removed pdfplumber, kept as a test.
 
+    It reads a page line by line, so two columns come out interleaved —
+    "Higher-level, Meetings:" — where pypdf reads one column and then the
+    other. No parameter fixes it: x_tolerance changes word splitting, not
+    order, and layout=True pads every line to the page width. A backend that
+    interleaves columns would fail this.
+    """
+    left = [("Higher-level,", 700), ("flexible", 688), ("lists:", 676)]
+    right = [("Meetings:", 700), ("two", 688), ("lectures", 676)]
+    text = extract_slides(positioned_pdf(left + right), [0])[0][1]
 
-@pytest.mark.parametrize("extractor", sorted(EXTRACTORS))
-def test_both_backends_refuse_something_that_is_not_a_pdf(extractor: str) -> None:
-    """A backend swap must not change which failures are explained."""
-    with pytest.raises(ExtractionError, match="not a readable PDF"):
-        extract_slides(b"this is a text file", [0], extractor=extractor)
-
-
-def test_an_unknown_backend_names_the_ones_there_are() -> None:
-    with pytest.raises(ExtractionError, match="pdfplumber, pypdf"):
-        extract_slides(build_pdf("x"), [0], extractor="pymupdf")
-
-
-def test_the_default_is_the_backend_with_evidence_behind_it() -> None:
-    """pdfplumber is expected to do better and has not been measured. Making it
-    the default on that expectation is the mistake this project has already
-    made twice."""
-    assert DEFAULT_EXTRACTOR == "pypdf"
+    lines = [line for line in text.splitlines() if line.strip()]
+    assert lines[:3] == ["Higher-level,", "flexible", "lists:"]
+    assert lines[3:] == ["Meetings:", "two", "lectures"]

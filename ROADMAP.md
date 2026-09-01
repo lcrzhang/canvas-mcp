@@ -841,7 +841,7 @@ then stopped. The page-limit error names a limit and a way forward; this one
 now says to open the file in Canvas or look for a PDF in the same module. The
 grammar was wrong too — "is a text/plain".
 
-### [~] 18. Two extractors, until one is measured
+### [x] 18. Two extractors, until one was measured
 
 **Delivers:** `--extractor pypdf|pdfplumber`, so the same file can be read with
 both.
@@ -862,9 +862,33 @@ the content stream groups, so it should handle the first and partly the second.
 backend on expectation is the mistake made twice already here — the schema
 "defect" that was not one, and the "broken" module filter that was working.
 
-Both are installed on purpose and temporarily. One goes once the same file has
-been read with both, and the backend is named on the startup line so the answer
-says which produced it.
+**Measured on 2026-09-01, and pdfplumber lost.** The same deck read with both:
+it reads a page line by line, so two columns interleave — `Higher-level,
+Meetings:` — where pypdf reads one column and then the other. On the real deck
+that turned the handout's contact slide into alternating lines from two
+unrelated blocks, and it broke the frame collapsing as well: rotating text
+blocks meant no two build-up frames matched, so twenty pages came back as
+twelve entries instead of four. Two regressions with one cause, as the tester
+worked out.
+
+No parameter fixes it. `x_tolerance` changes word splitting, not order;
+`layout=True` is visually faithful and pads every line to the page width, which
+a model pays for by the token. It did fix ligatures and the split capital, and
+that does not outweigh reading a slide in the wrong order.
+
+pdfplumber and `--extractor` are gone. The comparison survives as a test: a
+two-column page must come back one column at a time, so a future backend swap
+has to clear the bar this one failed.
+
+**The hypothesis was mine and it was wrong.** Word boundaries were the thing to
+improve, and glyph distance is the right mechanism for that — but ordering
+mattered more, and nobody had measured which. Adding it as a switch rather than
+as the default is what made the mistake cheap.
+
+**`slides` became `entries`.** It counted returned blocks, which equals slides
+only while the collapsing works: under pdfplumber it reported 12 for four
+slides. The tool cannot know how many slides a range really holds, so the field
+is named for what it counts.
 
 ## Known dates
 
