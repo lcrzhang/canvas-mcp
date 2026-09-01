@@ -14,6 +14,7 @@ import pytest
 
 from canvas_mcp.client import CanvasClient, CanvasError
 from canvas_mcp.filters import (
+    ANNOUNCEMENT_FIELDS,
     ASSIGNMENT_DETAIL_FIELDS,
     ASSIGNMENT_FIELDS,
     SUBMISSION_FIELDS,
@@ -21,6 +22,10 @@ from canvas_mcp.filters import (
 from canvas_mcp.scopes import DEFAULT_SCOPES, TOOL_SCOPES
 from canvas_mcp.server import build_client, build_server, parse_args
 from canvas_mcp.tools import build_tools
+from canvas_mcp.tools.announcements import (
+    DEFAULT_LIMIT,
+    make_list_announcements,
+)
 from canvas_mcp.tools.assignments import (
     is_upcoming,
     make_get_assignment,
@@ -135,7 +140,6 @@ def test_term_filter_matches_case_insensitively_and_partially() -> None:
 # still arriving; here is where it went. Adding a tool fails this test until
 # its name is removed from the list, which is the point.
 NOT_YET_BUILT = {
-    "list_announcements",
     "list_materials",
 }
 
@@ -327,3 +331,50 @@ def test_get_assignment_refuses_one_hidden_from_this_student() -> None:
     with CanvasClient(transport=httpx2.MockTransport(handler)) as client:
         with pytest.raises(CanvasError, match="not visible"):
             make_get_assignment(client)(course_id=1, assignment_id=9)
+
+
+# --- announcements --------------------------------------------------------
+
+ANNOUNCEMENTS = [
+    {"id": 1, "title": "Oldest", "posted_at": "2026-01-01T00:00:00Z", "message": "a"},
+    {"id": 2, "title": "Newest", "posted_at": "2026-09-01T00:00:00Z", "message": "b"},
+    {"id": 3, "title": "Undated", "posted_at": None, "message": "c"},
+    {
+        "id": 4,
+        "title": "Hidden",
+        "posted_at": "2026-08-01T00:00:00Z",
+        "hidden_for_user": True,
+        "message": "d",
+    },
+]
+
+
+def test_announcements_come_back_newest_first_with_undated_last() -> None:
+    """The API's order is not relied on."""
+    with courses_client(ANNOUNCEMENTS) as client:
+        listed = make_list_announcements(client)(course_id=1)
+    assert [a["title"] for a in listed] == ["Newest", "Oldest", "Undated"]
+
+
+def test_a_hidden_announcement_is_dropped() -> None:
+    with courses_client(ANNOUNCEMENTS) as client:
+        titles = [a["title"] for a in make_list_announcements(client)(course_id=1)]
+    assert "Hidden" not in titles
+
+
+def test_the_limit_is_applied_and_clamped() -> None:
+    with courses_client(ANNOUNCEMENTS) as client:
+        list_announcements = make_list_announcements(client)
+        assert len(list_announcements(course_id=1, limit=1)) == 1
+        # One real course returned 104; the ceiling is the tool's, not the
+        # caller's.
+        assert len(list_announcements(course_id=1, limit=10_000)) == 3
+        assert len(list_announcements(course_id=1, limit=0)) == 1
+
+
+def test_list_announcements_runs_against_the_committed_fixture() -> None:
+    client = build_client(demo=True)
+    listed = build_tools(client)["list_announcements"](course_id=1)
+    assert len(listed) == DEFAULT_LIMIT
+    assert all(tuple(a) == ANNOUNCEMENT_FIELDS for a in listed)
+    assert "avatar_image_url" not in json.dumps(listed)
