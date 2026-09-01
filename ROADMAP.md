@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 9 — `list_announcements`**
+Status: **step 10 — `list_materials`**
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -441,11 +441,11 @@ model nothing without it.
 The cap reports how much was cut rather than trailing off, so a model can say
 the text was shortened instead of answering from half of it.
 
-### [~] 8. `get_assignment`
+### [x] 8. `get_assignment`
 
 **Delivers:** "what is the week 1 assignment about?" works, sanitized.
 
-**Branch:** `feat/get-assignment`
+**Branch:** `feat/get-assignment` · **Issue:** #33 · **PR:** #34 (merged)
 
 **Notes:** `slim_assignment_detail` is a second function rather than a flag on
 `slim_assignment`. The list view must never carry a description, and a boolean
@@ -464,11 +464,30 @@ matching item from the list fixture. The converter's stand-in for teacher HTML
 became three realistic bodies with markup, an entity and a link, so the demo
 shows the sanitizer doing work rather than echoing a placeholder.
 
-### [ ] 9. `list_announcements`
+### [~] 9. `list_announcements`
 
 **Delivers:** recent announcements per course, plain text.
 
-**Branch:** `feat/list-announcements`
+**Branch:** `feat/list-announcements` · **Issue:** #35
+
+**Notes:** captured on 2026-09-01 via `discussion_topics?only_announcements`.
+One course returned **104 announcements, 247539 bytes across 79 fields**. The
+default limit is 10 and the ceiling is 50, in the tool rather than in the
+caller's judgement: each announcement costs a model its whole sanitized body.
+
+The author is left out. `author`, `user_name`, `pronouns` and
+`avatar_image_url` are a third party's identity, and none of it is needed to
+answer "are there new announcements". Section 3 asked for title, date and body,
+and that is what it returns.
+
+Sorted newest first in the tool rather than trusting the API's order, with
+undated announcements last. Same reasoning as not relying on `order_by=due_at`
+in step 6.
+
+Reduction is **5.9x**, far below the 40x of assignments and submissions —
+because here the body *is* the content, so there is little to remove. The
+delimiters cost about 130 bytes per item, which is most of what the wrapper
+adds and another reason the default limit is small.
 
 ### [ ] 10. `list_materials`
 

@@ -13,10 +13,12 @@ from pathlib import Path
 import pytest
 
 from canvas_mcp.filters import (
+    ANNOUNCEMENT_FIELDS,
     ASSIGNMENT_DETAIL_FIELDS,
     ASSIGNMENT_FIELDS,
     COURSE_FIELDS,
     SUBMISSION_FIELDS,
+    slim_announcement,
     slim_assignment,
     slim_assignment_detail,
     slim_course,
@@ -328,3 +330,51 @@ def test_detail_still_withholds_everything_else_the_list_view_does(
     assignment = {**SAFE_ASSIGNMENT, field: FORBIDDEN_ASSIGNMENT_LIST_FIELDS[field]}
     detailed = slim_assignment_detail(assignment)
     assert "SENTINEL" not in json.dumps(detailed)
+
+
+# --- announcements --------------------------------------------------------
+
+SAFE_ANNOUNCEMENT = {
+    "title": "Deadline extended",
+    "posted_at": "2026-09-01T08:00:00Z",
+    "message": "<p>The deadline moves to <b>Friday</b>.</p>",
+}
+
+FORBIDDEN_ANNOUNCEMENT_FIELDS = {
+    "author": {"display_name": "SENTINEL-teacher", "id": 1},
+    "user_name": "SENTINEL-user-name",
+    "pronouns": "SENTINEL-pronouns",
+    "avatar_image_url": "SENTINEL-avatar",
+    "podcast_url": "SENTINEL-podcast",
+    "url": "SENTINEL-url",
+    "attachments": [{"url": "SENTINEL-attachment"}],
+    "permissions": {"reply": True, "update": "SENTINEL-permission"},
+}
+
+
+def test_announcement_output_is_exactly_the_allowlist() -> None:
+    assert tuple(slim_announcement(SAFE_ANNOUNCEMENT)) == ANNOUNCEMENT_FIELDS
+
+
+@pytest.mark.parametrize("field", sorted(FORBIDDEN_ANNOUNCEMENT_FIELDS))
+def test_announcement_field_never_reaches_the_output(field: str) -> None:
+    announcement = {**SAFE_ANNOUNCEMENT, field: FORBIDDEN_ANNOUNCEMENT_FIELDS[field]}
+    assert "SENTINEL" not in json.dumps(slim_announcement(announcement))
+
+
+def test_the_author_is_left_out_on_purpose() -> None:
+    """A third party's name, pronouns and avatar are not needed to answer
+    "are there new announcements"."""
+    assert "author" not in slim_announcement(SAFE_ANNOUNCEMENT)
+
+
+def test_the_body_arrives_as_bounded_attributed_plain_text() -> None:
+    message = slim_announcement(SAFE_ANNOUNCEMENT)["message"]
+    assert "<b>" not in message
+    assert "The deadline moves to Friday." in message
+    assert message.startswith(BEGIN)
+
+
+def test_an_announcement_without_a_body_is_none() -> None:
+    empty = {**SAFE_ANNOUNCEMENT, "message": None}
+    assert slim_announcement(empty)["message"] is None
