@@ -34,7 +34,10 @@ def make_list_materials(client: CanvasClient) -> Callable[..., list[dict[str, An
         the better tool for deadlines.
 
         module_filter matches part of a module name, case-insensitively:
-        "week 3" or "practical".
+        "week 3" or "practical". An empty result means no module matched, not
+        that the course publishes nothing — course structure varies, and a
+        module for a given week may simply not exist yet. Call again without
+        the filter to see what is there.
 
         A locked module is listed by name with no contents, so the shape of the
         course stays visible even where the material is not.

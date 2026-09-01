@@ -52,7 +52,8 @@ def make_list_courses(client: CanvasClient) -> Callable[..., list[dict[str, Any]
 
         term_filter matches part of a term name, case-insensitively: "semester
         1" or "2026". It filters what is already returned, so combine it with
-        current_only=false to reach a past term.
+        current_only=false to reach a past term. An empty result means no term
+        matched, not that there are no courses.
         """
         raw = list(client.paginate("/courses", params=COURSES_PARAMS))
         if current_only:

@@ -584,7 +584,7 @@ findings, and the measured raw-vs-filtered byte counts.
 **Notes:** the argumentation here is Leo's — the agent may draft structure, not
 claims.
 
-### [~] 13. Tool description pass
+### [x] 13. Tool description pass
 
 **Delivers:** empirical check that the model picks the right tool. Iterate on
 descriptions until it does.
@@ -628,6 +628,61 @@ answer, which no test can see, so it has to be run against a real client:
 
 Run each, note what it called, and change the description of whichever tool it
 should have picked.
+
+**First result, 2026-09-01 — the grades question.** With `grades:read` off, a
+model asked for scores searched its tool list, found nothing, and said so
+without estimating or retrying. That is the behaviour the invisible-over-
+forbidden choice was made for, now observed rather than argued.
+
+But it explained the absence as *"this server is still being built, there is no
+tool for scores yet"*. The tool exists and is switched off, and a model cannot
+tell the difference — that is inherent to not registering it. So it filled the
+gap with something plausible and wrong, which is precisely this project's named
+failure mode, arriving in the one place no test was looking.
+
+Fixed in the server `instructions` rather than in a tool description: the
+server now states that anything missing is missing by configuration, that a
+model should say so rather than guess why, and that it must not estimate the
+answer a missing tool would have given. It does not say *what* is missing —
+that would undo the choice — and the string is identical whatever is enabled,
+so its length cannot be read as a hint.
+
+**A configuration mistake found alongside it.** The setup instructions written
+on 2026-08-31 pinned `--scopes courses:read,grades:read`, so removing grades
+left a single tool and four of the six had never run in a real client at all.
+The default scope set exists exactly so that nobody has to write one; the
+instructions should have omitted the flag.
+
+**Full checklist, 2026-09-01, against two live courses. Six of six.** Every
+question reached the tool it should have. Two results are worth keeping:
+
+*The grades question did not produce a grade.* Holding submission status and
+points per assignment, the model reported what was handed in and said plainly
+that no grade overview is available through these tools. Estimating one was
+available to it and it did not.
+
+*The deadline question called five tools where two would have done* — courses,
+assignments, announcements, materials twice, then one assignment. Left alone:
+the extra breadth surfaced a rule from the welcome announcement that belonged
+in the answer, and a description discouraging that would trade a better answer
+for fewer calls.
+
+**A wrong diagnosis, recorded because it is the second today.** Two filtered
+calls returned nothing — `module_filter="week 2"` and `"week 1"` — and this was
+written up as a broken filter. It was not: one course has no week 2 module
+published, the other organises its modules differently. The filter was correct
+and the model drew the right conclusion both times. Together with the schema
+claim, that is twice a defect was reported from an indirect reading rather than
+from the source, in a project whose method is checking the source.
+
+What it did show is a missing sentence: an empty filtered result is
+indistinguishable from an empty course, so both filters now say so and tell the
+caller to retry without one.
+
+*Also confirmed on live data:* subheader sectioning works on a course other
+than the fixture — four named sections in one module, items before the first
+heading in a nameless one — and module items carry real file ids, which is what
+step 14 needs.
 
 ---
 
