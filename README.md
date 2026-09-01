@@ -289,9 +289,10 @@ along the way.
 
 ## Status
 
-v0.2, on 2026-09-01: seven tools, read-only, 272 tests, confirmed running in
+v0.3, on 2026-09-01: seven tools, read-only, 277 tests, confirmed running in
 Claude Desktop against canvas.uva.nl. Every claim above was measured or
-captured on the date beside it.
+captured on the date beside it, and the ones that turned out wrong were
+corrected in place rather than quietly dropped — `ROADMAP.md` keeps both.
 
 Known and written down rather than fixed: a Canvas Page is listed but cannot be
 read, since only a File carries an id; extraction quality on multi-column
