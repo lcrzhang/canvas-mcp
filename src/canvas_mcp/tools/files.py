@@ -75,8 +75,10 @@ def make_read_file(client: CanvasClient) -> Callable[..., dict[str, Any]]:
         ).lower()
         if content_type and content_type not in READABLE_TYPES:
             raise CanvasError(
-                f"{meta.get('display_name') or 'That file'} is a "
-                f"{content_type} and this server only reads PDFs."
+                f"{meta.get('display_name') or 'That file'} is "
+                f"{content_type}, and this server reads only PDFs. Open it in "
+                "Canvas, or use list_materials to find a PDF in the same "
+                "module."
             )
 
         url = meta.get("url")

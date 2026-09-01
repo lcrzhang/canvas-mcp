@@ -81,10 +81,19 @@ def test_a_file_the_student_may_not_have_is_refused(flag: str) -> None:
             make_read_file(client)(course_id=1, file_id=7)
 
 
+def test_a_refusal_says_what_to_do_instead() -> None:
+    """The page-limit error names the limit and a way forward; this one used to
+    stop at the diagnosis. Reported from a live session."""
+    other = {**READABLE, "content-type": "text/plain", "display_name": "SETUP.txt"}
+    with serving(other) as client:
+        with pytest.raises(CanvasError, match="Open it in Canvas"):
+            make_read_file(client)(course_id=1, file_id=7)
+
+
 def test_a_file_that_is_not_a_pdf_is_named_rather_than_failing() -> None:
     other = {**READABLE, "content-type": "application/zip", "display_name": "code.zip"}
     with serving(other) as client:
-        with pytest.raises(CanvasError, match="code.zip is a application/zip"):
+        with pytest.raises(CanvasError, match="code.zip is application/zip"):
             make_read_file(client)(course_id=1, file_id=7)
 
 

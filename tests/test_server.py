@@ -411,3 +411,24 @@ def test_module_filter_matches_partially_and_case_insensitively() -> None:
         assert len(list_materials(course_id=1)) == 2
         assert len(list_materials(course_id=1, module_filter="week 1")) == 1
         assert list_materials(course_id=1, module_filter="week 9") == []
+
+
+def test_the_startup_line_says_which_version_is_answering(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """A client keeps a server process alive across a git pull. Without the
+    version there is no way to tell which code is answering, and a stale
+    process looks exactly like a feature that does not work — which is how an
+    hour of testing went into measuring code that had already been replaced."""
+    from canvas_mcp import __version__
+
+    build_server({"list_courses": stub()})
+    assert __version__ in capsys.readouterr().err
+
+
+def test_the_version_matches_the_one_the_package_declares() -> None:
+    from importlib.metadata import version
+
+    from canvas_mcp import __version__
+
+    assert version("canvas-mcp") == __version__

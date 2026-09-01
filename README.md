@@ -69,6 +69,12 @@ For an actual Canvas account, drop `--demo` and supply a token:
 }
 ```
 
+**A client keeps the server process alive.** After pulling a new version,
+restart the client — otherwise the old code keeps answering, which looks
+exactly like a feature that does not work. The server prints its version to
+stderr on startup, so the client's log says which code is running, and
+`canvas-mcp --version` says what is installed.
+
 The token is read from the environment and is never a tool argument, never
 logged, and never printed. Personal access tokens expire after at most 90 days;
 a rejected one produces an error that says so and where to make a new one.
