@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 7 — sanitizer**
+Status: **step 8 — `get_assignment`**
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -372,13 +372,13 @@ The startup line goes to **stderr**. The stdio transport speaks the protocol on
 stdout, so a stray print there corrupts the stream — a failure that looks like
 a broken server rather than a broken print. There is a test for it.
 
-### [~] 6. `list_assignments`
+### [x] 6. `list_assignments`
 
 **Delivers:** "what is due this week for Datastructuren?" works.
 
 **Files:** `src/canvas_mcp/tools/assignments.py`, tests
 
-**Branch:** `feat/list-assignments`
+**Branch:** `feat/list-assignments` · **Issue:** #29 · **PR:** #30 (merged)
 
 **Notes:** `due_at` may be null. `only_upcoming` filters on it; document what
 happens to assignments without a due date rather than dropping them silently.
@@ -410,7 +410,7 @@ parent and a top-level object has none: an assignment's `name` fell back to the
 course pool, so the demo listed course names where it meant assignments. Same
 defect class as the one the live test surfaced on 2026-08-31, in a new place.
 
-### [ ] 7. Sanitizer
+### [~] 7. Sanitizer
 
 **Delivers:** teacher HTML becomes plain text, capped, with an explicit
 `[truncated]` marker and visible delimiters around untrusted content.
@@ -422,6 +422,24 @@ defect class as the one the live test surfaced on 2026-08-31, in a new place.
 **Notes:** test with a fixture containing an injection attempt. The README must
 state that this mitigates, not solves — the real defence is the absence of
 write tools.
+
+The injection sample is a test constant rather than a captured fixture. A
+capture would not contain one, and writing it deliberately is the point: the
+test asserts the attempt arrives **intact and visible**, not that it was
+filtered. Filtering it would be the dangerous move, because it would suggest
+the problem had been handled.
+
+**The delimiters are the part that had to be got right.** Content that contains
+the closing delimiter could otherwise end the untrusted section early and have
+whatever followed read as though the server had said it. Both markers are
+stripped from the body before wrapping, with a test for each.
+
+No dependency added: `html.parser` from the standard library does the work.
+Links are kept as `text (url)` — a description reading "see the link" tells a
+model nothing without it.
+
+The cap reports how much was cut rather than trailing off, so a model can say
+the text was shortened instead of answering from half of it.
 
 ### [ ] 8. `get_assignment`
 
