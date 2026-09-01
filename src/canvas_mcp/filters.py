@@ -148,3 +148,68 @@ def slim_announcement(announcement: dict[str, Any]) -> dict[str, Any]:
         "posted_at": announcement.get("posted_at"),
         "message": sanitize(message, "announcement") if message else None,
     }
+
+
+# A module item, reduced. `id` is the content id, not the item id: it is what
+# read_file will need in v0.2, and modules are the only place it can come from
+# because the course file index is 403 for students (`SCOPE.md` section 2).
+MATERIAL_ITEM_FIELDS = ("title", "type", "id")
+MODULE_FIELDS = ("module", "locked", "sections")
+
+# A SubHeader is a label a teacher put between items. It is not content, so it
+# becomes the name of the section that follows rather than an entry in it.
+SUBHEADER = "SubHeader"
+
+
+def slim_module_item(item: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "title": item.get("title"),
+        "type": item.get("type"),
+        "id": item.get("content_id"),
+    }
+
+
+def group_into_sections(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Flatten a module's items into named sections.
+
+    A SubHeader opens a section and everything after it belongs there, until
+    the next SubHeader. Items appearing before any SubHeader go into a section
+    with no name.
+
+    Membership is sequential rather than taken from `indent`. Indent is how
+    deeply Canvas draws an item, not what it belongs to — grouping by it would
+    put an item in the wrong place the moment a teacher indents something for
+    looks.
+    """
+    sections: list[dict[str, Any]] = []
+    current: dict[str, Any] = {"section": None, "items": []}
+
+    for item in items:
+        if item.get("type") == SUBHEADER:
+            if current["items"] or current["section"] is not None:
+                sections.append(current)
+            current = {"section": item.get("title"), "items": []}
+            continue
+        if item.get("hidden_for_user"):
+            continue
+        current["items"].append(slim_module_item(item))
+
+    if current["items"] or current["section"] is not None:
+        sections.append(current)
+    return sections
+
+
+def slim_module(module: dict[str, Any]) -> dict[str, Any]:
+    """One module, with its items grouped under their subheaders.
+
+    A locked module keeps its name but loses its contents. `SCOPE.md` section 5
+    reads locked as "you may not have this" for modules and files, unlike
+    assignments — but hiding the module entirely would hide the shape of the
+    course, which is not what is being protected.
+    """
+    locked = module.get("state") == "locked"
+    return {
+        "module": module.get("name"),
+        "locked": locked,
+        "sections": [] if locked else group_into_sections(module.get("items") or []),
+    }
