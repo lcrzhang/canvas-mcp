@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 10 — `list_materials`**
+Status: **step 12 — README and v0.1.0 (HUMAN)** · all ten tools built
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -464,11 +464,11 @@ matching item from the list fixture. The converter's stand-in for teacher HTML
 became three realistic bodies with markup, an entity and a link, so the demo
 shows the sanitizer doing work rather than echoing a placeholder.
 
-### [~] 9. `list_announcements`
+### [x] 9. `list_announcements`
 
 **Delivers:** recent announcements per course, plain text.
 
-**Branch:** `feat/list-announcements` · **Issue:** #35
+**Branch:** `feat/list-announcements` · **Issue:** #35 · **PR:** #36 (merged)
 
 **Notes:** captured on 2026-09-01 via `discussion_topics?only_announcements`.
 One course returned **104 announcements, 247539 bytes across 79 fields**. The
@@ -489,7 +489,7 @@ because here the body *is* the content, so there is little to remove. The
 delimiters cost about 130 bytes per item, which is most of what the wrapper
 adds and another reason the default limit is small.
 
-### [ ] 10. `list_materials`
+### [~] 10. `list_materials`
 
 **Delivers:** "which slides belong to week 1?" works. Module tree flattened to
 module → subheader section → items.
@@ -501,6 +501,33 @@ module → subheader section → items.
 **Notes:** `SubHeader` items are labels, not content — group following items
 under them by `indent`. Respect `locked_for_user` and `hidden_for_user`. The
 course file index is 403 for students; modules are the only way in.
+
+**Grouping is sequential, not by indent.** A SubHeader opens a section and
+everything after it belongs there until the next one. `indent` is how deeply
+Canvas draws an item, not what it belongs to; using it for membership would
+misplace an item the moment a teacher indents something for looks. The note
+above asked for "group following items under them", and that is what this does.
+
+**No SubHeader exists in the captured course.** All 24 items are Page, File or
+Assignment across 7 modules, so the grouping is proven against constructed
+cases rather than real ones. Worth re-checking against a course that uses them.
+
+**Neither `locked_for_user` nor `hidden_for_user` appears on a module.** Canvas
+filters on enrolment before the response is built — the same finding section 2
+of `SCOPE.md` records for module positions. A module's `state` carries `locked`
+instead, and a locked module keeps its name and loses its contents: hiding it
+entirely would hide the shape of the course, which is not what is being
+protected.
+
+**Items report `content_id`, not their own id.** That is what `read_file` needs
+in v0.2, and modules are the only place it can come from. `SCOPE.md` section 3
+says the output is name and type; the id is a third field, added because
+without it step 14 has no way to name a file.
+
+The converter had to stop renumbering `indent` — it is structure, not identity,
+and a counter in its place makes the tree meaningless. Module names and item
+titles got their own pools, so the demo reads as a course rather than as a list
+of course names.
 
 ### [x] 11. Fixture mode
 
