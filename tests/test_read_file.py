@@ -121,3 +121,68 @@ def test_a_server_understating_its_size_is_still_stopped() -> None:
     with serving(READABLE, body=body, headers={"content-length": "10"}) as client:
         with pytest.raises(CanvasError, match="over the"):
             make_read_file(client)(course_id=1, file_id=7)
+
+
+# --- how a file is actually served ----------------------------------------
+
+
+def test_the_redirect_canvas_serves_files_behind_is_followed() -> None:
+    """Canvas answers a file URL with a redirect to a signed location. Without
+    following it the body is empty and the failure surfaces much later, as
+    "not a readable PDF" about a file that is fine."""
+    seen: list[str] = []
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        seen.append(request.url.host)
+        if request.url.path.endswith("/download"):
+            return httpx2.Response(
+                302, headers={"location": "https://cdn.example.edu/signed/x.pdf"}
+            )
+        if request.url.host == "cdn.example.edu":
+            return httpx2.Response(200, content=PDF)
+        return httpx2.Response(200, json=READABLE)
+
+    with CanvasClient(transport=httpx2.MockTransport(handler)) as client:
+        result = make_read_file(client)(course_id=1, file_id=7, page_range="1")
+
+    assert "First page text" in result["text"]
+    assert "cdn.example.edu" in seen
+
+
+def test_the_token_does_not_follow_a_file_to_another_host() -> None:
+    """The signed location needs no credential and should not receive one."""
+    headers_seen: dict[str, dict] = {}
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        headers_seen[request.url.host] = dict(request.headers)
+        if request.url.path.endswith("/download"):
+            return httpx2.Response(
+                302, headers={"location": "https://cdn.example.edu/signed/x.pdf"}
+            )
+        if request.url.host == "cdn.example.edu":
+            return httpx2.Response(200, content=PDF)
+        return httpx2.Response(200, json=READABLE)
+
+    with CanvasClient(transport=httpx2.MockTransport(handler)) as client:
+        make_read_file(client)(course_id=1, file_id=7, page_range="1")
+
+    assert "authorization" in headers_seen["canvas.example.edu"]
+    assert "authorization" not in headers_seen["cdn.example.edu"]
+
+
+def test_a_failed_download_names_the_path_and_not_the_verifier() -> None:
+    """A Canvas file URL carries a verifier, which is an unauthenticated
+    download link — section 5 keeps those out of anything a caller sees."""
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        if request.url.path.endswith("/download"):
+            return httpx2.Response(403)
+        return httpx2.Response(200, json=READABLE)
+
+    with CanvasClient(transport=httpx2.MockTransport(handler)) as client:
+        with pytest.raises(CanvasError) as excinfo:
+            make_read_file(client)(course_id=1, file_id=7)
+
+    message = str(excinfo.value)
+    assert "/files/7/download" in message
+    assert "verifier" not in message

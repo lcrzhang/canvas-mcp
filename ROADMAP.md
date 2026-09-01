@@ -709,7 +709,7 @@ step 14 needs.
 
 ## Milestone v0.2 — file content
 
-### [~] 14. `read_file` with page ranges
+### [x] 14. `read_file` with page ranges
 
 **Delivers:** "what is on slides 10-15 of lec01_intro?" works.
 
@@ -783,3 +783,49 @@ reversible by moving one line.
 - OCR — permanently out of scope, drags in ML dependencies for marginal gain
 - Marker / MinerU as extraction backend — better fidelity, but turns a small
   project into an installation project
+
+
+---
+
+## Found after v0.2, 2026-09-01
+
+### [~] 15. Errors that reach the model
+
+**Delivers:** an error this project raises on purpose arrives at the model with
+its text, instead of as "Error executing tool <name>".
+
+**Files:** `src/canvas_mcp/server.py`, `src/canvas_mcp/client.py`
+
+**Branch:** `fix/errors-reach-the-model`
+
+**Notes:** `read_file` failed against the live API on every attempt with no
+information, which is how this was found.
+
+**Two bugs, and the second is much larger than the first.**
+
+*`read_file` never followed a redirect.* Canvas answers a file URL with a 302
+to a signed location. `follow_redirects` is off by default in `httpx2`, so the
+body came back empty, extraction failed, and the message said the file was not
+a readable PDF — about a file that is fine. Now followed; `httpx2` strips the
+Authorization header on a cross-host redirect, so the signed URL never receives
+a credential, and there is a test pinning that.
+
+*No error message had reached a model since step 5.* The SDK turns any
+exception that is not `ToolError` into `Error executing tool <name>` and keeps
+the text on the server — correct for a crash, and wrong for every message this
+project writes deliberately. `SCOPE.md` section 9 says errors are instructions
+for a model; since the server was built, they had been instructions for a log
+file nobody reads. The 401 explaining that tokens expire, the 403 pointing at
+`list_materials`, the OCR refusal: none of them arrived.
+
+Fixed by wrapping tools where they are registered rather than inside each one,
+so a new tool cannot forget it — the same argument as the scope registry
+handing out tools instead of answering questions about them. Only `CanvasError`
+is surfaced. A genuine crash still keeps its internals on the server, which is
+what the SDK's behaviour is for.
+
+**Declined: logging the file URL.** The request was to log the exact URL
+`read_file` fetches. That URL carries a `verifier=`, which is an
+unauthenticated download link — the first row of section 5, and under stdio the
+log is a file on disk. The failure message names the path with the query
+stripped instead, which is what the debugging actually needed.
