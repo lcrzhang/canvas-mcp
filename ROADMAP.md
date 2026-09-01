@@ -771,8 +771,31 @@ reversible by moving one line.
 
 ## Backlog
 
-- `list_grades` as a documented, off-by-default example — depends on step 4
-- caching — currently a non-goal; revisit only if `read_file` proves too slow
+Everything here is a decision nobody has taken, not work left half done.
+
+- **`read_page`** — a Canvas Page is listed by `list_materials` and cannot be
+  read: only a `File` carries an id, and a Page keeps its content behind a slug
+  this server does not expose. Reading one is a new tool with a new scope and a
+  new kind of untrusted content, not a patch to `read_file`.
+- **`--enable` alongside `--scopes`** — `--scopes` replaces the default rather
+  than adding to it, so turning on one scope means naming the whole default
+  again. Leo hit this twice, once because the setup instructions pinned two
+  scopes and four tools silently vanished. A flag that adds to the default
+  would remove the trap; it also adds surface to a CLI whose smallness is part
+  of the point.
+- **Extraction quality on real slides** — every PDF test uses a document the
+  tests build, with one plain line per page. That proves the plumbing, not what
+  `pypdf` makes of a two-column deck or a formula. `pdfplumber` is the fallback
+  if it disappoints: MIT, coordinate-aware, slower. Two functions know what a
+  PDF is, so swapping is contained.
+- **caching** — a non-goal; revisit only if `read_file` proves too slow.
+
+## Known dates
+
+- **The token expires by 2026-11-27.** Personal access tokens last at most 90
+  days and this one was made on 2026-08-29. After that no capture runs and no
+  live test does either, until a new one is made. `--demo` keeps working, which
+  is what it is for.
 
 ---
 
@@ -830,7 +853,7 @@ unauthenticated download link — the first row of section 5, and under stdio th
 log is a file on disk. The failure message names the path with the query
 stripped instead, which is what the debugging actually needed.
 
-### [~] 16. Build-up frames
+### [x] 16. Build-up frames
 
 **Delivers:** a range of a lecture deck comes back as slides rather than as one
 page per `\pause`.

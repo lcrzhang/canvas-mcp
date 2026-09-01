@@ -101,7 +101,32 @@ en de output bevat ook pages en assignments, niet alleen bestanden.
 
 | Tool | Input | Output | Scope |
 |---|---|---|---|
-| `read_file` | `course_id`, `file_id`, `page_range?` | geëxtraheerde tekst | `files:content` |
+| `read_file` | `course_id`, `file_id`, `page_range?` | bestandsnaam, paginabereik, aantal slides, geëxtraheerde tekst | `files:content` |
+
+**Slides tellen niet als pagina's.** Empirisch vastgesteld op 2026-09-01 op
+`lec01_intro.pdf`: 94 fysieke pagina's, ongeveer 30 slides. LaTeX beamer
+schrijft elke `\pause` als een eigen pagina, dus een leesbereik van 20
+pagina's bevatte 4 unieke slides — elf ervan identiek.
+
+`read_file` klapt opeenvolgende frames van dezelfde slide samen. Twee pagina's
+gelden als één slide wanneer ze hetzelfde beginnen én de woorden van de ene in
+die van de andere zitten — in beide richtingen, want `\only` laat inhoud ook
+verdwijnen. De vólste frame blijft over, niet de laatste.
+
+Bewust *niet* op het slidenummer in de voettekst: dat bestaat in één
+beamer-theme, dus je zou een regex schrijven tegen willekeurige LaTeX, en een
+misser voegt verschillende slides samen zonder dat iemand het ziet. Een pagina
+zonder tekstlaag wordt nooit ingevouwen — dat is een pagina die niet gelezen
+kon worden, geen herhaling.
+
+De limiet staat daarom op twee getallen: **60 fysieke pagina's** worden
+gelezen, **20 slides** komen terug. De oorspronkelijke limiet van 20 pagina's
+mat het verkeerde ding — op een deck vol build-up frames is dat vier slides.
+
+**Een Canvas Page is zichtbaar maar niet leesbaar.** Alleen een `File` draagt
+een id; de inhoud van een Page zit achter een slug die deze server niet
+teruggeeft. `list_materials` zegt dat, omdat `id: null` er anders uitziet als
+een bug. Een `read_page` zou een nieuwe tool met een nieuwe scope zijn.
 
 ### Bestaat, maar staat standaard uit
 
