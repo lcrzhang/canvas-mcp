@@ -86,7 +86,11 @@ REAL_LOOKING = {
     "created_at": "2025-09-01T08:30:00Z",
     "calendar": {"ics": "https://canvas.uva.nl/feeds/calendars/abc123.ics"},
     "teachers": [
-        {"display_name": "Jan de Vries", "email": "not-a-real-mailbox@uva.nl", "id": 4471},
+        {
+            "display_name": "Jan de Vries",
+            "email": "not-a-real-mailbox@uva.nl",
+            "id": 4471,
+        },
     ],
     "files": [
         {
