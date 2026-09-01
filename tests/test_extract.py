@@ -1,8 +1,9 @@
 """Text extraction, against PDFs built here rather than captured.
 
 Nothing is downloaded and no real document is committed: the tests assemble a
-minimal PDF whose text they already know, which proves more than a captured
-file would and keeps a teacher's slides out of the repository.
+minimal PDF whose text is written next to the assertion, which proves more
+than a captured file would and keeps a teacher's slides out of the repository.
+Demo mode uses the same builder.
 """
 
 import pytest
@@ -14,56 +15,9 @@ from canvas_mcp.extract import (
     page_count,
     parse_page_range,
 )
+from canvas_mcp.fixtures import build_pdf
 
-
-def make_pdf(*page_texts: str) -> bytes:
-    """A valid PDF with one text line per page. An empty string gives a page
-    with no text layer, which is what a scan looks like from here."""
-    pages = len(page_texts)
-    page_ids = [3 + 2 * i for i in range(pages)]
-    content_ids = [4 + 2 * i for i in range(pages)]
-    font_id = 3 + 2 * pages
-
-    objects: list[tuple[int, bytes]] = [(1, b"<< /Type /Catalog /Pages 2 0 R >>")]
-    kids = b" ".join(f"{i} 0 R".encode() for i in page_ids)
-    objects.append((2, b"<< /Type /Pages /Kids [" + kids + b"] /Count %d >>" % pages))
-    for index, text in enumerate(page_texts):
-        objects.append(
-            (
-                page_ids[index],
-                f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 300] "
-                f"/Contents {content_ids[index]} 0 R /Resources << /Font << "
-                f"/F1 {font_id} 0 R >> >> >>".encode(),
-            )
-        )
-        stream = f"BT /F1 12 Tf 20 150 Td ({text}) Tj ET".encode() if text else b""
-        objects.append(
-            (
-                content_ids[index],
-                b"<< /Length %d >>\nstream\n" % len(stream) + stream + b"\nendstream",
-            )
-        )
-    objects.append((font_id, b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"))
-
-    out = bytearray(b"%PDF-1.4\n")
-    offsets: dict[int, int] = {}
-    for number, body in sorted(objects):
-        offsets[number] = len(out)
-        out += b"%d 0 obj\n" % number + body + b"\nendobj\n"
-
-    start = len(out)
-    size = max(offsets) + 1
-    out += b"xref\n0 %d \n" % size + b"0000000000 65535 f \n"
-    for number in range(1, size):
-        out += b"%010d 00000 n \n" % offsets.get(number, 0)
-    out += b"trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n" % (
-        size,
-        start,
-    )
-    return bytes(out)
-
-
-TWO_PAGES = make_pdf("Sorting is comparison based", "Quicksort picks a pivot")
+TWO_PAGES = build_pdf("Sorting is comparison based", "Quicksort picks a pivot")
 
 
 # --- reading --------------------------------------------------------------
@@ -91,11 +45,11 @@ def test_a_document_with_no_text_layer_is_refused_with_a_reason() -> None:
     """SCOPE section 7 rules out OCR, so silence would read as "blank page"
     about a page that is full of scanned writing."""
     with pytest.raises(ExtractionError, match="OCR"):
-        extract_text(make_pdf("", ""), [0, 1])
+        extract_text(build_pdf("", ""), [0, 1])
 
 
 def test_a_page_without_text_beside_one_with_it_is_marked_not_dropped() -> None:
-    mixed = make_pdf("Readable", "")
+    mixed = build_pdf("Readable", "")
     text = extract_text(mixed, [0, 1])
     assert "Readable" in text
     assert "[page 2] no text" in text

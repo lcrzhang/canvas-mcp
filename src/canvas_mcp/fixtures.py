@@ -361,6 +361,12 @@ DEMO_TOKEN = "demo-mode-no-credential"
 
 # Request path -> fixture file. Anything not listed 404s with a message saying
 # demo mode is the reason, rather than looking like a Canvas failure.
+# A course file, and the unauthenticated download link Canvas hands out for it.
+# Neither is JSON from a fixture file: the metadata is assembled and the body is
+# a PDF built on the spot.
+_FILE_META = re.compile(r"^/api/v1/courses/\d+/files/(?P<id>\d+)/?$")
+_FILE_DOWNLOAD = re.compile(r"^/files/\d+/download/?$")
+
 # pattern, fixture, and whether the last path segment selects one item by id.
 DEMO_ROUTES: tuple[tuple[re.Pattern[str], str, bool], ...] = (
     (re.compile(r"^/api/v1/courses/?$"), "courses.json", False),
@@ -421,6 +427,32 @@ def demo_transport() -> Any:
             # Answered inline so the startup check runs in demo mode too,
             # rather than being skipped and going untested.
             return httpx2.Response(200, json={"id": 1, "name": "Demo Student"})
+        if _FILE_META.match(path):
+            file_id = int(_FILE_META.match(path).group("id"))
+            # Built rather than stored, like everything else in demo mode.
+            return httpx2.Response(
+                200,
+                json={
+                    "id": file_id,
+                    "display_name": "lec01_intro.pdf",
+                    "content-type": "application/pdf",
+                    "size": len(demo_pdf()),
+                    "url": (
+                        f"https://{SYNTHETIC_HOST}/files/{file_id}/download"
+                        "?download_frd=1&verifier=FIXTUREdemo"
+                    ),
+                    "locked_for_user": False,
+                    "hidden_for_user": False,
+                },
+            )
+
+        if _FILE_DOWNLOAD.match(path):
+            return httpx2.Response(
+                200,
+                content=demo_pdf(),
+                headers={"content-type": "application/pdf"},
+            )
+
         for pattern, fixture, by_id in DEMO_ROUTES:
             match = pattern.match(path)
             if not match:
@@ -442,3 +474,70 @@ def demo_transport() -> Any:
         )
 
     return httpx2.MockTransport(handler)
+
+
+# --- a document to read ---------------------------------------------------
+#
+# Demo mode needs a PDF to read. Committing one would mean either a binary blob
+# nobody can review or a teacher's real slides. Building it is neither, and the
+# tests use the same builder.
+
+
+def build_pdf(*page_texts: str) -> bytes:
+    """A valid PDF with one text line per page. An empty string gives a page
+    with no text layer, which is what a scan looks like from here."""
+    pages = len(page_texts)
+    page_ids = [3 + 2 * i for i in range(pages)]
+    content_ids = [4 + 2 * i for i in range(pages)]
+    font_id = 3 + 2 * pages
+
+    objects: list[tuple[int, bytes]] = [(1, b"<< /Type /Catalog /Pages 2 0 R >>")]
+    kids = b" ".join(f"{i} 0 R".encode() for i in page_ids)
+    objects.append((2, b"<< /Type /Pages /Kids [" + kids + b"] /Count %d >>" % pages))
+    for index, text in enumerate(page_texts):
+        objects.append(
+            (
+                page_ids[index],
+                f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 300] "
+                f"/Contents {content_ids[index]} 0 R /Resources << /Font << "
+                f"/F1 {font_id} 0 R >> >> >>".encode(),
+            )
+        )
+        stream = f"BT /F1 12 Tf 20 150 Td ({text}) Tj ET".encode() if text else b""
+        objects.append(
+            (
+                content_ids[index],
+                b"<< /Length %d >>\nstream\n" % len(stream) + stream + b"\nendstream",
+            )
+        )
+    objects.append((font_id, b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"))
+
+    out = bytearray(b"%PDF-1.4\n")
+    offsets: dict[int, int] = {}
+    for number, body in sorted(objects):
+        offsets[number] = len(out)
+        out += b"%d 0 obj\n" % number + body + b"\nendobj\n"
+
+    start = len(out)
+    size = max(offsets) + 1
+    out += b"xref\n0 %d \n" % size + b"0000000000 65535 f \n"
+    for number in range(1, size):
+        out += b"%010d 00000 n \n" % offsets.get(number, 0)
+    out += b"trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n" % (
+        size,
+        start,
+    )
+    return bytes(out)
+
+
+DEMO_PDF_PAGES = (
+    "Week 1 - Introduction. Sorting is a comparison problem.",
+    "Insertion sort is quadratic in the worst case.",
+    "Quicksort picks a pivot and partitions around it.",
+    "Merge sort is stable; quicksort is not.",
+)
+
+
+def demo_pdf() -> bytes:
+    """The document read_file reads in demo mode."""
+    return build_pdf(*DEMO_PDF_PAGES)

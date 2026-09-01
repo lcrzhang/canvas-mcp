@@ -15,6 +15,7 @@ from canvas_mcp.tools.assignments import (
     make_list_assignments,
 )
 from canvas_mcp.tools.courses import make_list_courses
+from canvas_mcp.tools.files import make_read_file
 from canvas_mcp.tools.grades import make_list_grades
 from canvas_mcp.tools.materials import make_list_materials
 
@@ -27,6 +28,7 @@ TOOL_TITLES = {
     "list_announcements": "Announcements",
     "list_materials": "Course materials",
     "list_grades": "Scores per assignment",
+    "read_file": "Read a course file",
 }
 
 
@@ -42,5 +44,6 @@ def build_tools(client: CanvasClient) -> dict[str, Callable[..., Any]]:
         "get_assignment": make_get_assignment(client),
         "list_announcements": make_list_announcements(client),
         "list_materials": make_list_materials(client),
+        "read_file": make_read_file(client),
         "list_grades": make_list_grades(client),
     }

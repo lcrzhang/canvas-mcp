@@ -82,10 +82,12 @@ a rejected one produces an error that says so and where to make a new one.
 | `get_assignment` | `assignments:read` | on | What does this assignment ask for? |
 | `list_announcements` | `announcements:read` | on | Has anything been posted? |
 | `list_materials` | `materials:read` | on | Which slides belong to week 1? |
+| `read_file` | `files:content` | on | What is on slides 10-15? |
 | `list_grades` | `grades:read` | **off** | What did I score, per assignment? |
 
-`--scopes` takes a comma-separated list. Omit it and you get the four read
-scopes above; `grades:read` requires asking for it by name.
+`--scopes` takes a comma-separated list. Omit it and you get the five scopes
+above; `grades:read` requires asking for it by name. The list replaces the
+default rather than adding to it, so name every scope you want.
 
 A tool outside the enabled scopes is **not registered at all**, rather than
 registered and refusing. A model cannot see it and so cannot try. The failure
@@ -161,6 +163,21 @@ Named out, with a test each: calendar feed URLs that need no authentication,
 it), `secure_params`, internal account and SIS identifiers, an announcement
 author's name, pronouns and avatar, and a student's own submitted work.
 
+## Reading a file
+
+`read_file` takes the id `list_materials` returns and reads the text of a PDF,
+one passage at a time: `page_range` is written the way it is printed — `"12"`
+or `"10-15"`, counting from 1 — and at most twenty pages at once.
+
+Only PDFs, and only ones with a text layer. A scan comes back as a refusal
+saying it is probably an image and that this server does no OCR, rather than as
+blank pages — silence would read as "that page is empty" about a page full of
+handwriting. A file over 25 MB is refused before it is transferred.
+
+Everything that knows what a PDF is lives in two functions, so the extraction
+backend can be replaced without touching a tool. It is `pypdf`: PyMuPDF
+extracts better and is AGPL, which this project cannot take on.
+
 ## Untrusted content
 
 Assignment descriptions, announcements and page text are written by third
@@ -224,8 +241,8 @@ along the way.
 
 ## Status
 
-v0.1: six tools, read-only, tested against canvas.uva.nl and confirmed running
-in Claude Desktop. v0.2 adds `read_file` for the contents of a PDF, reachable
-only through the file ids `list_materials` returns.
+v0.2: seven tools, read-only, tested against canvas.uva.nl and confirmed
+running in Claude Desktop. `read_file` reads the text of a PDF, reachable only
+through the file ids `list_materials` returns.
 
 MIT.

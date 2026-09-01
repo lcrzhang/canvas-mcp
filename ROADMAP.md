@@ -746,6 +746,27 @@ know, which proves more than a captured one and keeps a teacher's slides out of
 the repository. Empty page contents give a page with no text layer, which is
 what a scan looks like from here.
 
+**14b done, 2026-09-01.** The builder moved from the tests into `fixtures.py`,
+because demo mode needs a document too and committing one would mean either a
+binary nobody can review or a teacher's real slides.
+
+Size is checked twice: against `Content-Length` before the body is transferred,
+and against what actually arrived. Content-Length is a claim, not a promise,
+and a server understating it should not be able to spend a caller's memory.
+
+For a file, `locked_for_user` refuses — the strict reading of section 5, which
+is where it belongs. On an assignment in step 6 it became a field instead. The
+same flag, two meanings, and the difference is whether it withholds content.
+
+**The default scope list grew, and had to break a test to do it.** Adding
+`files:content` to `DEFAULT_SCOPES` failed the step 4 specification, which
+named four scopes. That is exactly why the default is a written list rather
+than "everything except `grades:read`": a rule would have absorbed the new
+scope silently, and nobody would have decided anything. Reading a slide is what
+a study assistant is for and the file is one the student can already open, so
+it is on by default — but that is a decision, taken in a pull request, and
+reversible by moving one line.
+
 ---
 
 ## Backlog

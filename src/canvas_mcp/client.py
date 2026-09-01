@@ -53,6 +53,13 @@ def error_message(status_code: int, path: str) -> str:
     return f"Canvas returned {status_code} for {path}."
 
 
+def _too_large(size: int, limit: int) -> str:
+    return (
+        f"That file is {size // 1_000_000} MB, over the {limit // 1_000_000} MB "
+        "this server will read. Open it in Canvas instead."
+    )
+
+
 class CanvasClient:
     """A read-only Canvas API client.
 
@@ -148,6 +155,32 @@ class CanvasClient:
             f"{path} still had more pages after {MAX_PAGES}. Refusing to keep "
             "following them — narrow the request instead."
         )
+
+    def get_bytes(self, url: str, max_bytes: int) -> bytes:
+        """Fetch a file, refusing one larger than `max_bytes`.
+
+        The size is checked from the response header before the body is read,
+        and again against what actually arrived: a server that understates
+        Content-Length should not be able to spend a caller's memory.
+        """
+        try:
+            with self._client.stream("GET", url) as response:
+                if response.status_code >= 400:
+                    raise CanvasError(error_message(response.status_code, url))
+                declared = response.headers.get("content-length")
+                if declared and int(declared) > max_bytes:
+                    raise CanvasError(_too_large(int(declared), max_bytes))
+
+                body = bytearray()
+                for chunk in response.iter_bytes():
+                    body += chunk
+                    if len(body) > max_bytes:
+                        raise CanvasError(_too_large(len(body), max_bytes))
+                return bytes(body)
+        except httpx2.RequestError as exc:
+            raise CanvasError(
+                f"Could not reach Canvas at {self.base_url}: {exc}"
+            ) from exc
 
     def verify_token(self) -> dict[str, Any]:
         """Check the token once at startup and fail fast if it is dead.
