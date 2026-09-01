@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "canvas-mcp"
-version = "0.2.0"
+version = "0.3.0"
 description = "Read-only MCP server for Canvas LMS with deny-by-default scoping"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -17,8 +17,14 @@ dependencies = [
     "httpx2>=2.12",
     # mcp 2.x: FastMCP was renamed MCPServer and the API is snake_case.
     "mcp>=2.1",
-    # PDF text extraction. Chosen over PyMuPDF, which extracts better but is
-    # AGPL — a licence this repository cannot take on now that it is public.
+    # PDF text extraction. pdfplumber was measured against this on the same
+    # lecture deck and lost: it reads a two-column slide line by line, so the
+    # columns interleave, and no parameter fixes it — layout=True is visually
+    # right and pads every line to the page width, which a model pays for.
+    # pypdf reads column by column.
+    #
+    # PyMuPDF extracts better than either and is AGPL, which this repository
+    # cannot take on now that it is public.
     "pypdf>=5",
 ]
 

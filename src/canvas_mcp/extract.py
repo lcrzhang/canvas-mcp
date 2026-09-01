@@ -1,6 +1,16 @@
 """Pull readable text out of a PDF.
 
-Everything that knows about PDFs lives here, behind one function. `SCOPE.md`
+Everything that knows about PDFs lives here, behind `pages_of` and
+`page_count`. Swapping backends means replacing those.
+
+`pdfplumber` was measured against `pypdf` on the same lecture deck and lost.
+It reads a page line by line, so a two-column slide comes out interleaved —
+`Higher-level, Meetings:` — where `pypdf` reads one column and then the other.
+No parameter fixes it: `x_tolerance` changes word splitting, not order, and
+`layout=True` is visually faithful at the cost of padding every line to the
+page width, which a model pays for by the token. It did fix ligatures and lost
+word spaces elsewhere, and neither outweighs reading a slide in the wrong
+order. `SCOPE.md`
 section 7 rules out OCR, so a page with no text layer is refused with an
 explanation rather than returned as an empty string — silence would read as
 "this page is blank", which is a plausible wrong answer about a page that is
@@ -64,6 +74,16 @@ def parse_page_range(page_range: str | None, total: int) -> list[int]:
             f"{MAX_PAGES} pages is often far fewer than {MAX_PAGES} slides."
         )
     return wanted
+
+
+def _pypdf_pages(data: bytes, indexes: list[int]) -> list[str]:
+    reader = _read(data)
+    return [(reader.pages[i].extract_text() or "").strip() for i in indexes]
+
+
+def pages_of(data: bytes, indexes: list[int]) -> list[str]:
+    """The text of the pages asked for. The seam a backend swap goes through."""
+    return _pypdf_pages(data, indexes)
 
 
 def page_count(data: bytes) -> int:
@@ -143,14 +163,13 @@ def collapse_overlays(pages: list[tuple[int, str]]) -> list[tuple[list[int], str
     return slides
 
 
-def extract_slides(data: bytes, pages: Iterable[int]) -> list[tuple[list[int], str]]:
+def extract_slides(
+    data: bytes,
+    pages: Iterable[int],
+) -> list[tuple[list[int], str]]:
     """The pages asked for, with build-up frames collapsed into slides."""
-    reader = _read(data)
     wanted = list(pages)
-
-    extracted = [
-        (index, (reader.pages[index].extract_text() or "").strip()) for index in wanted
-    ]
+    extracted = list(zip(wanted, pages_of(data, wanted), strict=True))
 
     if not any(text for _, text in extracted):
         raise ExtractionError(

@@ -50,8 +50,12 @@ def make_read_file(client: CanvasClient) -> Callable[..., dict[str, Any]]:
         Lecture slides have far more pages than slides — LaTeX writes one page
         per build-up step, so a 30-slide lecture is often 90 pages. Frames of
         the same slide are collapsed into one entry labelled with the pages it
-        came from, and the reply says how many slides that range held. Ask for
-        a wide range: 60 pages of a deck is usually 15 or 20 slides.
+        came from, and "entries" says how many came back — one entry per
+        slide where frames were recognised, one per page where they were not.
+
+        The limit is 60 pages in and 20 slides out, so ask for a wide range:
+        sixty pages of a deck is usually fifteen or twenty slides. If more than
+        twenty slides are found the text says where it stopped.
 
         Where a course publishes both "lecture.pdf" and "lecture_handout.pdf",
         the handout is normally the same slides with the build-up already
@@ -109,7 +113,13 @@ def make_read_file(client: CanvasClient) -> Callable[..., dict[str, Any]]:
         return {
             "file": meta.get("display_name"),
             "pages": f"{wanted[0] + 1}-{wanted[-1] + 1} of {total}",
-            "slides": f"{min(found, MAX_SLIDES)} of {found} in that range",
+            # Entries, not slides. An entry is one slide where build-up
+            # frames were recognised and one page where they were not — and
+            # the tool cannot tell how many slides a range really holds. A
+            # field called "slides" said 12 for four slides the day the
+            # extractor changed under it, which is the kind of number that
+            # gets quoted.
+            "entries": min(found, MAX_SLIDES),
             "text": untrusted(text, f"{meta.get('display_name')}, a course file"),
         }
 
