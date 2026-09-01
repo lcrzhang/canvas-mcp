@@ -790,6 +790,34 @@ Everything here is a decision nobody has taken, not work left half done.
   PDF is, so swapping is contained.
 - **caching** — a non-goal; revisit only if `read_file` proves too slow.
 
+### [~] 17. Say which version is answering
+
+**Delivers:** the running version is visible, and a refusal says what to do
+instead.
+
+**Files:** `src/canvas_mcp/server.py`, `src/canvas_mcp/tools/files.py`
+
+**Branch:** `fix/say-which-version-is-running`
+
+**Notes:** a full test round on 2026-09-01 measured code that had already been
+replaced. Step 16 had merged, but the client keeps the MCP server alive as a
+process, so the pre-collapse build was still answering. The report concluded
+the collapse did not work — correctly, about the wrong build.
+
+Nothing in the output said which version was running, and that was the real
+defect: a stale process is indistinguishable from a broken feature. The startup
+line now names the version before it names the scopes, and `--version` says
+what is installed. The README says to restart the client after pulling.
+
+A test asserts the installed metadata matches `__version__`, which failed the
+moment it was written because the local editable install was itself stale —
+the same class of problem, caught one layer down.
+
+**Also from that round:** a non-PDF refusal named the file and the type and
+then stopped. The page-limit error names a limit and a way forward; this one
+now says to open the file in Canvas or look for a PDF in the same module. The
+grammar was wrong too — "is a text/plain".
+
 ## Known dates
 
 - **The token expires by 2026-11-27.** Personal access tokens last at most 90

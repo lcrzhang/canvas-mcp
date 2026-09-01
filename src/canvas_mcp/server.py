@@ -18,6 +18,7 @@ from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 from mcp.types import ToolAnnotations
 
+from canvas_mcp import __version__
 from canvas_mcp.client import CanvasClient, CanvasError
 from canvas_mcp.fixtures import DEMO_TOKEN, demo_transport
 from canvas_mcp.scopes import DEFAULT_SCOPES, ScopeError, ScopeRegistry
@@ -91,6 +92,10 @@ def report(registry: ScopeRegistry) -> None:
     """
     enabled = ", ".join(sorted(registry.scopes)) or "nothing"
     disabled = ", ".join(registry.disabled_scopes()) or "nothing"
+    # The version first, because a client keeps a server process alive across
+    # a git pull: without this there is no way to tell which code is answering,
+    # and a stale process looks exactly like a feature that does not work.
+    print(f"canvas-mcp {__version__}", file=sys.stderr)
     print(f"canvas-mcp: enabled {enabled}", file=sys.stderr)
     print(f"canvas-mcp: disabled {disabled}", file=sys.stderr)
 
@@ -114,6 +119,11 @@ def build_client(*, demo: bool = False) -> CanvasClient:
 
 def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="canvas-mcp", description=__doc__)
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"canvas-mcp {__version__}",
+    )
     parser.add_argument(
         "--demo",
         action="store_true",
