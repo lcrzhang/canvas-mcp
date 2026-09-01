@@ -32,6 +32,7 @@ TOOL_SCOPES: dict[str, str] = {
     "list_announcements": "announcements:read",
     "list_materials": "materials:read",
     "list_grades": "grades:read",
+    "read_file": "files:content",
 }
 
 # An explicit list, not a rule. "Everything except grades:read" would grow by
@@ -42,6 +43,10 @@ DEFAULT_SCOPES: tuple[str, ...] = (
     "assignments:read",
     "announcements:read",
     "materials:read",
+    # Reading a slide is what a study assistant is for, and the file is one the
+    # student can already open in Canvas. Unlike grades:read this is not the
+    # capability being withheld.
+    "files:content",
 )
 
 

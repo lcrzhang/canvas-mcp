@@ -53,12 +53,20 @@ def all_tools() -> dict[str, object]:
 # --- what is exposed ------------------------------------------------------
 
 
-def test_the_default_is_an_explicit_list_of_four_read_scopes() -> None:
+def test_the_default_is_an_explicit_list_of_read_scopes() -> None:
+    """The list grew once, and had to break this test to do it.
+
+    `files:content` was added when `read_file` landed in v0.2, deliberately and
+    in a pull request rather than as a side effect. That is the whole reason
+    the default is a written list instead of "everything except grades:read":
+    a rule would have absorbed the new scope silently.
+    """
     assert set(DEFAULT_SCOPES) == {
         "courses:read",
         "assignments:read",
         "announcements:read",
         "materials:read",
+        "files:content",
     }
 
 
