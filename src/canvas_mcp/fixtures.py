@@ -140,6 +140,13 @@ _TERM_NAMES = (
     "Semester 2 2026-2027",
     "Summer 2027",
 )
+_TITLES = (
+    "Week 3: lecture moved to Thursday",
+    "Deadline extended by two days",
+    "Reader chapter 4 is online",
+    "Q&A session before the exam",
+    "Practicum groups have been posted",
+)
 _ASSIGNMENT_NAMES = (
     "Weekly exercise 1",
     "Lab report",
@@ -213,6 +220,8 @@ def _synthetic_string(key: str, value: str, n: int, parent: str = "") -> str:
             return _ASSIGNMENT_NAMES[n % len(_ASSIGNMENT_NAMES)]
         if parent == "user":
             return _PERSON_NAMES[n % len(_PERSON_NAMES)]
+    if key == "title":
+        return _TITLES[n % len(_TITLES)]
     if key in ("grade", "entered_grade"):
         # A letter grade rather than a number. FIXTURE-grade-1 reads as a bug,
         # and a number next to `score` invites a reader to check whether the
@@ -318,6 +327,11 @@ DEMO_ROUTES: tuple[tuple[re.Pattern[str], str, bool], ...] = (
         False,
     ),
     (re.compile(r"^/api/v1/courses/\d+/assignments/?$"), "assignments.json", False),
+    (
+        re.compile(r"^/api/v1/courses/\d+/discussion_topics/?$"),
+        "announcements.json",
+        False,
+    ),
     (
         re.compile(r"^/api/v1/courses/\d+/assignments/(?P<id>\d+)/?$"),
         "assignments.json",
