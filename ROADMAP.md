@@ -789,7 +789,7 @@ reversible by moving one line.
 
 ## Found after v0.2, 2026-09-01
 
-### [~] 15. Errors that reach the model
+### [x] 15. Errors that reach the model
 
 **Delivers:** an error this project raises on purpose arrives at the model with
 its text, instead of as "Error executing tool <name>".
@@ -829,3 +829,49 @@ what the SDK's behaviour is for.
 unauthenticated download link — the first row of section 5, and under stdio the
 log is a file on disk. The failure message names the path with the query
 stripped instead, which is what the debugging actually needed.
+
+### [~] 16. Build-up frames
+
+**Delivers:** a range of a lecture deck comes back as slides rather than as one
+page per `\pause`.
+
+**Files:** `src/canvas_mcp/extract.py`, `src/canvas_mcp/tools/files.py`
+
+**Branch:** `feat/collapse-overlays`
+
+**Notes:** measured on a real deck, 2026-09-01: `lec01_intro.pdf` has 94
+physical pages and about 30 slides. A read of pages 45-64 returned 20 pages
+holding 4 slides — eleven of them identical.
+
+**Grouping is on content, not on the footer.** The reported slide number in
+that deck's footer (`29/∞`) would be a stronger signal where it exists, and it
+was proposed. Rejected: it belongs to one beamer theme, so it would need a
+regex against arbitrary LaTeX from arbitrary teachers, and a misfire merges
+unrelated slides silently. That is the wrong direction to fail in.
+
+**The fullest frame is kept, not the last.** The proposal assumed the last
+frame is a superset of the earlier ones. True for `\pause`, false for
+`\only<1>{...}`, where content shows on the first frame and not after — taking
+the last would drop it. Containment is tested in both directions, so frames
+that genuinely diverge are both kept.
+
+**Openings are compared as a prefix, not for equality.** The first attempt
+compared the first line, which only works when the extractor puts a title on
+its own line. The second compared a fixed prefix, which failed on short slides
+because the words a frame adds still fall inside it. A prefix relation handles
+both.
+
+**A page with no text is never folded in.** An empty page beside a readable one
+is not a build-up frame; it is a page that could not be read, and folding it
+away would hide a full-page scan. An existing test caught this the moment the
+collapse landed.
+
+**The page limit split in two.** Sixty physical pages may be read; twenty
+slides come back. The old limit of twenty pages was trying to mean "a passage,
+not a document", and on a deck full of build-up frames twenty pages is four
+slides. Beyond twenty slides the reply is cut with the count and a way forward.
+
+**A Page cannot be read**, and `list_materials` now says so. Only a File
+carries an id; a Canvas Page keeps its content behind a slug this server does
+not expose. It looked like a bug, which is reason enough to write it down. A
+`read_page` tool would be a new tool with a new scope, not a patch.

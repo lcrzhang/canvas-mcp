@@ -11,7 +11,11 @@ import pytest
 from canvas_mcp.extract import (
     MAX_PAGES,
     ExtractionError,
+    collapse_overlays,
+    extract_slides,
     extract_text,
+    format_slides,
+    is_the_same_slide,
     page_count,
     parse_page_range,
 )
@@ -102,3 +106,89 @@ def test_a_range_that_cannot_work_says_why(given: str, says: str) -> None:
 def test_asking_for_a_whole_document_is_refused() -> None:
     with pytest.raises(ExtractionError, match=str(MAX_PAGES)):
         parse_page_range(f"1-{MAX_PAGES + 1}", total=200)
+
+
+# --- build-up frames ------------------------------------------------------
+#
+# A lecture deck has one page per \pause, so 94 pages can be 30 slides. These
+# pin when two pages count as one slide and, more importantly, when they do
+# not.
+
+TITLE = "Asymptotic bounds"
+
+
+def frame(*lines: str) -> str:
+    return "\n".join((TITLE, *lines))
+
+
+def test_identical_consecutive_pages_become_one_slide() -> None:
+    pages = [
+        (0, frame("Big-O is an upper bound")),
+        (1, frame("Big-O is an upper bound")),
+    ]
+    assert collapse_overlays(pages) == [([0, 1], frame("Big-O is an upper bound"))]
+
+
+def test_a_build_up_keeps_the_fullest_frame() -> None:
+    """With \\pause the last frame is the fullest. With \\only it is not, so the
+    longest is kept rather than the last."""
+    pages = [
+        (0, frame("Big-O")),
+        (1, frame("Big-O", "Omega")),
+        (2, frame("Big-O", "Omega", "Theta")),
+    ]
+    ((indexes, text),) = collapse_overlays(pages)
+    assert indexes == [0, 1, 2]
+    assert "Theta" in text
+
+
+def test_content_that_disappears_is_not_collapsed_away() -> None:
+    """`\\only<1>{X}` shows X on the first frame and not after. Neither page
+    contains the other, so both are kept rather than one being chosen."""
+    pages = [(0, frame("Only on the first")), (1, frame("Only on the second"))]
+    assert len(collapse_overlays(pages)) == 2
+
+
+def test_two_slides_are_kept_apart_even_when_one_is_a_subset() -> None:
+    """A short slide's words can be contained in a longer one by chance. The
+    opening has to match too, and different slides open differently."""
+    pages = [(0, "Sorting\nquick merge"), (1, "Searching\nquick merge binary")]
+    assert len(collapse_overlays(pages)) == 2
+
+
+def test_a_run_is_labelled_with_the_pages_it_came_from() -> None:
+    """A model quoting a slide should be able to say where it is."""
+    pages = [(43, frame("a")), (44, frame("a")), (45, frame("a")), (46, "Other\nb")]
+    text = format_slides(collapse_overlays(pages))
+    assert "[pages 44-46, 3 build-up frames of one slide]" in text
+    assert "[page 47]" in text
+
+
+def test_a_lone_page_is_not_called_a_build_up() -> None:
+    assert "build-up" not in format_slides(collapse_overlays([(0, frame("a"))]))
+
+
+def test_the_opening_is_compared_whatever_the_line_breaks() -> None:
+    """Whether a title lands on its own line depends on the extractor, so the
+    comparison uses a prefix rather than the first line."""
+    assert is_the_same_slide("Asymptotic bounds Big-O", "Asymptotic bounds Big-O Omega")
+
+
+def test_a_deck_of_build_ups_collapses_end_to_end() -> None:
+    deck = build_pdf(
+        "Collections. A list keeps order.",
+        "Collections. A list keeps order. A set does not.",
+        "Collections. A list keeps order. A set does not. A map has keys.",
+        "Complexity. Constant time is best.",
+    )
+    slides = extract_slides(deck, range(4))
+    assert len(slides) == 2
+    assert "A map has keys" in slides[0][1]
+
+
+def test_an_unreadable_page_is_never_folded_into_its_neighbour() -> None:
+    """A page with no text is not a build-up frame — it is a page that could
+    not be read. A full-page scanned diagram would otherwise vanish into the
+    slide before it."""
+    pages = [(0, frame("Readable")), (1, "")]
+    assert len(collapse_overlays(pages)) == 2

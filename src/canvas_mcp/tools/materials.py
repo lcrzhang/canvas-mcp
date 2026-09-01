@@ -29,9 +29,14 @@ def make_list_materials(client: CanvasClient) -> Callable[..., list[dict[str, An
         itself to students, so a file id can only come from here.
 
         Returns each module with its items grouped under the headings the
-        teacher wrote. Every item has a title, a type (File, Page, Assignment,
-        Quiz) and an id. Assignments appear here too, but list_assignments is
-        the better tool for deadlines.
+        teacher wrote. Every item has a title and a type: File, Page,
+        Assignment or Quiz.
+
+        Only a File carries an id, and only a File can be read with read_file.
+        A Page has no file behind it — its title is all there is here, and its
+        contents are not available through this server. Assignments appear in
+        this list too, but list_assignments is the better tool for deadlines
+        and get_assignment for what one asks.
 
         module_filter matches part of a module name, case-insensitively:
         "week 3" or "practical". An empty result means no module matched, not

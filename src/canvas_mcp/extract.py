@@ -17,9 +17,13 @@ from pypdf.errors import PdfReadError
 # A page range a person would write: "12" or "10-15", one-based and inclusive.
 _RANGE = re.compile(r"^\s*(\d+)\s*(?:-\s*(\d+)\s*)?$")
 
-# Reading more than this at once is a request for a whole document rather than
-# a passage, and the answer would be truncated anyway.
-MAX_PAGES = 20
+# Physical pages read in one call. Generous because a slide deck spends most of
+# them on build-up frames: 94 physical pages is a normal 30-slide lecture.
+MAX_PAGES = 60
+
+# Slides returned after those frames are collapsed. This is the limit that
+# means what the old page limit was trying to mean — a passage, not a document.
+MAX_SLIDES = 20
 
 
 class ExtractionError(Exception):
@@ -56,7 +60,8 @@ def parse_page_range(page_range: str | None, total: int) -> list[int]:
     if len(wanted) > MAX_PAGES:
         raise ExtractionError(
             f"That is {len(wanted)} pages. Ask for at most {MAX_PAGES} at a "
-            "time, so the answer is about a passage rather than a document."
+            "time. Slide decks repeat each slide once per build-up frame, so "
+            f"{MAX_PAGES} pages is often far fewer than {MAX_PAGES} slides."
         )
     return wanted
 
@@ -65,19 +70,87 @@ def page_count(data: bytes) -> int:
     return len(_read(data).pages)
 
 
-def extract_text(data: bytes, pages: Iterable[int]) -> str:
-    """The only function that knows what a PDF is.
+def _words(text: str) -> set[str]:
+    return set(text.split())
 
-    Swapping the backend means replacing this and `page_count`, and nothing
-    else in the project needs to hear about it.
+
+# How much of the opening has to match for two pages to be the same slide. A
+# frame title and the first words under it, roughly.
+OPENING = 40
+
+
+def _opening(text: str) -> str:
+    """The start of a page, with whitespace flattened.
+
+    Compared instead of the first line, because whether a title lands on a line
+    of its own depends on how the extractor breaks the text — and a heuristic
+    that only works when it does would fail silently on the decks where it
+    does not.
     """
+    return " ".join(text.split())[:OPENING]
+
+
+def is_the_same_slide(earlier: str, later: str) -> bool:
+    """Whether two consecutive pages are frames of one slide.
+
+    LaTeX beamer writes every `\\pause` as its own page, so a lecture deck has
+    several near-identical pages per slide. Two pages count as one slide when
+    they open with the same text and one's words are contained in the
+    other's.
+
+    Containment in either direction, because content can disappear as well as
+    appear: `\\only<1>{...}` shows something on the first frame and not after.
+    Requiring the same opening is what keeps two genuinely different slides
+    apart when one happens to use a subset of the other's words.
+
+    Deliberately not based on the slide number in a footer. That number exists
+    in one beamer theme and not in others, and a regex that misfires would
+    merge unrelated slides — silently, which is the wrong direction to fail in.
+    """
+    if not earlier.strip() or not later.strip():
+        # A page with no text is not a frame of anything: it is a page that
+        # could not be read, which is worth saying rather than folding into a
+        # neighbour. A full-page scanned diagram would otherwise disappear.
+        return False
+
+    first_opening, second_opening = _opening(earlier), _opening(later)
+    # A prefix rather than an exact match: on a short slide the words a frame
+    # adds still fall inside the first OPENING characters, so requiring
+    # equality would keep every build-up apart.
+    if not (
+        first_opening.startswith(second_opening)
+        or second_opening.startswith(first_opening)
+    ):
+        return False
+    first, second = _words(earlier), _words(later)
+    return first <= second or second <= first
+
+
+def collapse_overlays(pages: list[tuple[int, str]]) -> list[tuple[list[int], str]]:
+    """Group build-up frames into slides, keeping the fullest frame of each.
+
+    The fullest rather than the last: with `\\pause` the last frame is the
+    fullest, but with `\\only` it is not, and taking the last would drop text
+    that appeared on an earlier one.
+    """
+    slides: list[tuple[list[int], str]] = []
+    for index, text in pages:
+        if slides and is_the_same_slide(slides[-1][1], text):
+            indexes, kept = slides[-1]
+            slides[-1] = (indexes + [index], max(kept, text, key=len))
+        else:
+            slides.append(([index], text))
+    return slides
+
+
+def extract_slides(data: bytes, pages: Iterable[int]) -> list[tuple[list[int], str]]:
+    """The pages asked for, with build-up frames collapsed into slides."""
     reader = _read(data)
     wanted = list(pages)
 
-    extracted = []
-    for index in wanted:
-        text = reader.pages[index].extract_text() or ""
-        extracted.append((index, text.strip()))
+    extracted = [
+        (index, (reader.pages[index].extract_text() or "").strip()) for index in wanted
+    ]
 
     if not any(text for _, text in extracted):
         raise ExtractionError(
@@ -85,11 +158,31 @@ def extract_text(data: bytes, pages: Iterable[int]) -> str:
             "image: this server does not do OCR, so there is nothing to read. "
             "Try another page range, or open the file in Canvas."
         )
+    return collapse_overlays(extracted)
 
-    return "\n\n".join(
-        f"[page {index + 1}]\n{text}" if text else f"[page {index + 1}] no text"
-        for index, text in extracted
-    )
+
+def format_slides(slides: list[tuple[list[int], str]]) -> str:
+    """Label each slide with the pages it came from, so a model can cite it."""
+    parts = []
+    for indexes, text in slides:
+        if len(indexes) == 1:
+            label = f"[page {indexes[0] + 1}]"
+        else:
+            label = (
+                f"[pages {indexes[0] + 1}-{indexes[-1] + 1}, "
+                f"{len(indexes)} build-up frames of one slide]"
+            )
+        parts.append(f"{label}\n{text}" if text else f"{label} no text")
+    return "\n\n".join(parts)
+
+
+def extract_text(data: bytes, pages: Iterable[int]) -> str:
+    """The only function that knows what a PDF is.
+
+    Swapping the backend means replacing this and `page_count`, and nothing
+    else in the project needs to hear about it.
+    """
+    return format_slides(extract_slides(data, pages))
 
 
 def _read(data: bytes) -> PdfReader:
