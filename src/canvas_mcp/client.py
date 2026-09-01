@@ -53,6 +53,11 @@ def error_message(status_code: int, path: str) -> str:
     return f"Canvas returned {status_code} for {path}."
 
 
+def _path_of(url: str) -> str:
+    """A URL with its query removed, safe to put in a message."""
+    return str(httpx2.URL(url).copy_with(query=None, fragment=None))
+
+
 def _too_large(size: int, limit: int) -> str:
     return (
         f"That file is {size // 1_000_000} MB, over the {limit // 1_000_000} MB "
@@ -164,9 +169,23 @@ class CanvasClient:
         Content-Length should not be able to spend a caller's memory.
         """
         try:
-            with self._client.stream("GET", url) as response:
+            with self._client.stream(
+                "GET",
+                url,
+                # Canvas answers a file URL with a redirect to a signed
+                # location. Without this the body is empty and the failure
+                # arrives later, as "not a readable PDF".
+                follow_redirects=True,
+                # The client asks for JSON everywhere else; a PDF is not that.
+                headers={"Accept": "*/*"},
+            ) as response:
                 if response.status_code >= 400:
-                    raise CanvasError(error_message(response.status_code, url))
+                    # The path, never the query: a Canvas file URL carries a
+                    # verifier, which is an unauthenticated download link and
+                    # is exactly what SCOPE.md section 5 keeps out of output.
+                    raise CanvasError(
+                        error_message(response.status_code, _path_of(url))
+                    )
                 declared = response.headers.get("content-length")
                 if declared and int(declared) > max_bytes:
                     raise CanvasError(_too_large(int(declared), max_bytes))

@@ -101,3 +101,48 @@ def test_the_instructions_are_the_same_whatever_is_enabled() -> None:
     narrow = build_server(demo, scopes=["courses:read"]).instructions
     wide = build_server(demo, scopes=ALL_SCOPES).instructions
     assert narrow == wide
+
+
+# --- errors that reach the model ------------------------------------------
+
+
+def test_a_deliberate_error_arrives_with_its_message() -> None:
+    """The SDK replaces any exception but ToolError with "Error executing tool
+    <name>", which is right for a crash and wrong for everything this project
+    writes on purpose. SCOPE section 9 calls errors instructions for a model;
+    without the wrapper they were instructions for a log nobody reads."""
+    from mcp.server.mcpserver.exceptions import ToolError
+
+    from canvas_mcp.client import CanvasError
+    from canvas_mcp.server import surfacing
+
+    def failing(course_id: int) -> None:
+        raise CanvasError("Course 1 not found, or not visible with this enrollment.")
+
+    with pytest.raises(ToolError, match="not visible with this enrollment"):
+        surfacing(failing)(course_id=1)
+
+
+def test_a_real_crash_still_keeps_its_details_on_the_server() -> None:
+    """Only errors this project raises on purpose are surfaced. A bug should
+    not have its internals read out to a model."""
+    from canvas_mcp.server import surfacing
+
+    def broken(course_id: int) -> None:
+        raise KeyError("some internal detail")
+
+    with pytest.raises(KeyError):
+        surfacing(broken)(course_id=1)
+
+
+def test_surfacing_leaves_the_signature_the_schema_is_built_from() -> None:
+    import inspect
+
+    from canvas_mcp.server import surfacing
+
+    def tool(course_id: int, page_range: str | None = None) -> None:
+        """A docstring the SDK turns into a description."""
+
+    wrapped = surfacing(tool)
+    assert inspect.signature(wrapped) == inspect.signature(tool)
+    assert wrapped.__doc__ == tool.__doc__
