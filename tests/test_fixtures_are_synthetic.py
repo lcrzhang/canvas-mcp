@@ -10,7 +10,12 @@ from pathlib import Path
 
 import pytest
 
-from canvas_mcp.fixtures import find_real_looking_values, to_synthetic
+from canvas_mcp.fixtures import (
+    find_real_looking_values,
+    load_fixture,
+    shift_dates,
+    to_synthetic,
+)
 
 FIXTURE_DIR = Path(__file__).resolve().parent.parent / "fixtures"
 
@@ -187,3 +192,50 @@ def test_a_score_never_exceeds_the_points_it_sits_next_to() -> None:
 def test_a_grade_reads_as_a_grade() -> None:
     converted = to_synthetic({"grade": "8.5"})
     assert "FIXTURE" not in converted["grade"]
+
+
+def test_a_subheader_gets_a_section_name_not_a_file_name() -> None:
+    """The parent passed down is a role, and only the item's own type says it
+    labels a section rather than being material."""
+    module = {
+        "name": "Week 1",
+        "items": [
+            {"title": "Lectures", "type": "SubHeader"},
+            {"title": "slides.pdf", "type": "File"},
+        ],
+    }
+    items = to_synthetic(module, key="module")["items"]
+    assert items[0]["title"] != items[1]["title"]
+    assert items[0]["type"] == "SubHeader"
+
+
+def test_loading_a_fixture_moves_its_dates_up_to_today() -> None:
+    """The file keeps fixed dates so a regeneration diffs cleanly. Demo mode
+    shifts them on load, so last year's capture is not an archived term."""
+    from datetime import datetime, timedelta
+
+    before = "2026-02-03T09:00:00Z"
+    shifted = shift_dates({"due_at": before}, 400)
+    moved = datetime.fromisoformat(shifted["due_at"]) - datetime.fromisoformat(before)
+    assert moved == timedelta(days=400)
+
+
+def test_shifting_leaves_everything_that_is_not_a_date_alone() -> None:
+    document = {"name": "Week 1", "id": 3, "locked": True, "term": {"end_at": None}}
+    assert shift_dates(document, 400) == document
+
+
+def test_an_unparseable_date_survives_the_shift_unchanged() -> None:
+    assert shift_dates({"due_at": "2026-13-45"}, 10)["due_at"] == "2026-13-45"
+
+
+def test_the_demo_fixtures_are_current_when_loaded() -> None:
+    """The check that would have caught the demo emptying itself."""
+    from datetime import UTC, datetime
+
+    from canvas_mcp.tools.courses import term_has_ended
+
+    now = datetime.now(UTC)
+    courses = load_fixture("courses.json")
+    assert courses
+    assert not any(term_has_ended(course, now) for course in courses)
