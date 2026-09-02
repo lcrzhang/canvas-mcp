@@ -36,7 +36,7 @@ from canvas_mcp.tools.courses import make_list_courses, term_has_ended
 from canvas_mcp.tools.grades import make_list_grades
 from canvas_mcp.tools.materials import make_list_materials
 
-FIXTURES = Path(__file__).resolve().parent.parent / "fixtures"
+FIXTURES = Path(__file__).resolve().parent.parent / "src" / "canvas_mcp" / "demo_data"
 FIXTURE = FIXTURES / "courses.json"
 SUBMISSIONS_FIXTURE = FIXTURES / "submissions.json"
 ASSIGNMENTS_FIXTURE = FIXTURES / "assignments.json"

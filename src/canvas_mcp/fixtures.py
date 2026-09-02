@@ -353,7 +353,10 @@ def to_synthetic(
 # transport swap, not a second implementation: the same client, filters, tools
 # and scope registry run underneath. See `SCOPE.md` section 8.
 
-FIXTURE_DIR = Path(__file__).resolve().parent.parent.parent / "fixtures"
+# Inside the package, not beside it: a wheel does not carry the repository, so
+# a plain `pip install` used to produce a working command and a demo mode that
+# could not find its own data. Found by installing it somewhere else.
+FIXTURE_DIR = Path(__file__).resolve().parent / "demo_data"
 
 # The placeholder that stands in for a token in demo mode. Deliberately not a
 # credential and deliberately obvious in any error message.

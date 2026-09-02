@@ -31,7 +31,7 @@ from canvas_mcp.filters import (
 )
 from canvas_mcp.sanitize import BEGIN, END
 
-FIXTURES = Path(__file__).resolve().parent.parent / "fixtures"
+FIXTURES = Path(__file__).resolve().parent.parent / "src" / "canvas_mcp" / "demo_data"
 FIXTURE = FIXTURES / "courses.json"
 SUBMISSIONS_FIXTURE = FIXTURES / "submissions.json"
 ASSIGNMENTS_FIXTURE = FIXTURES / "assignments.json"
