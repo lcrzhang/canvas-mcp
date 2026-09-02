@@ -19,7 +19,11 @@ from pathlib import Path
 from typing import Any
 
 from canvas_mcp.client import CanvasClient, CanvasError
-from canvas_mcp.fixtures import find_real_looking_values, to_synthetic
+from canvas_mcp.fixtures import (
+    FIXTURE_DIR,
+    find_real_looking_values,
+    to_synthetic,
+)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -169,7 +173,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  ... and {len(findings) - 20} more")
         return 2
 
-    out = args.out or REPO_ROOT / "fixtures" / f"{args.capture}.json"
+    out = args.out or FIXTURE_DIR / f"{args.capture}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(fixture, indent=2) + "\n")
 

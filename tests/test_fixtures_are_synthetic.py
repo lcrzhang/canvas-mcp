@@ -17,7 +17,9 @@ from canvas_mcp.fixtures import (
     to_synthetic,
 )
 
-FIXTURE_DIR = Path(__file__).resolve().parent.parent / "fixtures"
+FIXTURE_DIR = (
+    Path(__file__).resolve().parent.parent / "src" / "canvas_mcp" / "demo_data"
+)
 
 
 def test_a_fully_synthetic_document_is_clean() -> None:
@@ -243,3 +245,14 @@ def test_the_demo_fixtures_are_current_when_loaded() -> None:
     courses = load_fixture("courses.json")
     assert courses
     assert not any(term_has_ended(course, now) for course in courses)
+
+
+def test_the_fixtures_travel_with_the_package() -> None:
+    """A wheel does not carry the repository. They used to sit beside the
+    package, so `pip install .` produced a working command whose demo mode
+    could not find its own data — found by installing it somewhere else."""
+    import canvas_mcp
+
+    package = Path(canvas_mcp.__file__).resolve().parent
+    assert FIXTURE_DIR.is_relative_to(package)
+    assert sorted(p.name for p in FIXTURE_DIR.glob("*.json"))

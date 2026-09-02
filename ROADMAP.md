@@ -890,6 +890,28 @@ only while the collapsing works: under pdfplumber it reported 12 for four
 slides. The tool cannot know how many slides a range really holds, so the field
 is named for what it counts.
 
+### [~] 19. Ship the fixtures with the package
+
+**Delivers:** `pip install` produces a working `--demo` anywhere.
+
+**Files:** `src/canvas_mcp/demo_data/`, `src/canvas_mcp/fixtures.py`
+
+**Branch:** `fix/ship-the-fixtures`
+
+**Notes:** found by being asked how to install this on another machine, and
+answering by installing it. A wheel does not carry the repository, and the
+fixtures sat beside the package rather than inside it — so a plain
+`pip install .` produced a working command whose demo mode raised
+`FileNotFoundError` looking for a directory three levels above site-packages.
+
+Everything worked here because the install was editable, which is the one
+layout where the old path resolved. Nothing in the test suite could see it:
+the tests read the fixtures through a path of their own.
+
+`fixtures/` moved to `src/canvas_mcp/demo_data/`. A test now asserts the
+directory is inside the package, which is the property that was assumed rather
+than checked.
+
 ## Known dates
 
 - **The token expires by 2026-11-27.** Personal access tokens last at most 90

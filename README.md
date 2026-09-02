@@ -33,25 +33,36 @@ Stated first, because the boundaries are the design.
 ## Try it without a Canvas account
 
 Demo mode serves committed fixtures instead of the network. No token, no
-requests.
+requests, nothing to sign up for.
 
 ```bash
-pip install -e .
+pip install git+https://github.com/lcrzhang/canvas-mcp
 canvas-mcp --demo
 ```
 
-In an MCP client — Claude Desktop, for example:
+On Windows the same command works in PowerShell once Python is installed; the
+executable lands in `...\Scripts\canvas-mcp.exe` rather than `.../bin/`.
+
+In an MCP client — Claude Desktop, for example. Its config lives at
+`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS and
+`%APPDATA%\Claude\claude_desktop_config.json` on Windows:
 
 ```json
 {
   "mcpServers": {
     "canvas": {
-      "command": "/path/to/canvas-mcp/.venv/bin/canvas-mcp",
+      "command": "/full/path/to/venv/bin/canvas-mcp",
       "args": ["--demo"]
     }
   }
 }
 ```
+
+The path has to be the full one — a client does not run your shell, so it does
+not know your `PATH` or your virtual environment. `which canvas-mcp` prints it,
+or `where canvas-mcp` on Windows, where it looks like
+`C:\\Users\\you\\venv\\Scripts\\canvas-mcp.exe` — with the backslashes doubled,
+because JSON.
 
 Then ask *"which courses am I taking?"* and you will get invented ones. Every
 value in those fixtures is synthetic; only their shape is real.
