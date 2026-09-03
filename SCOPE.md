@@ -82,7 +82,7 @@ duidelijkste voorbeeld van waarom sectie 5 bestaat.
 |---|---|---|---|
 | `list_courses` | `term_filter?`, `current_only?` | id, name, code, term-naam | `courses:read` |
 | `list_assignments` | `course_id`, `only_upcoming?` | id, name, due_at, points, submitted, locked | `assignments:read` |
-| `get_assignment` | `course_id`, `assignment_id` | sanitized plain text, gecapt | `assignments:read` |
+| `get_assignment` | `course_id`, `assignment_id` | sanitized plain text (description gecapt, rubric niet) | `assignments:read` |
 | `list_announcements` | `course_id`, `limit?` | titel, datum, plain-text body | `announcements:read` |
 | `list_materials` | `course_id`, `module_filter?` | module → sectie → item (naam, type) | `materials:read` |
 
@@ -204,6 +204,28 @@ Mitigatie:
 **Eerlijk in de README:** dit lost prompt injection niet op. De echte
 verdediging is dat er geen write tools zijn — er is niets om te misbruiken.
 Dat is het argument, niet de sanitizer.
+
+### Eén uitzondering op de cap: de rubric
+
+Besloten door Leo op 2026-09-03. De rubric van een opdracht gaat wél door stap
+1 en 3, maar **niet door stap 2**.
+
+Een afgekapte description loopt zichtbaar af: er staat een `[truncated]`-marker
+en het model weet dat er meer was. Een afgekapte rubric verliest stilzwijgend
+een criterium waarop de student beoordeeld wordt, en dat is niet te zien aan
+wat er overblijft — precies de faalmodus die dit project vermijdt: een
+plausibel verkeerd antwoord in plaats van een foutmelding.
+
+De omvang is in de praktijk begrensd doordat een rubric een vast raster is en
+geen vrije tekst. Dat is een aanname, geen garantie: een uitzonderlijk grote
+rubric komt in zijn geheel binnen. Gemeten op de fixture van 2026-09-03: vijf
+criteria met vijf ratings elk werden 2022 tekens, dus net over `MAX_CHARS` —
+de standaardcap zou daar al gesneden hebben.
+
+Het ingevulde exemplaar is iets anders. `assignment.rubric` is het lege raster
+en hoort bij `assignments:read`; `submission.rubric_assessment` bevat de punten
+die een nakijker heeft toegekend en hoort bij `grades:read`. Ze staan in
+dezelfde response en de filterlaag leest alleen de eerste.
 
 ---
 

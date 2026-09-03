@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 12 — README and v0.1.0**
+Status: **step 20 — the rubric an assignment is marked against**
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -1020,3 +1020,46 @@ slides. Beyond twenty slides the reply is cut with the count and a way forward.
 carries an id; a Canvas Page keeps its content behind a slug this server does
 not expose. It looked like a bug, which is reason enough to write it down. A
 `read_page` tool would be a new tool with a new scope, not a patch.
+---
+
+## Found after v0.2, 2026-09-03
+
+### [~] 20. The rubric an assignment is marked against
+
+**Delivers:** `get_assignment` returns the rubric, so "what is this actually
+graded on" can be answered when the criteria live on the assignment rather than
+in an attached file.
+
+**Files:** `src/canvas_mcp/filters.py`, `src/canvas_mcp/tools/assignments.py`,
+`tests/test_filters.py`, `SCOPE.md`
+
+**Branch:** `feat/rubric-in-get-assignment`
+
+**Notes:** Leo hit this on a course whose rubric was never uploaded as a file
+and existed only on the assignment. No new endpoint and no new permission were
+needed: Canvas already returns `rubric` and `rubric_settings` on the assignment
+object `get_assignment` fetches, and the filter layer was dropping them. This
+is a widened allowlist, not new access.
+
+**Rendered as one text block, not as structured JSON.** The alternative was a
+nested `{criteria: [{ratings: [...]}]}` shape. Rejected: `untrusted()` wraps a
+string, so a structured rubric means either thirty boundary markers on a
+five-criterion grid, or none at all on teacher-written text. Nothing consumes
+the field programmatically — a model reads it — so one block with one boundary
+is both safer and smaller. `to_plain_text` and `untrusted` were composed
+directly rather than adding a no-cap mode to `sanitize()`.
+
+**Uncapped, decided by Leo on 2026-09-03.** The reasoning is recorded in
+`SCOPE.md` section 6, since it is an exception to a rule stated there rather
+than a detail of this step.
+
+**The filled-in rubric was the thing to keep out.** `submission.rubric_assessment`
+sits in the same response and holds the points a nakijker awarded, which is
+`grades:read`. The existing sentinel test caught the boundary immediately when
+`rubric` moved out of the list view's forbidden set, which is what those tests
+are for.
+
+**Left out:** `ignore_for_scoring`, `criterion_use_range` and
+`use_rubric_for_grading` are not reported. They say how the rubric is applied
+to a score, not what the work has to do, and the first two would need a
+sentence each to be readable rather than cryptic.

@@ -11,7 +11,7 @@ out missing rather than leaked.
 
 from typing import Any
 
-from canvas_mcp.sanitize import sanitize
+from canvas_mcp.sanitize import sanitize, to_plain_text, untrusted
 
 # The complete output of slim_course(). Tests assert this exactly, so widening
 # it is a deliberate act with a failing test attached.
@@ -107,19 +107,73 @@ def slim_assignment(assignment: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-# slim_assignment plus the one field that needs sanitizing. Kept as a separate
+# slim_assignment plus the two fields that need sanitizing. Kept as a separate
 # function rather than a flag: the list view must never carry a description,
 # and a boolean parameter is easier to get wrong than two names.
-ASSIGNMENT_DETAIL_FIELDS = (*ASSIGNMENT_FIELDS, "description")
+ASSIGNMENT_DETAIL_FIELDS = (*ASSIGNMENT_FIELDS, "description", "rubric")
+
+
+def _criterion_lines(index: int, criterion: dict[str, Any]) -> list[str]:
+    """One rubric criterion as plain-text lines, nothing dropped."""
+    lines: list[str] = []
+    head = f"{index}. {to_plain_text(criterion.get('description') or '')}".rstrip()
+    points = criterion.get("points")
+    if points is not None:
+        head = f"{head} ({points} points)"
+    lines.append(head)
+
+    long_description = to_plain_text(criterion.get("long_description") or "")
+    lines.extend(f"   {line}" for line in long_description.splitlines())
+
+    for rating in criterion.get("ratings") or []:
+        label = to_plain_text(rating.get("description") or "")
+        rating_points = rating.get("points")
+        prefix = f"   - {rating_points}: " if rating_points is not None else "   - "
+        lines.append(f"{prefix}{label}".rstrip())
+        detail = to_plain_text(rating.get("long_description") or "")
+        lines.extend(f"     {line}" for line in detail.splitlines())
+    return lines
+
+
+def rubric_text(assignment: dict[str, Any]) -> str | None:
+    """The assignment's rubric as one untrusted plain-text block, uncapped.
+
+    Only `assignment["rubric"]`, which is the empty grid: what the work is
+    judged on. The filled-in version lives on the submission as
+    `rubric_assessment` and is a score, so it belongs to `grades:read` and is
+    never read here.
+
+    **This is the one piece of third-party content that is not capped**, unlike
+    `SCOPE.md` section 6's general rule. A cut description trails off visibly;
+    a cut rubric silently loses a criterion the student is graded on, and the
+    model has no way to know it happened. Size is bounded by a rubric being a
+    fixed grid rather than free text. Markup still goes, and the boundary
+    markers still say where the teacher's words begin and end.
+    """
+    criteria = assignment.get("rubric")
+    if not criteria:
+        return None
+
+    settings = assignment.get("rubric_settings") or {}
+    title = to_plain_text(settings.get("title") or "")
+    possible = settings.get("points_possible")
+    header = f"Rubric: {title}" if title else "Rubric"
+    if possible is not None:
+        header = f"{header} ({possible} points possible)"
+
+    lines = [header]
+    for index, criterion in enumerate(criteria, start=1):
+        lines.extend(_criterion_lines(index, criterion))
+    return untrusted("\n".join(lines), "assignment rubric")
 
 
 def slim_assignment_detail(assignment: dict[str, Any]) -> dict[str, Any]:
-    """One assignment, including its description as bounded plain text.
+    """One assignment, including its description and rubric as plain text.
 
-    The description is written by a teacher, so it goes through
-    `sanitize.sanitize()`: markup out, size capped, and wrapped in delimiters
-    that name where it came from. See `SCOPE.md` section 6 — that mitigates,
-    it does not solve.
+    Both are written by a teacher, so both are stripped of markup and wrapped
+    in delimiters naming where they came from. See `SCOPE.md` section 6 — that
+    mitigates, it does not solve. The description is capped; the rubric is
+    not, for the reason in `rubric_text`.
     """
     description = assignment.get("description")
     return {
@@ -127,6 +181,7 @@ def slim_assignment_detail(assignment: dict[str, Any]) -> dict[str, Any]:
         "description": (
             sanitize(description, "assignment description") if description else None
         ),
+        "rubric": rubric_text(assignment),
     }
 
 
