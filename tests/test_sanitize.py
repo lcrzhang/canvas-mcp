@@ -6,7 +6,15 @@ size is bounded, and the content cannot forge its way out of the wrapper. None
 of them claim the content is safe.
 """
 
-from canvas_mcp.sanitize import BEGIN, END, MAX_CHARS, cap, sanitize, to_plain_text
+from canvas_mcp.sanitize import (
+    BEGIN,
+    END,
+    MAX_CHARS,
+    cap,
+    sanitize,
+    split_parts,
+    to_plain_text,
+)
 
 # A description written to be read by a model rather than by a student. Kept
 # as a test constant rather than a JSON fixture: it is the input to one
@@ -63,6 +71,55 @@ def test_long_text_says_how_much_was_cut() -> None:
 
 def test_the_default_cap_matches_the_documented_one() -> None:
     assert MAX_CHARS == 2000
+
+
+# --- parts ----------------------------------------------------------------
+
+
+def test_short_text_is_one_part() -> None:
+    assert split_parts("short") == ["short"]
+
+
+def test_empty_text_is_one_empty_part() -> None:
+    """Whether there is anything to read is the caller's question. Returning
+    no parts at all would make "no description" and "a description I have not
+    cut yet" the same answer."""
+    assert split_parts("") == [""]
+
+
+def test_no_part_is_longer_than_the_limit() -> None:
+    parts = split_parts("\n".join(f"line {n}" for n in range(500)), limit=100)
+    assert len(parts) > 1
+    assert all(len(part) <= 100 for part in parts)
+
+
+def test_the_parts_are_consecutive_and_lose_nothing() -> None:
+    """The property that makes asking for the next part mean anything: part 2
+    begins where part 1 stopped, with no overlap and no gap."""
+    text = "\n".join(f"line {n}" for n in range(500))
+    parts = split_parts(text, limit=100)
+    assert "\n".join(parts) == text
+
+
+def test_a_cut_falls_on_a_line_break_when_there_is_one() -> None:
+    """A rubric row cut down the middle is the thing this exists to avoid."""
+    rows = ["Argument: a claim, defended", "Sources: at least five", "Style: clear"]
+    parts = split_parts("\n".join(rows), limit=40)
+    for part in parts:
+        for line in part.splitlines():
+            assert line in rows
+
+
+def test_text_with_no_line_break_is_cut_at_the_limit() -> None:
+    parts = split_parts("x" * 250, limit=100)
+    assert [len(part) for part in parts] == [100, 100, 50]
+
+
+def test_a_part_carries_no_truncation_marker() -> None:
+    """`cap` says what it threw away because nothing can get it back. A part
+    is not thrown away, so saying so would be false."""
+    parts = split_parts("x" * 250, limit=100)
+    assert not any("truncated" in part for part in parts)
 
 
 # --- the boundary ---------------------------------------------------------

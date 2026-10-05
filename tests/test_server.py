@@ -326,6 +326,14 @@ def test_get_assignment_reads_one_assignment_through_the_demo_route() -> None:
     assert "written by a third party" in detail["description"]
 
 
+def test_get_assignment_turns_a_part_that_does_not_exist_into_a_refusal() -> None:
+    """Step 15: an error raised on purpose has to reach the model with its
+    text. A model asking for part 9 should be told how many there are."""
+    client = build_client(demo=True)
+    with pytest.raises(CanvasError, match="does not exist|no description"):
+        build_tools(client)["get_assignment"](course_id=1, assignment_id=1, part=9)
+
+
 def test_get_assignment_refuses_one_hidden_from_this_student() -> None:
     def handler(request: httpx2.Request) -> httpx2.Response:
         return httpx2.Response(200, json={"id": 9, "hidden_for_user": True})

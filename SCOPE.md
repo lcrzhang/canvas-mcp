@@ -82,7 +82,7 @@ duidelijkste voorbeeld van waarom sectie 5 bestaat.
 |---|---|---|---|
 | `list_courses` | `term_filter?`, `current_only?` | id, name, code, term-naam | `courses:read` |
 | `list_assignments` | `course_id`, `only_upcoming?` | id, name, due_at, points, submitted, locked | `assignments:read` |
-| `get_assignment` | `course_id`, `assignment_id` | sanitized plain text (description gecapt, rubric niet) | `assignments:read` |
+| `get_assignment` | `course_id`, `assignment_id`, `part?` | sanitized plain text (description in delen, rubric heel) | `assignments:read` |
 | `list_announcements` | `course_id`, `limit?` | titel, datum, plain-text body | `announcements:read` |
 | `list_materials` | `course_id`, `module_filter?` | module → sectie → item (naam, type) | `materials:read` |
 
@@ -198,8 +198,36 @@ geschreven en kunnen instructies bevatten die op een model gericht zijn.
 Mitigatie:
 
 1. HTML → plain text, tags gestript, links behouden als tekst
-2. harde cap (~2000 chars) met expliciete `[truncated]` marker
+2. harde cap (~2000 chars) per antwoord
 3. content gewrapt in delimiters zodat de grens zichtbaar is
+
+### Een cap die een vervolg heeft, geen doodlopend eind
+
+Besloten door Leo op 2026-10-04. Stap 2 begrenst hoeveel untrusted content in
+één antwoord past; hij mag niet bepalen hoeveel er te lezen is.
+
+`cap()` plakt er een `[truncated, N characters omitted]` aan en daarmee is het
+afgelopen: het model weet dát er iets weg is en heeft geen enkele manier om het
+te krijgen. Bij een announcement is dat verdedigbaar, bij een
+opdrachtomschrijving niet — docenten zetten de beoordelingscriteria juist
+achteraan een lange tekst, dus precies het stuk dat wegviel is het stuk waar de
+vraag over gaat.
+
+`get_assignment` neemt daarom een `part`. De description komt in
+opeenvolgende, niet-overlappende delen van maximaal `MAX_CHARS`, veld
+`description_part` zegt `"2 of 3"`, en een marker wijst naar het volgende deel.
+Grenzen vallen op een regeleinde waar er een is, zodat een regel van een
+ingetypte rubric niet over twee delen wordt gesneden.
+
+Die marker staat **buiten** de delimiters. Binnen zou hij als de tekst van de
+docent lezen, en een docent zou er een kunnen schrijven die liegt over hoeveel
+er nog komt.
+
+Een `part` die niet bestaat is een weigering met het aantal delen erin, geen
+stille terugval op deel 1 — anders leest een caller twee keer hetzelfde zonder
+het te weten.
+
+Hetzelfde patroon als `read_file` met `page_range`, en om dezelfde reden.
 
 **Eerlijk in de README:** dit lost prompt injection niet op. De echte
 verdediging is dat er geen write tools zijn — er is niets om te misbruiken.
@@ -210,11 +238,13 @@ Dat is het argument, niet de sanitizer.
 Besloten door Leo op 2026-09-03. De rubric van een opdracht gaat wél door stap
 1 en 3, maar **niet door stap 2**.
 
-Een afgekapte description loopt zichtbaar af: er staat een `[truncated]`-marker
-en het model weet dat er meer was. Een afgekapte rubric verliest stilzwijgend
-een criterium waarop de student beoordeeld wordt, en dat is niet te zien aan
-wat er overblijft — precies de faalmodus die dit project vermijdt: een
-plausibel verkeerd antwoord in plaats van een foutmelding.
+Een description die niet in één antwoord past wordt in delen gelezen: er valt
+niets weg, alleen later. Een rubric in delen knippen zou betekenen dat een
+model moet beslissen of een criterium ertoe doet voordat het het gezien heeft,
+en een afgekapte rubric verliest stilzwijgend een criterium waarop de student
+beoordeeld wordt — niet te zien aan wat er overblijft. Dat is precies de
+faalmodus die dit project vermijdt: een plausibel verkeerd antwoord in plaats
+van een foutmelding. Een rubric is klein genoeg om heel te komen.
 
 De omvang is in de praktijk begrensd doordat een rubric een vast raster is en
 geen vrije tekst. Dat is een aanname, geen garantie: een uitzonderlijk grote
