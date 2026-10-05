@@ -4,6 +4,9 @@ The only tool that transfers a file rather than a JSON document, so the limits
 are the interesting part.
 """
 
+import io
+import zipfile
+
 import httpx2
 import pytest
 
@@ -196,10 +199,128 @@ def test_is_text_prefers_the_type_and_falls_back_to_the_name() -> None:
     assert not is_text("application/octet-stream", "archive.zip")
 
 
-def test_a_file_that_is_not_a_pdf_is_named_rather_than_failing() -> None:
-    other = {**READABLE, "content-type": "application/zip", "display_name": "code.zip"}
+# --- zips -----------------------------------------------------------------
+
+ZIP = {
+    "id": 9,
+    "display_name": "HW Week 5 - LaTeX template.zip",
+    "content-type": "application/zip",
+    "url": "https://canvas.example.edu/files/9/download?verifier=FIXTUREx",
+}
+
+
+def zipped(entries: dict[str, bytes | str]) -> bytes:
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        for name, body in entries.items():
+            archive.writestr(name, body)
+    return buffer.getvalue()
+
+
+TEMPLATE_ZIP = zipped(
+    {
+        "hw5/template.tex": TEMPLATE,
+        "hw5/refs.bib": "@book{x, title={Y}}",
+        "hw5/logo.png": b"\x89PNG",
+    }
+)
+
+
+def test_a_zip_without_a_member_says_what_it_holds() -> None:
+    """A model cannot guess `hw5/template.tex` from the outside. The listing is
+    what replaces guessing."""
+    with serving(ZIP, body=TEMPLATE_ZIP) as client:
+        result = make_read_file(client)(course_id=1, file_id=9)
+
+    assert result["file"] == "HW Week 5 - LaTeX template.zip"
+    assert result["members"] == "3 of 3"
+    names = [m["name"] for m in result["contains"]]
+    assert names == ["hw5/template.tex", "hw5/refs.bib", "hw5/logo.png"]
+    assert [m["readable"] for m in result["contains"]] == [True, True, False]
+    assert result["contains"][0]["size"] == len(TEMPLATE)
+
+
+def test_a_named_member_comes_back_as_text() -> None:
+    with serving(ZIP, body=TEMPLATE_ZIP) as client:
+        result = make_read_file(client)(
+            course_id=1, file_id=9, member="hw5/template.tex"
+        )
+
+    assert result["member"] == "hw5/template.tex"
+    assert result["part"] == "1 of 1"
+    assert "\\documentclass{article}" in result["text"]
+    assert "% answer 1a here" in result["text"]
+    assert result["text"].startswith(BEGIN)
+
+
+def test_the_attribution_names_the_archive_and_the_member() -> None:
+    """Which file inside which archive — a model quoting this should be able to
+    say where it came from."""
+    with serving(ZIP, body=TEMPLATE_ZIP) as client:
+        result = make_read_file(client)(
+            course_id=1, file_id=9, member="hw5/template.tex"
+        )
+    assert "HW Week 5 - LaTeX template.zip:hw5/template.tex" in result["text"]
+
+
+def test_a_member_this_server_cannot_read_is_refused_by_name() -> None:
+    with serving(ZIP, body=TEMPLATE_ZIP) as client:
+        with pytest.raises(CanvasError, match="only text out of an archive"):
+            make_read_file(client)(course_id=1, file_id=9, member="hw5/logo.png")
+
+
+def test_a_nested_zip_is_listed_and_not_opened() -> None:
+    """One archive is a convenience; a chain of them is a way to spend
+    memory."""
+    nested = zipped({"inner.zip": TEMPLATE_ZIP})
+    with serving(ZIP, body=nested) as client:
+        listing = make_read_file(client)(course_id=1, file_id=9)
+        assert listing["contains"] == [
+            {"name": "inner.zip", "size": len(TEMPLATE_ZIP), "readable": False}
+        ]
+        with pytest.raises(CanvasError, match="only text out of an archive"):
+            make_read_file(client)(course_id=1, file_id=9, member="inner.zip")
+
+
+def test_a_member_that_is_not_there_is_refused_with_a_way_forward() -> None:
+    with serving(ZIP, body=TEMPLATE_ZIP) as client:
+        with pytest.raises(CanvasError, match="without a member to see"):
+            make_read_file(client)(course_id=1, file_id=9, member="hw5/nope.tex")
+
+
+def test_a_zip_canvas_refused_to_type_is_still_looked_into() -> None:
+    vague = {**ZIP, "content-type": "application/octet-stream"}
+    with serving(vague, body=TEMPLATE_ZIP) as client:
+        assert make_read_file(client)(course_id=1, file_id=9)["members"] == "3 of 3"
+
+
+def test_something_that_is_not_a_zip_is_refused_in_words() -> None:
+    with serving(ZIP, body=b"not a zip at all") as client:
+        with pytest.raises(CanvasError, match="not a readable zip"):
+            make_read_file(client)(course_id=1, file_id=9)
+
+
+def test_the_download_link_never_reaches_a_zip_answer() -> None:
+    with serving(ZIP, body=TEMPLATE_ZIP) as client:
+        listing = make_read_file(client)(course_id=1, file_id=9)
+        content = make_read_file(client)(
+            course_id=1, file_id=9, member="hw5/template.tex"
+        )
+    assert "verifier" not in str(listing)
+    assert "verifier" not in str(content)
+
+
+def test_a_file_that_cannot_be_read_is_named_rather_than_failing() -> None:
+    """The example was `code.zip` until this server learned to look inside one.
+    A Word document is the thing it still only has a name for."""
+    other = {
+        **READABLE,
+        "content-type": "application/vnd.openxmlformats-officedocument"
+        ".wordprocessingml.document",
+        "display_name": "notes.docx",
+    }
     with serving(other) as client:
-        with pytest.raises(CanvasError, match="code.zip is application/zip"):
+        with pytest.raises(CanvasError, match="notes.docx is application/vnd"):
             make_read_file(client)(course_id=1, file_id=7)
 
 

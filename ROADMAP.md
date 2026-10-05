@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 23 — a text file is text already**
+Status: **step 24 — look inside a zip**
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -1171,7 +1171,7 @@ regression test is built from the shape seen live rather than from a capture.
 A capture would need `tools/make_fixture.py` against this assignment, and when
 one runs is Leo's call.
 
-### [~] 23. A text file is text already
+### [x] 23. A text file is text already
 
 **Delivers:** `read_file` returns `.tex`, `.bib`, `.md` and `.csv` verbatim,
 so a LaTeX template can be reasoned about instead of described.
@@ -1220,3 +1220,53 @@ carries one.
 
 **Left out:** no fixture carries a text file, so the tests build one through
 the mock transport. Demo mode still serves only a PDF.
+
+### [~] 24. Look inside a zip
+
+**Delivers:** the LaTeX template attached to a homework assignment can be read
+without downloading, unzipping and pasting it.
+
+**Files:** `src/canvas_mcp/archive.py`, `src/canvas_mcp/tools/files.py`,
+`tests/test_archive.py`, `tests/test_read_file.py`, `SCOPE.md`, `README.md`
+
+**Branch:** `feat/look-inside-a-zip`
+
+**Notes:** the other half of step 23. Together they answer the request this
+started from on 2026-10-05.
+
+**A listing, then a member.** `read_file` on a zip with no `member` returns
+what the archive holds; with one it returns that file. The alternative was a
+separate tool, which would have meant a second scope entry for the same
+capability over the same route. Two steps because a model cannot guess
+`hw5/template.tex` from the outside, which is exactly the shape
+`list_materials` → `read_file` already teaches.
+
+**`archive.py` is the only module that knows what a zip is**, the way
+`extract.py` is for PDFs. The bounds live with the format rather than with the
+tool.
+
+**The bounds do not trust the archive.** A zip declares each member's
+uncompressed size in a header written by whoever built it, so the limit is
+applied to what comes out of the decompressor — `read(MAX_MEMBER_BYTES + 1)`
+and refuse what does not stop. There is a test with a real deflate bomb and a
+test that rewriting `file_size` changes nothing, because that is the claim.
+
+**Nothing recurses and nothing is written.** A zip inside a zip is listed and
+refused, with the reason. No member reaches the disk, which is what makes
+`../../etc/passwd` a string in a listing rather than a vulnerability; there is
+a test saying so, so that a later change that does write somewhere fails it.
+
+**Measured, not assumed:** Canvas serves this archive as
+`application/x-zip-compressed`, not `application/zip`. Both are in the list,
+and a vague type still loses to the name.
+
+**A second test changed its example.** `code.zip` was the file that could not
+be read; it can now, so the case moved to a `.docx`. The same thing happened to
+`SETUP.txt` in step 23 — two steps running, the example of "unreadable" has had
+to retreat, which is the shape of this pair of steps.
+
+**Left out:** a PDF inside a zip. The extractor takes bytes, so it would work,
+but `page_range` and `member` and `part` interacting is a bigger surface than
+this step should buy, and no deck has been found inside an archive yet. A zip
+is also not listed by `list_materials` as anything special — it is a File like
+any other, and its id arrives the same way.
