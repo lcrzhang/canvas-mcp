@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 20 — the rubric an assignment is marked against**
+Status: **step 21 — a long description can be read to the end**
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -1024,7 +1024,7 @@ not expose. It looked like a bug, which is reason enough to write it down. A
 
 ## Found after v0.2, 2026-09-03
 
-### [~] 20. The rubric an assignment is marked against
+### [x] 20. The rubric an assignment is marked against
 
 **Delivers:** `get_assignment` returns the rubric, so "what is this actually
 graded on" can be answered when the criteria live on the assignment rather than
@@ -1063,3 +1063,55 @@ are for.
 `use_rubric_for_grading` are not reported. They say how the rubric is applied
 to a score, not what the work has to do, and the first two would need a
 sentence each to be readable rather than cryptic.
+
+### [~] 21. A long description can be read to the end
+
+**Delivers:** the marking criteria a teacher typed at the bottom of a long
+assignment description are reachable, instead of falling inside the part the
+cap threw away.
+
+**Files:** `src/canvas_mcp/sanitize.py`, `src/canvas_mcp/filters.py`,
+`src/canvas_mcp/tools/assignments.py`, `tests/`, `SCOPE.md`
+
+**Branch:** `feat/read-a-long-description-in-parts`
+
+**Notes:** found the same way step 20 was — a rubric that was not a file. Step
+20 covered the one Canvas stores as a grid; this covers the one a teacher
+pasted into the text. `[truncated, N characters omitted]` told a model that
+something was missing and gave it nothing to do about it, and the missing part
+is systematically the end, which is where criteria live.
+
+**The cap stays; it gains a continuation.** Four options were on the table.
+Raising `MAX_CHARS` is a guess until it is measured against live data and a
+long enough description still falls off the end. Uncapping the description the
+way the rubric is uncapped removes the only bound on untrusted content, and a
+description can carry an entire embedded handbook, which a rubric cannot.
+Detecting a rubric-shaped tail and keeping it was rejected for the reason step
+16 rejected the beamer footer: a regex against arbitrary teacher HTML, where a
+miss is silent. Reading in parts is the pattern `read_file` already uses for
+`page_range`, so it is not a new concept to explain.
+
+**Boundaries fall on a line break.** A rubric in a description is rows of text,
+and a row cut in half across two parts is the thing this step exists to
+prevent. With no line break inside the window the cut falls at the limit.
+
+**The part marker sits outside the untrusted delimiters.** It is the server
+speaking. Inside, it would read as the teacher's words, and a teacher could
+write one claiming there is nothing more to read.
+
+**An out-of-range part is refused with the count**, not clamped to part 1. A
+caller silently handed text it has already read cannot tell.
+
+**The rubric comes back with every part.** Making a field's presence depend on
+`part` is the coupling that produces a confident wrong answer; it costs a
+repeat of a small block.
+
+**Found on the way:** a description of `<p></p>` used to come back as a pair of
+delimiters around nothing, which claims there is something to read. It is now
+null, like a missing one. Same principle as the existing test for a missing
+description, so it was fixed rather than noted.
+
+**Left out:** `list_announcements` still uses `cap()`. An announcement is read
+in one go and there is no question whose answer hides at the end of one, so the
+marker remains honest there. `read_page` stays in the backlog — Leo's call on
+2026-10-04, after step 20 made the Page case visible.
