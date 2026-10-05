@@ -216,6 +216,19 @@ parts, the way a long assignment description does. Canvas types a file by its
 extension and gives up often, so a `.tex` it calls `application/octet-stream`
 is still read: the name may overrule a type that says only "bytes".
 
+**A zip is looked into rather than read.** Without `member` it returns what
+the archive holds — every entry with its name, its size and whether this server
+can read it — and with `member` set to one of those names it returns that file.
+A model cannot guess `hw5/template.tex` from the outside, which is what the
+listing replaces.
+
+The bounds there do not trust the archive. A zip states the uncompressed size
+of each member in its own header and whoever built it wrote that number, so the
+limit applies to what actually comes out of the decompressor. Two hundred
+members are listed, and a zip inside a zip is named rather than opened. Nothing
+is written to disk, which is what makes a member called `../../etc/passwd` a
+string in a listing and nothing more.
+
 Otherwise only PDFs, and only ones with a text layer. A scan comes back as a
 refusal saying it is probably an image and that this server does no OCR, rather
 than as blank pages — silence would read as "that page is empty" about a page

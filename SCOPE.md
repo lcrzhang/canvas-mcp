@@ -101,7 +101,7 @@ en de output bevat ook pages en assignments, niet alleen bestanden.
 
 | Tool | Input | Output | Scope |
 |---|---|---|---|
-| `read_file` | `course_id`, `file_id`, `page_range?`, `part?` | pdf: bestandsnaam, paginabereik, aantal slides, tekst — tekstbestand: naam, deel, letterlijke inhoud | `files:content` |
+| `read_file` | `course_id`, `file_id`, `page_range?`, `part?`, `member?` | pdf: paginabereik, aantal slides, tekst — tekstbestand: deel, letterlijke inhoud — zip: inhoudsopgave, of één lid als tekst | `files:content` |
 
 **Slides tellen niet als pagina's.** Empirisch vastgesteld op 2026-09-01 op
 `lec01_intro.pdf`: 94 fysieke pagina's, ongeveer 30 slides. LaTeX beamer
@@ -134,6 +134,23 @@ komt net zo goed terug als `application/octet-stream` als als `text/x-tex`. De
 naam mag een type dat alleen "bytes" zegt daarom overrulen — anders faalt juist
 het normale geval. Dat is ook het enige signaal dat er zal zijn voor een
 bestand ín een zip, dat een naam heeft en geen type.
+
+**Een zip wordt ingekeken, niet gelezen.** Zonder `member` komt de
+inhoudsopgave terug: elk lid met naam, grootte en of deze server het kan lezen.
+Mét `member` komt dat ene bestand als tekst. Twee stappen, hetzelfde patroon
+als `list_materials` → `read_file`, want een model kan `hw5/template.tex` niet
+raden van buitenaf.
+
+De grenzen vertrouwen het archief niet. Een zip schrijft zelf op hoe groot een
+lid uitgepakt is, en die header komt van wie het archief maakte — de limiet
+geldt daarom voor wat er feitelijk uit de decompressor komt. Verder een maximum
+van 200 leden en geen recursie: een zip in een zip wordt genoemd, niet geopend.
+Niets raakt de schijf, dus een lid dat `../../etc/passwd` heet is een string in
+een lijst en verder niets.
+
+Gemeten op 2026-10-05: Canvas serveert `HW Week 5 - LaTeX template.zip` als
+`application/x-zip-compressed`, niet als `application/zip`. Beide staan in de
+lijst, en de naam mag een vaag type nog steeds overrulen.
 
 **Een bestand aan een opdracht is bereikbaar.** Sectie 2 zei dat modules de
 enige route naar een file id zijn. Dat klopt niet meer: een docent die een
