@@ -320,6 +320,112 @@ def test_an_injection_in_a_description_stays_inside_the_boundary() -> None:
     assert description.rstrip().endswith(END)
 
 
+# --- a long description, read in parts -------------------------------------
+
+# Past MAX_CHARS on purpose: the point of these tests is what happens at the
+# boundary, and a description short enough to fit never reaches it.
+LONG_DESCRIPTION = "".join(
+    f"<p>Paragraph {n}: more about sorting than anyone needs.</p>" for n in range(120)
+)
+
+
+def test_a_short_description_is_one_part() -> None:
+    detailed = slim_assignment_detail({**SAFE_ASSIGNMENT, "description": "<p>hi</p>"})
+    assert detailed["description_part"] == "1 of 1"
+    assert "part 1 of 1" not in detailed["description"]
+
+
+def test_a_long_description_says_where_the_reader_is_and_how_to_go_on() -> None:
+    detailed = slim_assignment_detail(
+        {**SAFE_ASSIGNMENT, "description": LONG_DESCRIPTION}
+    )
+    total = int(detailed["description_part"].split(" of ")[1])
+    assert total > 1
+    assert detailed["description_part"] == f"1 of {total}"
+    assert f"[part 1 of {total}; ask for part 2 to read on]" in detailed["description"]
+
+
+def test_the_marker_sits_outside_the_untrusted_block() -> None:
+    """It is the server talking, not the teacher. Inside the delimiters a
+    teacher could write one that lies about how much is left."""
+    description = slim_assignment_detail(
+        {**SAFE_ASSIGNMENT, "description": LONG_DESCRIPTION}
+    )["description"]
+    assert description.index(END) < description.index("[part 1 of")
+
+
+def test_the_next_part_continues_where_the_last_one_stopped() -> None:
+    assignment = {**SAFE_ASSIGNMENT, "description": LONG_DESCRIPTION}
+    first = slim_assignment_detail(assignment, part=1)
+    total = int(first["description_part"].split(" of ")[1])
+    read = []
+    for part in range(1, total + 1):
+        detailed = slim_assignment_detail(assignment, part=part)
+        assert detailed["description_part"] == f"{part} of {total}"
+        body = detailed["description"].split(END)[0].split("---\n", 1)[1]
+        read.append(body.strip())
+    assert "Paragraph 0:" in read[0]
+    assert "Paragraph 119:" in read[-1]
+    # Nothing was read twice: each paragraph appears in exactly one part.
+    joined = "\n".join(read)
+    assert joined.count("Paragraph 119:") == 1
+
+
+def test_the_last_part_says_it_is_the_last() -> None:
+    assignment = {**SAFE_ASSIGNMENT, "description": LONG_DESCRIPTION}
+    total = int(slim_assignment_detail(assignment)["description_part"].split(" of ")[1])
+    last = slim_assignment_detail(assignment, part=total)["description"]
+    assert f"[part {total} of {total}, the last one]" in last
+    assert "ask for part" not in last
+
+
+def test_a_rubric_typed_into_the_description_survives_whole() -> None:
+    """The case this step exists for: a teacher who put the marking criteria at
+    the end of a long description rather than in a Canvas rubric. Under the old
+    cap that text was the part that went."""
+    rows = (
+        "<p>Argument: a claim, defended — 10 points</p>"
+        "<p>Sources: at least five, cited — 5 points</p>"
+        "<p>Style: clear and under 500 words — 5 points</p>"
+    )
+    assignment = {**SAFE_ASSIGNMENT, "description": LONG_DESCRIPTION + rows}
+    total = int(slim_assignment_detail(assignment)["description_part"].split(" of ")[1])
+    everything = "\n".join(
+        slim_assignment_detail(assignment, part=part)["description"]
+        for part in range(1, total + 1)
+    )
+    for row in (
+        "Argument: a claim, defended — 10 points",
+        "Sources: at least five, cited — 5 points",
+        "Style: clear and under 500 words — 5 points",
+    ):
+        assert row in everything
+
+
+def test_a_part_that_does_not_exist_is_refused_with_the_count() -> None:
+    """Clamping to part 1 would hand back text the caller has already read
+    without saying so, which is the confident wrong answer this avoids."""
+    assignment = {**SAFE_ASSIGNMENT, "description": "<p>hi</p>"}
+    with pytest.raises(ValueError, match="1 part"):
+        slim_assignment_detail(assignment, part=4)
+    with pytest.raises(ValueError, match="between 1 and 1"):
+        slim_assignment_detail(assignment, part=0)
+
+
+def test_asking_for_a_part_of_an_assignment_with_no_description_is_refused() -> None:
+    with pytest.raises(ValueError, match="no description"):
+        slim_assignment_detail(SAFE_ASSIGNMENT, part=2)
+    assert slim_assignment_detail(SAFE_ASSIGNMENT)["description_part"] is None
+
+
+def test_markup_with_no_words_in_it_is_no_description() -> None:
+    """`<p></p>` is a description Canvas reports and a reader cannot use. A
+    pair of delimiters around nothing claims there is something to read."""
+    detailed = slim_assignment_detail({**SAFE_ASSIGNMENT, "description": "<p></p>"})
+    assert detailed["description"] is None
+    assert detailed["description_part"] is None
+
+
 # --- the rubric ------------------------------------------------------------
 
 SAFE_RUBRIC = {
@@ -365,6 +471,16 @@ def test_every_criterion_and_rating_survives() -> None:
         "Claim without support.",
     ):
         assert text in rubric
+
+
+def test_the_rubric_field_comes_back_with_every_part() -> None:
+    """A model that asked for part 2 should not lose the criteria. The rubric
+    is a different field with a different meaning, not part of the text."""
+    assignment = {**SAFE_ASSIGNMENT, "description": LONG_DESCRIPTION, **SAFE_RUBRIC}
+    first = slim_assignment_detail(assignment, part=1)
+    second = slim_assignment_detail(assignment, part=2)
+    assert first["rubric"] == second["rubric"]
+    assert "Argument" in second["rubric"]
 
 
 def test_a_long_rubric_is_not_cut() -> None:
