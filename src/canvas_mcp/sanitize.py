@@ -16,9 +16,14 @@ Three jobs, in order:
 2. The result is capped, with an explicit marker saying how much was cut.
 3. It is wrapped in delimiters, so where the untrusted part begins and ends is
    visible rather than inferred.
+
+Links keep their target, because a description reading "see the link" is
+useless without it — but only the part of it that is not a credential. See
+`without_query`.
 """
 
 from html.parser import HTMLParser
+from urllib.parse import urlsplit, urlunsplit
 
 MAX_CHARS = 2000
 
@@ -31,6 +36,32 @@ _DROPPED = frozenset({"script", "style", "head", "title"})
 _BLOCKS = frozenset(
     {"p", "div", "br", "li", "tr", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote"}
 )
+
+
+def without_query(url: str) -> str:
+    """A URL with its query and fragment removed.
+
+    A Canvas link to a file carries `?verifier=...`, which is an
+    unauthenticated download link: whoever holds it can fetch the file without
+    a token. `SCOPE.md` section 5 keeps those out of tool output, and
+    `client.py` already strips them from error messages and `server.py` from
+    the HTTP log. A link inside a teacher's description is the same credential
+    arriving by a different door.
+
+    The whole query goes rather than the parameters known to be credentials.
+    A denylist of parameter names has to be complete to be correct, and this
+    one would be guessing at what Canvas and every site a teacher links to put
+    in a query string. What is left — scheme, host and path — is what says
+    which file a link points at, and for a Canvas file that path still carries
+    the id `read_file` needs.
+
+    The cost is real and is not hidden: an external link whose query is its
+    content, `watch?v=...` being the obvious one, comes out pointing at the
+    wrong place. `ROADMAP.md` step 22 records stripping only on the Canvas host
+    as the alternative if that proves to matter.
+    """
+    parts = urlsplit(url)
+    return urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
 
 
 class _TextExtractor(HTMLParser):
@@ -59,8 +90,9 @@ class _TextExtractor(HTMLParser):
             self.parts.append("\n")
         elif tag == "a" and self._href:
             # The URL is kept as text: a description reading "see the link"
-            # tells a model nothing without it.
-            self.parts.append(f" ({self._href})")
+            # tells a model nothing without it. Only the part that is not a
+            # credential, though — see `without_query`.
+            self.parts.append(f" ({without_query(self._href)})")
             self._href = None
 
     def handle_data(self, data: str) -> None:

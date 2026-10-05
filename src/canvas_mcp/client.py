@@ -7,6 +7,8 @@ from typing import Any
 
 import httpx2
 
+from canvas_mcp.sanitize import without_query
+
 DEFAULT_BASE_URL = "https://canvas.uva.nl"
 DEFAULT_TIMEOUT = 10.0
 API_PREFIX = "/api/v1"
@@ -54,8 +56,12 @@ def error_message(status_code: int, path: str) -> str:
 
 
 def _path_of(url: str) -> str:
-    """A URL with its query removed, safe to put in a message."""
-    return str(httpx2.URL(url).copy_with(query=None, fragment=None))
+    """A URL with its query removed, safe to put in a message.
+
+    One definition, in `sanitize`, so the rule cannot drift between the two
+    doors a verifier could leave by: an error message and a link in text.
+    """
+    return without_query(url)
 
 
 def _too_large(size: int, limit: int) -> str:
