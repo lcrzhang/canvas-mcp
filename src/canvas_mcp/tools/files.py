@@ -8,6 +8,7 @@ after `list_materials`.
 from collections.abc import Callable
 from typing import Any
 
+from canvas_mcp.archive import ArchiveError, members, read_member
 from canvas_mcp.client import CanvasClient, CanvasError
 from canvas_mcp.extract import (
     MAX_SLIDES,
@@ -57,6 +58,22 @@ TEXT_SUFFIXES = (
 
 # A type that means "bytes" and nothing more, so the name may overrule it.
 VAGUE_TYPES = ("", "application/octet-stream", "binary/octet-stream")
+
+# A zip is not read; it is looked into. Canvas is as vague about these as about
+# everything else, so the name decides here too.
+ARCHIVE_TYPES = (
+    "application/zip",
+    "application/x-zip-compressed",
+    "application/zip-compressed",
+)
+
+
+def is_archive(content_type: str, name: str) -> bool:
+    """Whether to look inside this rather than read it."""
+    if content_type in ARCHIVE_TYPES:
+        return True
+    return content_type in VAGUE_TYPES and name.lower().endswith(".zip")
+
 
 # Bigger than MAX_CHARS, which bounds a description sitting in a JSON answer
 # beside other fields. This bounds a whole answer, and the PDF path next to it
@@ -111,6 +128,52 @@ def _as_text(name: str, text: str, part: int) -> dict[str, Any]:
     return {"file": name, "part": f"{part} of {len(parts)}", "text": body}
 
 
+def _listing(name: str, data: bytes) -> dict[str, Any]:
+    """What an archive holds, and which of it can be read.
+
+    Returned instead of content when no member was named: a model cannot guess
+    `tpl/hw5.tex` from the outside, and guessing is what a listing replaces.
+    """
+    listed, total = members(data)
+    return {
+        "file": name,
+        "members": f"{len(listed)} of {total}",
+        "contains": [
+            {
+                "name": member.name,
+                "size": member.size,
+                # Whether read_file can return it. A .png or a nested .zip is
+                # named rather than hidden: knowing it is in there is part of
+                # knowing what the archive is.
+                "readable": is_text("", member.name),
+            }
+            for member in listed
+        ],
+    }
+
+
+def _member_text(name: str, data: bytes, member: str, part: int) -> dict[str, Any]:
+    """One member of an archive, as text.
+
+    A member has a name and no content-type, which is why `is_text` was built
+    to let a name decide — see step 23 in `ROADMAP.md`.
+    """
+    if not is_text("", member):
+        raise CanvasError(
+            f"{member} is in {name}, but this server reads only text out of an "
+            "archive. Read the archive without a member to see what else it "
+            "holds."
+        )
+    try:
+        body = read_member(data, member)
+    except ArchiveError as exc:
+        # Already phrased for a reader, the way an ExtractionError is.
+        raise CanvasError(str(exc)) from exc
+    answer = _as_text(f"{name}:{member}", decode(body), part)
+    answer["member"] = member
+    return answer
+
+
 def make_read_file(client: CanvasClient) -> Callable[..., dict[str, Any]]:
     """Build the tool, with the client closed over rather than passed in."""
 
@@ -119,6 +182,7 @@ def make_read_file(client: CanvasClient) -> Callable[..., dict[str, Any]]:
         file_id: int,
         page_range: str | None = None,
         part: int = 1,
+        member: str | None = None,
     ) -> dict[str, Any]:
         """Read the text of a PDF published in a course.
 
@@ -151,6 +215,12 @@ def make_read_file(client: CanvasClient) -> Callable[..., dict[str, Any]]:
         parts, with part saying which of how many, the way get_assignment
         handles a long description. Pass part=2 for the next one.
 
+        A zip is looked into rather than read. Called without member it
+        returns what the archive holds — every entry with its name, its size
+        and whether this server can read it. Call it again with member set to
+        one of those names to get that file. Names are listed with their
+        folders, so pass the name exactly as it came back.
+
         A file id can come from list_materials, or from a link in an
         assignment description, where an attached file leaves its id behind.
 
@@ -171,12 +241,13 @@ def make_read_file(client: CanvasClient) -> Callable[..., dict[str, Any]]:
         ).lower()
         name = meta.get("display_name") or ""
         readable_text = is_text(content_type, name)
-        if content_type not in READABLE_TYPES and not readable_text:
+        archive = is_archive(content_type, name)
+        if content_type not in READABLE_TYPES and not readable_text and not archive:
             raise CanvasError(
                 f"{name or 'That file'} is "
                 f"{content_type or 'of no stated type'}, and this server reads "
-                "PDFs and text files. Open it in Canvas, or use list_materials "
-                "to find one it can read in the same module."
+                "PDFs, text files and zips. Open it in Canvas, or use "
+                "list_materials to find one it can read in the same module."
             )
 
         url = meta.get("url")
@@ -187,6 +258,14 @@ def make_read_file(client: CanvasClient) -> Callable[..., dict[str, Any]]:
             )
 
         data = client.get_bytes(url, MAX_FILE_BYTES)
+
+        if archive:
+            if member is None:
+                try:
+                    return _listing(name, data)
+                except ArchiveError as exc:
+                    raise CanvasError(str(exc)) from exc
+            return _member_text(name, data, member, int(part))
 
         if readable_text:
             return _as_text(name, decode(data), int(part))
