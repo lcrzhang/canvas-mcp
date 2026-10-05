@@ -188,9 +188,11 @@ author's name, pronouns and avatar, and a student's own submitted work.
 
 ## Reading a file
 
-`read_file` takes the id `list_materials` returns and reads the text of a PDF,
-one passage at a time: `page_range` is written the way it is printed — `"12"`
-or `"10-15"`, counting from 1.
+`read_file` takes a file id and reads the text of a PDF, one passage at a
+time: `page_range` is written the way it is printed — `"12"` or `"10-15"`,
+counting from 1. The id comes from `list_materials`, or from a link in an
+assignment description, where a file attached to the assignment leaves its id
+behind.
 
 **A lecture deck has far more pages than slides.** LaTeX writes one page per
 build-up step, so a 30-slide lecture is often 90 pages: one real deck read
@@ -207,10 +209,17 @@ in the footer: a regex against arbitrary LaTeX that misfires would merge
 unrelated slides, silently. A page with no text is never folded into its
 neighbour, because it is a page that could not be read rather than a repeat.
 
-Only PDFs, and only ones with a text layer. A scan comes back as a refusal
-saying it is probably an image and that this server does no OCR, rather than as
-blank pages — silence would read as "that page is empty" about a page full of
-handwriting. A file over 25 MB is refused before it is transferred.
+**A text file comes back verbatim** — `.tex`, `.bib`, `.md`, `.csv` — with no
+markup stripping and no reflowing, because source is what the question is
+usually about. `page_range` does not apply to one; a long file arrives in
+parts, the way a long assignment description does. Canvas types a file by its
+extension and gives up often, so a `.tex` it calls `application/octet-stream`
+is still read: the name may overrule a type that says only "bytes".
+
+Otherwise only PDFs, and only ones with a text layer. A scan comes back as a
+refusal saying it is probably an image and that this server does no OCR, rather
+than as blank pages — silence would read as "that page is empty" about a page
+full of handwriting. A file over 25 MB is refused before it is transferred.
 
 Everything that knows what a PDF is lives in two functions, so the backend can
 be replaced without touching a tool. It is `pypdf`, and that was measured

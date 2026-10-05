@@ -13,7 +13,13 @@ from canvas_mcp.fixtures import build_pdf, demo_pdf
 from canvas_mcp.sanitize import BEGIN, END
 from canvas_mcp.server import build_client
 from canvas_mcp.tools import build_tools
-from canvas_mcp.tools.files import MAX_FILE_BYTES, make_read_file
+from canvas_mcp.tools.files import (
+    MAX_FILE_BYTES,
+    MAX_TEXT_CHARS,
+    decode,
+    is_text,
+    make_read_file,
+)
 
 PDF = build_pdf("First page text", "Second page text")
 
@@ -83,11 +89,111 @@ def test_a_file_the_student_may_not_have_is_refused(flag: str) -> None:
 
 def test_a_refusal_says_what_to_do_instead() -> None:
     """The page-limit error names the limit and a way forward; this one used to
-    stop at the diagnosis. Reported from a live session."""
-    other = {**READABLE, "content-type": "text/plain", "display_name": "SETUP.txt"}
+    stop at the diagnosis. Reported from a live session.
+
+    The example used to be `SETUP.txt`, which this server now reads. An image
+    is the thing it still cannot do anything with."""
+    other = {**READABLE, "content-type": "image/png", "display_name": "plot.png"}
     with serving(other) as client:
         with pytest.raises(CanvasError, match="Open it in Canvas"):
             make_read_file(client)(course_id=1, file_id=7)
+
+
+# --- text files -----------------------------------------------------------
+
+# A LaTeX template is the case this exists for: source a model is asked to
+# reason about and write alongside, where reformatting would lose the point.
+TEMPLATE = (
+    "\\documentclass{article}\n"
+    "\\usepackage{amsmath}\n"
+    "\\begin{document}\n"
+    "\\section*{Homework week 5}\n"
+    "% answer 1a here\n"
+    "\\end{document}\n"
+)
+
+TEX = {
+    "id": 8,
+    "display_name": "template.tex",
+    "content-type": "text/x-tex",
+    "url": "https://canvas.example.edu/files/8/download?verifier=FIXTUREx",
+}
+
+
+def test_a_tex_file_comes_back_verbatim() -> None:
+    """No markup stripping and no reflowing: the backslashes and the comment
+    are the thing being asked about."""
+    with serving(TEX, body=TEMPLATE.encode()) as client:
+        result = make_read_file(client)(course_id=1, file_id=8)
+
+    assert result["file"] == "template.tex"
+    assert result["part"] == "1 of 1"
+    assert "\\documentclass{article}" in result["text"]
+    assert "% answer 1a here" in result["text"]
+    assert result["text"].startswith(BEGIN)
+    assert result["text"].rstrip().endswith(END)
+
+
+def test_a_tex_file_canvas_refused_to_type_is_still_read() -> None:
+    """Canvas types by extension and gives up often. This is the common case,
+    not the exotic one."""
+    vague = {**TEX, "content-type": "application/octet-stream"}
+    with serving(vague, body=TEMPLATE.encode()) as client:
+        result = make_read_file(client)(course_id=1, file_id=8)
+    assert "\\documentclass{article}" in result["text"]
+
+
+def test_an_untyped_binary_with_no_known_suffix_is_still_refused() -> None:
+    """The name may overrule a vague type, not an absent reason to trust it."""
+    blob = {**TEX, "content-type": "application/octet-stream", "display_name": "a.bin"}
+    with serving(blob, body=b"\x00\x01") as client:
+        with pytest.raises(CanvasError, match="Open it in Canvas"):
+            make_read_file(client)(course_id=1, file_id=8)
+
+
+def test_a_long_text_file_arrives_in_parts() -> None:
+    body = ("% a line of a very long preamble\n" * 2000).encode()
+    with serving(TEX, body=body) as client:
+        first = make_read_file(client)(course_id=1, file_id=8)
+        total = int(first["part"].split(" of ")[1])
+        last = make_read_file(client)(course_id=1, file_id=8, part=total)
+
+    assert total > 1
+    assert "ask for part 2" in first["text"]
+    assert "the last one" in last["text"]
+    assert len(first["text"]) < MAX_TEXT_CHARS + 500
+
+
+def test_a_part_of_a_text_file_that_does_not_exist_is_refused() -> None:
+    with serving(TEX, body=TEMPLATE.encode()) as client:
+        with pytest.raises(CanvasError, match="does not exist"):
+            make_read_file(client)(course_id=1, file_id=8, part=4)
+
+
+def test_the_download_link_never_reaches_a_text_answer() -> None:
+    with serving(TEX, body=TEMPLATE.encode()) as client:
+        result = make_read_file(client)(course_id=1, file_id=8)
+    assert "verifier" not in str(result)
+
+
+def test_text_that_is_not_utf8_is_read_rather_than_refused() -> None:
+    """Canvas says nothing reliable about encoding, and latin-1 maps every
+    byte, so a file written in one does not become an error."""
+    assert decode("café".encode("latin-1")) == "caf\xe9"
+    assert decode("café".encode()) == "café"
+
+
+def test_a_byte_order_mark_does_not_become_a_character() -> None:
+    assert decode("\ufeff\\documentclass".encode()) == "\\documentclass"
+
+
+def test_is_text_prefers_the_type_and_falls_back_to_the_name() -> None:
+    assert is_text("text/x-tex", "anything")
+    assert is_text("text/plain", "notes")
+    assert is_text("application/octet-stream", "template.tex")
+    assert not is_text("application/pdf", "lecture.pdf")
+    assert not is_text("image/png", "plot.png")
+    assert not is_text("application/octet-stream", "archive.zip")
 
 
 def test_a_file_that_is_not_a_pdf_is_named_rather_than_failing() -> None:
