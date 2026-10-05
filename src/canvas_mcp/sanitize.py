@@ -87,6 +87,39 @@ def cap(text: str, limit: int = MAX_CHARS) -> str:
     return f"{text[:limit].rstrip()}\n[truncated, {omitted} characters omitted]"
 
 
+def split_parts(text: str, limit: int = MAX_CHARS) -> list[str]:
+    """Cut text into consecutive parts of at most `limit` characters each.
+
+    `cap()` is for content that is read in one go: it says how much it threw
+    away and there is no way to ask for the rest. This is for content a caller
+    can come back for — the parts are consecutive and do not overlap, so part 2
+    begins exactly where part 1 stopped, which is what makes asking for the
+    next one mean anything.
+
+    A boundary falls on the last line break inside the window when there is
+    one. A rubric typed into an assignment description is rows of text, and a
+    row cut down the middle across two parts is the thing this is for. With no
+    line break to use, the cut falls at the limit.
+
+    Empty text is one empty part, not none: whether there is anything to read
+    is the caller's question, not this function's.
+    """
+    parts: list[str] = []
+    rest = text
+    while len(rest) > limit:
+        cut = rest[:limit].rfind("\n")
+        if cut <= 0:
+            # No line break to cut on, or one at the very start — either way
+            # the limit is the only boundary available. `cut` must stay
+            # positive or this loop would not advance.
+            cut = limit
+        parts.append(rest[:cut].rstrip())
+        rest = rest[cut:].lstrip("\n")
+    if rest or not parts:
+        parts.append(rest)
+    return parts
+
+
 def untrusted(text: str, source: str) -> str:
     """Wrap content in a visible boundary naming where it came from.
 

@@ -11,7 +11,7 @@ out missing rather than leaked.
 
 from typing import Any
 
-from canvas_mcp.sanitize import sanitize, to_plain_text, untrusted
+from canvas_mcp.sanitize import sanitize, split_parts, to_plain_text, untrusted
 
 # The complete output of slim_course(). Tests assert this exactly, so widening
 # it is a deliberate act with a failing test attached.
@@ -107,10 +107,15 @@ def slim_assignment(assignment: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-# slim_assignment plus the two fields that need sanitizing. Kept as a separate
+# slim_assignment plus the fields the detail view adds. Kept as a separate
 # function rather than a flag: the list view must never carry a description,
 # and a boolean parameter is easier to get wrong than two names.
-ASSIGNMENT_DETAIL_FIELDS = (*ASSIGNMENT_FIELDS, "description", "rubric")
+ASSIGNMENT_DETAIL_FIELDS = (
+    *ASSIGNMENT_FIELDS,
+    "description",
+    "description_part",
+    "rubric",
+)
 
 
 def _criterion_lines(index: int, criterion: dict[str, Any]) -> list[str]:
@@ -167,20 +172,73 @@ def rubric_text(assignment: dict[str, Any]) -> str | None:
     return untrusted("\n".join(lines), "assignment rubric")
 
 
-def slim_assignment_detail(assignment: dict[str, Any]) -> dict[str, Any]:
+def description_parts(assignment: dict[str, Any]) -> list[str]:
+    """The description as plain text, cut into parts that can be asked for.
+
+    Empty when there is nothing to read. A description of `<p></p>` is markup
+    with no words in it, and reporting that as one empty part would put a pair
+    of delimiters around nothing — which claims there is content to read.
+    """
+    text = to_plain_text(assignment.get("description") or "")
+    return split_parts(text) if text else []
+
+
+def _part_trailer(part: int, total: int) -> str:
+    """Where the reader is, and how to go on. Written by the server.
+
+    It sits **outside** the untrusted delimiters on purpose. Inside them it
+    would read as the teacher's words, and a teacher could write one that
+    lies about how much is left.
+    """
+    if total <= 1:
+        return ""
+    if part < total:
+        return f"\n[part {part} of {total}; ask for part {part + 1} to read on]"
+    return f"\n[part {part} of {total}, the last one]"
+
+
+def slim_assignment_detail(assignment: dict[str, Any], part: int = 1) -> dict[str, Any]:
     """One assignment, including its description and rubric as plain text.
 
     Both are written by a teacher, so both are stripped of markup and wrapped
     in delimiters naming where they came from. See `SCOPE.md` section 6 — that
-    mitigates, it does not solve. The description is capped; the rubric is
-    not, for the reason in `rubric_text`.
+    mitigates, it does not solve.
+
+    The description is returned one part at a time, `MAX_CHARS` at most, with
+    `description_part` saying which part of how many. The rubric is not cut at
+    all, for the reason in `rubric_text`, and comes back with every part: it is
+    a different field with a different meaning, and making its presence depend
+    on `part` is the kind of coupling that produces a confident wrong answer.
+
+    Raises `ValueError` when `part` does not exist, rather than clamping to a
+    part that does. A caller that silently gets part 1 after asking for part 4
+    cannot tell that it has read the same text twice.
     """
-    description = assignment.get("description")
+    parts = description_parts(assignment)
+    index = int(part) - 1
+
+    if not parts:
+        if int(part) != 1:
+            raise ValueError(
+                f"This assignment has no description, so there is no part {int(part)}."
+            )
+        description = None
+        position = None
+    elif index < 0 or index >= len(parts):
+        raise ValueError(
+            f"This description has {len(parts)} part(s) and part {int(part)} "
+            f"does not exist. Ask for a part between 1 and {len(parts)}."
+        )
+    else:
+        description = untrusted(parts[index], "assignment description") + _part_trailer(
+            int(part), len(parts)
+        )
+        position = f"{int(part)} of {len(parts)}"
+
     return {
         **slim_assignment(assignment),
-        "description": (
-            sanitize(description, "assignment description") if description else None
-        ),
+        "description": description,
+        "description_part": position,
         "rubric": rubric_text(assignment),
     }
 
