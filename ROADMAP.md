@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 22 — a verifier left by the door the sanitizer holds open**
+Status: **step 23 — a text file is text already**
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -1120,7 +1120,7 @@ marker remains honest there. `read_page` stays in the backlog — Leo's call on
 
 ## Found after v0.2, 2026-10-05
 
-### [~] 22. A verifier left by the door the sanitizer holds open
+### [x] 22. A verifier left by the door the sanitizer holds open
 
 **Delivers:** no unauthenticated download link reaches tool output, including
 the ones a teacher's own text carries.
@@ -1170,3 +1170,53 @@ description; only the credential beside them is gone.
 regression test is built from the shape seen live rather than from a capture.
 A capture would need `tools/make_fixture.py` against this assignment, and when
 one runs is Leo's call.
+
+### [~] 23. A text file is text already
+
+**Delivers:** `read_file` returns `.tex`, `.bib`, `.md` and `.csv` verbatim,
+so a LaTeX template can be reasoned about instead of described.
+
+**Files:** `src/canvas_mcp/tools/files.py`, `tests/test_read_file.py`,
+`SCOPE.md`, `README.md`
+
+**Branch:** `feat/read-a-text-file`
+
+**Notes:** asked for on 2026-10-05 — a homework assignment with a PDF and a
+LaTeX template attached, where the template is the thing to work in. Step 24
+has the zip; this is the half that is independent of it.
+
+**Nothing is done to the bytes.** No markup stripping, no reflowing. The
+sanitizer's job here is the boundary and the attribution, not the content: a
+backslash and a `%` comment are what the question is about.
+
+**The name may overrule a vague type.** Canvas types by extension and gives up
+often; `.tex` arrives as `application/octet-stream` as readily as `text/x-tex`,
+so going by content-type alone fails the common case. A name only overrules a
+type that says nothing — `application/pdf` and `image/png` still decide for
+themselves. It is also the only signal there will be inside a zip, where a
+member has a name and no type, so step 24 inherits this rather than inventing
+its own.
+
+**Encoding is guessed, in a fixed order, and cannot fail.** UTF-8 with a BOM
+stripped, then latin-1, which maps every byte. `errors="replace"` was the
+alternative and drops characters out of the middle of somebody's source
+without saying so.
+
+**Parts, not a cap**, reusing step 21's `split_parts` — but at 20 000
+characters rather than `MAX_CHARS`. That constant bounds a description sitting
+in a JSON answer beside other fields; this bounds the whole answer, and the
+PDF path beside it is bounded at 20 slides rather than at a character count. A
+source file cut every 2000 characters would take ten calls.
+
+**A test had to change its example.** `test_a_refusal_says_what_to_do_instead`
+used `SETUP.txt` as the thing that cannot be read. It can now, so the case
+moved to an image — the behaviour it pins, that a refusal names a way forward,
+is untouched.
+
+**README and SCOPE both claimed "only PDFs".** Both are now false and both are
+updated; `SCOPE.md` section 2's claim that modules are the only route to a file
+id is corrected too, since step 22 established that an assignment's description
+carries one.
+
+**Left out:** no fixture carries a text file, so the tests build one through
+the mock transport. Demo mode still serves only a PDF.

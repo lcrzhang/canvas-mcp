@@ -101,7 +101,7 @@ en de output bevat ook pages en assignments, niet alleen bestanden.
 
 | Tool | Input | Output | Scope |
 |---|---|---|---|
-| `read_file` | `course_id`, `file_id`, `page_range?` | bestandsnaam, paginabereik, aantal slides, geëxtraheerde tekst | `files:content` |
+| `read_file` | `course_id`, `file_id`, `page_range?`, `part?` | pdf: bestandsnaam, paginabereik, aantal slides, tekst — tekstbestand: naam, deel, letterlijke inhoud | `files:content` |
 
 **Slides tellen niet als pagina's.** Empirisch vastgesteld op 2026-09-01 op
 `lec01_intro.pdf`: 94 fysieke pagina's, ongeveer 30 slides. LaTeX beamer
@@ -122,6 +122,24 @@ kon worden, geen herhaling.
 De limiet staat daarom op twee getallen: **60 fysieke pagina's** worden
 gelezen, **20 slides** komen terug. De oorspronkelijke limiet van 20 pagina's
 mat het verkeerde ding — op een deck vol build-up frames is dat vier slides.
+
+**Een tekstbestand gaat niet door de extractor.** Vastgesteld op 2026-10-05:
+`.tex`, `.bib`, `.md` en `.csv` komen woordelijk terug, zonder markup-stripping
+en zonder herformatteren. Bij broncode is de opmaak het onderwerp, niet de
+verpakking. Een lang bestand komt in delen, met dezelfde markering als een
+lange description (sectie 6).
+
+Canvas typeert een bestand op zijn extensie en geeft het vaak op: een `.tex`
+komt net zo goed terug als `application/octet-stream` als als `text/x-tex`. De
+naam mag een type dat alleen "bytes" zegt daarom overrulen — anders faalt juist
+het normale geval. Dat is ook het enige signaal dat er zal zijn voor een
+bestand ín een zip, dat een naam heeft en geen type.
+
+**Een bestand aan een opdracht is bereikbaar.** Sectie 2 zei dat modules de
+enige route naar een file id zijn. Dat klopt niet meer: een docent die een
+bestand aan een opdracht hangt, laat Canvas een link in de description
+schrijven, en daar staat het id in. Gemeten op 2026-10-05 — `read_file` op een
+id uit zo'n link gaf de opgave terug.
 
 **Een Canvas Page is zichtbaar maar niet leesbaar.** Alleen een `File` draagt
 een id; de inhoud van een Page zit achter een slug die deze server niet
