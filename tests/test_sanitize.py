@@ -14,6 +14,7 @@ from canvas_mcp.sanitize import (
     sanitize,
     split_parts,
     to_plain_text,
+    without_query,
 )
 
 # A description written to be read by a model rather than by a student. Kept
@@ -36,6 +37,50 @@ def test_a_link_keeps_its_target_as_text() -> None:
     """A description reading "see the link" is useless without the link."""
     text = to_plain_text('Hand in via <a href="https://x.example.edu/a">the portal</a>')
     assert "the portal (https://x.example.edu/a)" in text
+
+
+# --- credentials in a link ------------------------------------------------
+
+# The shape Canvas really uses, seen on a live assignment on 2026-10-05: two
+# files attached to a description, each link carrying a verifier. The id is
+# kept; the verifier is the whole point of this test.
+REAL_FILE_LINK = (
+    '<p>See <a href="https://canvas.uva.nl/courses/59598/files/16029691'
+    '?verifier=35892816-98ae-4af7-9ebd-4ab4ce4c1051&amp;wrap=1">'
+    "HW Week 5 - LaTeX template.zip</a></p>"
+)
+
+
+def test_a_verifier_in_a_description_link_does_not_reach_the_output() -> None:
+    """`SCOPE.md` section 5 keeps unauthenticated download links out of tool
+    output. read_file strips them, the error path strips them and the HTTP log
+    strips them; a link a teacher wrote is the same credential at a different
+    door."""
+    text = to_plain_text(REAL_FILE_LINK)
+    assert "verifier" not in text
+    assert "35892816" not in text
+
+
+def test_the_file_id_survives_the_stripping() -> None:
+    """What is left has to still say which file the link points at — and for a
+    Canvas file that is the id read_file needs."""
+    text = to_plain_text(REAL_FILE_LINK)
+    assert "https://canvas.uva.nl/courses/59598/files/16029691" in text
+
+
+def test_without_query_keeps_scheme_host_and_path() -> None:
+    assert (
+        without_query("https://canvas.uva.nl/courses/1/files/2?verifier=abc&wrap=1")
+        == "https://canvas.uva.nl/courses/1/files/2"
+    )
+
+
+def test_without_query_drops_a_fragment_too() -> None:
+    assert without_query("https://x.example.edu/a?b=1#c") == "https://x.example.edu/a"
+
+
+def test_a_link_with_no_query_is_left_alone() -> None:
+    assert without_query("https://x.example.edu/a") == "https://x.example.edu/a"
 
 
 def test_script_and_style_contents_are_dropped() -> None:

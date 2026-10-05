@@ -1,6 +1,6 @@
 # Roadmap — canvas-mcp
 
-Status: **step 21 — a long description can be read to the end**
+Status: **step 22 — a verifier left by the door the sanitizer holds open**
 
 Order is 3b, 3a, 3: the guard checks the converter, the converter produces
 the fixture, the fixture makes the filter tests mean something.
@@ -1064,7 +1064,7 @@ are for.
 to a score, not what the work has to do, and the first two would need a
 sentence each to be readable rather than cryptic.
 
-### [~] 21. A long description can be read to the end
+### [x] 21. A long description can be read to the end
 
 **Delivers:** the marking criteria a teacher typed at the bottom of a long
 assignment description are reachable, instead of falling inside the part the
@@ -1115,3 +1115,58 @@ description, so it was fixed rather than noted.
 in one go and there is no question whose answer hides at the end of one, so the
 marker remains honest there. `read_page` stays in the backlog — Leo's call on
 2026-10-04, after step 20 made the Page case visible.
+
+---
+
+## Found after v0.2, 2026-10-05
+
+### [~] 22. A verifier left by the door the sanitizer holds open
+
+**Delivers:** no unauthenticated download link reaches tool output, including
+the ones a teacher's own text carries.
+
+**Files:** `src/canvas_mcp/sanitize.py`, `src/canvas_mcp/client.py`,
+`tests/test_sanitize.py`, `tests/test_filters.py`, `SCOPE.md`
+
+**Branch:** `fix/strip-credentials-from-links-in-text`
+
+**Notes:** found on 2026-10-05 while answering a question about reading a
+LaTeX template, by calling `get_assignment` against the live course rather than
+reasoning about it. The description came back with both attachments and both
+verifiers:
+
+```
+HW Week 5 - LaTeX template.zip (https://canvas.uva.nl/courses/59598/files/
+16029691?verifier=35892816-...)
+```
+
+**The allowlist was never wrong; it was answering a different question.** It
+decides which *fields* leave, and `description` is a field that may. What
+travels inside that field was nobody's job. Three places already stripped a
+verifier — `read_file`, the error path, the HTTP log — and each had been
+written as a local fix rather than as one rule, so the fourth door was not
+visibly missing.
+
+**One definition, in `sanitize`.** `client._path_of` now calls it. The rule
+could otherwise drift between the door that leads to an error message and the
+door that leads to link text, which is how the hole opened in the first place.
+
+**The whole query goes, not the parameters known to be credentials.** A
+denylist of parameter names has to be complete to be correct, and it would be
+guessing at what Canvas and every site a teacher links to put in a query
+string. The repo made the same argument for fields in section 5 and reached
+the same answer.
+
+**The cost, recorded rather than hidden:** an external link whose query is its
+content comes out pointing at the wrong place — `watch?v=xyz` becomes `watch`.
+Stripping only on the Canvas host would keep those working and is the
+alternative if it proves to matter; it needs the base URL inside the sanitizer,
+which today knows nothing about Canvas.
+
+**Not a new capability.** The file ids this makes visible were always in the
+description; only the credential beside them is gone.
+
+**Left out:** the fixtures carry no description with a file link in it, so the
+regression test is built from the shape seen live rather than from a capture.
+A capture would need `tools/make_fixture.py` against this assignment, and when
+one runs is Leo's call.

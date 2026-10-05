@@ -320,6 +320,23 @@ def test_an_injection_in_a_description_stays_inside_the_boundary() -> None:
     assert description.rstrip().endswith(END)
 
 
+def test_a_verifier_in_a_description_link_never_reaches_the_output() -> None:
+    """The whole way out, not just the sanitizer: a teacher attaches a file to
+    an assignment and Canvas writes the link with a verifier in it. Seen live
+    on 2026-10-05, which is how this hole was found."""
+    attached = {
+        **SAFE_ASSIGNMENT,
+        "description": (
+            '<p>Use the template: <a href="https://canvas.uva.nl/courses/'
+            '59598/files/16029691?verifier=SENTINEL-verifier&amp;wrap=1">'
+            "HW Week 5 - LaTeX template.zip</a></p>"
+        ),
+    }
+    detailed = slim_assignment_detail(attached)
+    assert "SENTINEL" not in json.dumps(detailed)
+    assert "files/16029691" in detailed["description"]
+
+
 # --- a long description, read in parts -------------------------------------
 
 # Past MAX_CHARS on purpose: the point of these tests is what happens at the
@@ -578,6 +595,18 @@ FORBIDDEN_ANNOUNCEMENT_FIELDS = {
     "attachments": [{"url": "SENTINEL-attachment"}],
     "permissions": {"reply": True, "update": "SENTINEL-permission"},
 }
+
+
+def test_a_verifier_in_an_announcement_link_never_reaches_the_output() -> None:
+    """Same door, other room."""
+    announcement = {
+        **SAFE_ANNOUNCEMENT,
+        "message": (
+            '<p><a href="https://canvas.uva.nl/courses/1/files/2'
+            '?verifier=SENTINEL-verifier">the handout</a></p>'
+        ),
+    }
+    assert "SENTINEL" not in json.dumps(slim_announcement(announcement))
 
 
 def test_announcement_output_is_exactly_the_allowlist() -> None:
