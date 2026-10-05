@@ -167,6 +167,31 @@ verwijderd, met een test per veld:
 | `uuid`, `*_account_id`, `sis_*` | interne identifiers, geen nut voor een LLM |
 | `storage_quota_mb`, `blueprint`, `template`, `license`, ... | LTI/admin-plumbing |
 
+### De allowlist dekt velden, niet wat er ín een veld staat
+
+Gevonden op 2026-10-05, tegen de echte API. De filterlaag is een allowlist, dus
+`file.url` met zijn `verifier=` komt er nooit door. Maar een docent die een
+bestand aan een opdracht hangt, laat Canvas een link in de **description**
+schrijven — en die description is een veld dat er wél doorheen mag:
+
+```
+HW Week 5 - LaTeX template.zip (https://canvas.uva.nl/courses/59598/files/
+16029691?verifier=35892816-...)
+```
+
+Dezelfde credential, een andere deur. `read_file` stript hem, `client.py`
+stript hem uit foutmeldingen, `server.py` houdt hem uit de HTTP-log — alleen de
+sanitizer liet hem staan, omdat die links juist bewaart (een description die
+"zie de link" zegt is niets waard zonder die link).
+
+Sindsdien verliest elke URL die als tekst overleeft zijn query en fragment,
+precies zoals `_path_of` dat al deed. Het pad blijft, dus je ziet nog steeds
+wélk bestand bedoeld wordt — en bij een Canvas-bestand draagt dat pad het id
+dat `read_file` nodig heeft.
+
+De prijs staat in `ROADMAP.md` stap 22: een externe link waarvan de query de
+inhoud ís, `watch?v=...`, wijst daarna naar de verkeerde plek.
+
 Gemeten op `/courses` met 4 vakken op 2026-08-29: **4310 bytes ruw → ~450
 bytes geslankt** (factor ~9).
 
