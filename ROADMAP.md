@@ -1270,3 +1270,73 @@ but `page_range` and `member` and `part` interacting is a bigger surface than
 this step should buy, and no deck has been found inside an archive yet. A zip
 is also not listed by `list_materials` as anything special — it is a File like
 any other, and its id arrives the same way.
+
+---
+
+## Found after v0.2, 2026-10-17
+
+### [~] 25. A trust store that is not there
+
+**Delivers:** a stale `SSL_CERT_FILE` says which variable it is, instead of
+arriving as `FileNotFoundError` from inside `httpx2`.
+
+**Files:** `src/canvas_mcp/client.py`, `tests/test_client.py`
+
+**Branch:** `fix/stale-ssl-cert-file`
+
+**Notes:** found while installing this server on a Windows machine on
+2026-10-17. The install succeeded and every startup then died before the MCP
+handshake, in `create_ssl_context`, on a Windows user variable left behind by
+other software: `SSL_CERT_FILE` pointing at a CA bundle that had been deleted
+along with its directory. The traceback names `httpx2` and
+`canvas_mcp.client` and names neither the variable nor the path, so it reads
+as a bug in the package that was just installed. In an MCP client none of it
+is visible at all — the client reports that the server failed to start.
+
+**Refused, not ignored.** Carrying on with the system trust store was the
+alternative, and it is what a `try`/`except` around the constructor would
+have given for free. Rejected: `SSL_CERT_FILE` is a deliberate instruction
+about which certificates to trust, so an operator who points it at a
+corporate bundle and later loses that file should be told, not quietly handed
+a different trust store than the one they configured. Falling back would need
+a warning to be honest about what it did, and a warning on stderr under stdio
+is the thing nobody reads. Refusing costs a startup; the fix takes seconds
+once the message names the variable.
+
+**`SSL_CERT_DIR` fails more quietly than `SSL_CERT_FILE`.** Measured on
+2026-10-17 against Python 3.13: a missing `cafile` raises `FileNotFoundError`
+on the spot, while a missing `capath` is accepted by OpenSSL and yields a
+context holding zero CA certificates — so nothing fails until a request does,
+with a message about the certificate rather than about the path. Both are
+refused. `httpx2` consults `SSL_CERT_DIR` only when `SSL_CERT_FILE` is unset
+and this check deliberately does not copy that precedence: a path pointing at
+nothing is broken configuration either way, and unsetting the other variable
+tomorrow promotes it to the live one.
+
+**Only when the transport is the default one.** `httpx2` returns an injected
+transport untouched and builds an SSL context only inside its own, so demo
+mode and the entire test suite never read these variables. Checking
+unconditionally would have refused `--demo`, which exists for a reader who has
+no Canvas account, over a machine problem demo mode does not touch — and on
+the machine where this was found it would have failed every test that
+constructs a client. Observed before the check was written: the suite passes
+with the broken variable still set.
+
+**After the token check, not before.** `CANVAS_TOKEN` is this project's own
+configuration and the machine's trust store is not, so a run with neither in
+place hears about the token first.
+
+**No dependency.** `certifi` would have supplied a bundle to fall back to, and
+`truststore` is already in the tree as an `httpx2` dependency, but importing
+either here would make this project take a position on which certificates to
+trust. `os.path.isfile` answers the only question being asked.
+
+**The workaround this replaces** put a valid bundle path into `SSL_CERT_FILE`
+in one client's `env` block. That fixed one machine and taught the next reader
+nothing; an error message travels with the code.
+
+**Left out:** every other way a trust store can be wrong — a bundle that
+exists and holds no certificates, one that cannot be read, and
+`REQUESTS_CA_BUNDLE`, which nothing here reads. The first two already fail
+with OpenSSL's own message and the path in it, which is enough to act on.
+This step is the missing-path case, which is the one that names nothing.

@@ -1,10 +1,17 @@
 """Client tests run against httpx2.MockTransport: no network, no token, and
 the same code path as a real request."""
 
+from pathlib import Path
+
 import httpx2
 import pytest
 
-from canvas_mcp.client import CanvasClient, CanvasError, error_message
+from canvas_mcp.client import (
+    CanvasClient,
+    CanvasError,
+    error_message,
+    trust_store_problem,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -93,6 +100,84 @@ def test_unreachable_host_names_the_base_url() -> None:
     with CanvasClient(transport=httpx2.MockTransport(handler)) as client:
         with pytest.raises(CanvasError, match="Could not reach Canvas"):
             client.get("/courses")
+
+
+def test_a_stale_ssl_cert_file_names_the_variable_and_the_path(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    gone = tmp_path / "cacert-2024-11-26.pem"
+    monkeypatch.setenv("SSL_CERT_FILE", str(gone))
+    monkeypatch.delenv("SSL_CERT_DIR", raising=False)
+
+    with pytest.raises(CanvasError) as excinfo:
+        CanvasClient()
+
+    message = str(excinfo.value)
+    assert "SSL_CERT_FILE" in message
+    assert str(gone) in message
+    # Without this the reader debugs Canvas, or this server, or the install.
+    assert "not Canvas" in message
+    assert "unset it" in message
+
+
+def test_a_stale_ssl_cert_dir_is_refused_as_well(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    gone = tmp_path / "certs"
+    monkeypatch.delenv("SSL_CERT_FILE", raising=False)
+    monkeypatch.setenv("SSL_CERT_DIR", str(gone))
+
+    with pytest.raises(CanvasError) as excinfo:
+        CanvasClient()
+
+    message = str(excinfo.value)
+    assert "SSL_CERT_DIR" in message
+    assert str(gone) in message
+    assert "directory" in message
+
+
+def test_a_trust_store_that_is_there_is_left_alone(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    # Whether the bundle parses is OpenSSL's to say; whether the path exists
+    # is the only question asked here.
+    bundle = tmp_path / "cacert.pem"
+    bundle.write_text("", encoding="utf-8")
+    monkeypatch.setenv("SSL_CERT_FILE", str(bundle))
+    monkeypatch.setenv("SSL_CERT_DIR", str(tmp_path))
+
+    assert trust_store_problem() is None
+
+
+def test_no_trust_store_in_the_environment_is_not_a_problem(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("SSL_CERT_FILE", raising=False)
+    monkeypatch.delenv("SSL_CERT_DIR", raising=False)
+
+    assert trust_store_problem() is None
+
+
+def test_without_the_variables_the_default_transport_is_still_built(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The real path: no transport injected, no request made."""
+    monkeypatch.delenv("SSL_CERT_FILE", raising=False)
+    monkeypatch.delenv("SSL_CERT_DIR", raising=False)
+
+    with CanvasClient() as client:
+        assert client.base_url == "https://canvas.uva.nl"
+
+
+def test_a_stale_trust_store_does_not_stop_an_injected_transport(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Demo mode and these tests pass a transport, which `httpx2` returns
+    untouched, so no SSL context is built and nothing reads the variable."""
+    monkeypatch.setenv("SSL_CERT_FILE", str(tmp_path / "gone.pem"))
+
+    with client_returning(json={"id": 1}) as client:
+        assert client.get("/users/self") == {"id": 1}
 
 
 def paging_client(
