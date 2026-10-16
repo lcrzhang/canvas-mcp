@@ -332,6 +332,14 @@ Deze staan bovenaan de README, niet onderaan.
 - geen file downloads naar schijf voor de gebruiker
 - geen v0.1 file content
 
+**`tools/set_token.py` schrijft bestanden die de server niet bezit.**
+Vastgelegd toen het script werd toegevoegd: dit is het eerste in deze repo dat
+buiten zijn eigen boom schrijft — de configs van de MCP-clients — en dat
+daarvoor de tokenwaarde in handen krijgt. Het print hem nooit en logt hem
+nooit, en de README vraagt de gebruiker al om diezelfde waarde met de hand in
+diezelfde bestanden te zetten. Het staat hier zodat een latere lezer ziet dat
+dit besloten is en niet is ingeslopen.
+
 ---
 
 ## 8. Fixtures en demo-modus
