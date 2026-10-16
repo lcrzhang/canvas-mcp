@@ -71,6 +71,44 @@ def _too_large(size: int, limit: int) -> str:
     )
 
 
+# Both are read by Python's own `ssl` module, so a stale one is not this
+# server's problem to work around: it breaks HTTPS for every Python program on
+# the machine. `SSL_CERT_DIR` is only consulted when `SSL_CERT_FILE` is unset,
+# but a broken path in either is an operator's TLS configuration pointing at
+# nothing, and the next run with the other one unset fails where this one did
+# not.
+_TRUST_STORE_ENV = (
+    ("SSL_CERT_FILE", os.path.isfile, "file"),
+    ("SSL_CERT_DIR", os.path.isdir, "directory"),
+)
+
+
+def trust_store_problem() -> str | None:
+    """Name a CA trust store the environment points at and does not have.
+
+    `httpx2` hands `SSL_CERT_FILE` to OpenSSL unexamined, which raises
+    `FileNotFoundError` from inside a constructor three libraries down, naming
+    neither the variable nor the path — so the failure reads as a bug in
+    whatever was just installed. A missing `SSL_CERT_DIR` is quieter still:
+    OpenSSL accepts it, the trust store is empty, and every request fails
+    verification instead.
+
+    Kept separate from the client so it can be tested without a transport.
+    """
+    for variable, exists, kind in _TRUST_STORE_ENV:
+        path = os.environ.get(variable, "")
+        if path and not exists(path):
+            return (
+                f"{variable} is set to {path}, and there is no {kind} there. "
+                "Python itself reads that variable, so every HTTPS call from "
+                "every Python program on this machine fails the same way — "
+                "this is the environment, not Canvas and not this server. "
+                "Point it at a CA bundle that exists, or unset it to use the "
+                "system trust store."
+            )
+    return None
+
+
 class CanvasClient:
     """A read-only Canvas API client.
 
@@ -95,6 +133,15 @@ class CanvasClient:
         configured = base_url or os.environ.get("CANVAS_BASE_URL") or DEFAULT_BASE_URL
         root = configured.rstrip("/")
         self.base_url = root
+        # Only the default transport builds an SSL context: `httpx2` returns an
+        # injected one untouched, so demo mode and the tests neither need a
+        # trust store nor should be stopped by a broken one. Checked after the
+        # token, which is this project's own configuration rather than the
+        # machine's.
+        if transport is None:
+            problem = trust_store_problem()
+            if problem is not None:
+                raise CanvasError(problem)
         self._client = httpx2.Client(
             base_url=root + API_PREFIX,
             headers={
